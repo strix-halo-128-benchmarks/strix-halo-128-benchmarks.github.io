@@ -42,6 +42,8 @@ exactly how far that can be pushed.
   18   For newcomers                    a build path, ten pitfalls, what this cost
   19   The same data, plotted           ten figures built from the archive
   20   Appendix                         commands, port map, file map, glossary
+  21   Change log                       what each edition changed, and why
+  22   Credits and tooling              who measured, what wrote the text
 
    Figures 1-24 · Tables 1-13
 ```
@@ -2476,6 +2478,24 @@ so it could no longer be rebuilt; it now plots the 2026-10-28 full suite on the 
 MMLU-Pro cell is a poisoned 1/120 rather than a score; `qwen38-35b` and `Ornith-1.5-35B` were both
 measured only at cap 512, so their code rows are floors, not ceilings; and no model on disk has been
 measured at a 32k needle since the kernel moved to 7.3.0-5.
+
+---
+
+## 22. Credits and tooling
+
+**Measurement.** Every figure here was produced by `~/bench/t20` and the per-axis scripts on the
+machine described in §2, run by the operator between 2026-10-07 and 2026-10-31. The numbers come from
+those runs and from the hardware monitor's SQLite history; none is estimated, and each is traceable to
+a run id in `~/runs/catalogue.json`.
+
+**Assistance.** The benchmark runs, the analysis and the drafting of this document were carried out
+with **Hermes Agent (Nous Research) driven by DeepSeek's `deepseek-flash`** model, working alongside the
+operator: the agent scheduled and monitored the runs, read their outputs, built the tables and figures,
+and maintained the retirement record. The model did not produce any measurement — it read them.
+
+**Publication.** The public site is generated from these same sources by `scripts/build.sh`, which
+refuses to publish if a sanitising check fails, and the retirement ledger is published beside this
+report. Corrections are welcome as issues on the repository.
 
 ---
 

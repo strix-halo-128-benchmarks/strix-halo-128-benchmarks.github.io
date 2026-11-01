@@ -63,6 +63,14 @@ it compares close scores. Not affiliated with AMD, llama.cpp, or any model vendo
 | platform guides, setup | [strixhalo.wiki](https://strixhalo.wiki/) |
 | llama.cpp backend bugs and datapoints | [gfx1151 discussions](https://github.com/ggml-org/llama.cpp/discussions/20856) |
 
+## Credits
+
+Measurements, analysis and the writing of these documents were done with **Hermes Agent**
+(Nous Research) driven by **DeepSeek `deepseek-flash`**, working alongside the machine's operator over
+four weeks. The model scheduled and monitored the benchmark runs, read their outputs and drafted the
+text; the hardware produced the measurements, and every figure is traceable to a run id in the
+catalogue.
+
 ## Licence and citation
 
 Text, figures and data: **CC BY 4.0**. See [LICENSE](LICENSE). Reuse the numbers freely with

@@ -864,4 +864,10 @@ riddle sweep is the number worth checking, because that is rarer on this box tha
 
 ---
 
+*Written with Hermes Agent (Nous Research) driven by DeepSeek's `deepseek-flash`, from the run archive
+and from the sha256 values taken immediately before each deletion. Where a hash or date was never
+captured, the entry says so rather than filling the gap.*
+
+---
+
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*
