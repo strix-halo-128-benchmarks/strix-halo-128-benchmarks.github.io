@@ -55,7 +55,16 @@ exactly how far that can be pushed.
 
 This document records a practical, repeatable method for deciding which local language models are
 worth serving on a 128 GB unified-memory AMD Strix Halo machine, and it reports what that method
-found across 33 models.
+found across the 30 models in the published matrix, out of 50 local model files that have at least
+one measurement.
+
+Three conventions run through the document. **`MMLU` in a compact score or table cell means MMLU-Pro**
+(the 120-item chat 0-shot probe described in §6.2), never the original 14,000-item MMLU; the full name is
+written out wherever the distinction matters. **GTT** is the Graphics Translation Table — the
+GPU-addressable window into system RAM, which on this machine is the 100 GiB pool that actually matters
+(§2.1), not the 8 GiB reported as VRAM. **SE** is the standard error of a proportion, quoted whenever two
+scores are close enough that sampling noise could explain the gap; at n=164 that is ±2.3 pp at p=0.9, at
+n=120 it is ±2.7 pp (§8 has the full table).
 
 Seven claims are worth having up front, because everything else follows from them.
 
@@ -763,7 +772,7 @@ worth running only after preflight.
 
 **MMLU-Pro (120 questions)** — four-option knowledge questions, scored on the exact option letter.
 Separates "knows things" from "can code", which are frequently different models here: the fastest
-model on the box (mellum21, 111.9 t/s) is mid-pack on knowledge, and the best knowledge model on
+model on this machine (mellum21, 111.9 t/s) is mid-pack on knowledge, and the best knowledge model on
 record (gemma4-31b, retired 2026-10-30) was the second slowest; the best one still on disk
 (gemma4-26b-uncen, 0.8500) runs at 56.9 t/s.
 
@@ -825,7 +834,7 @@ Five rules, in order of how much damage ignoring them causes:
    66-item measurement; `gemma4-31b` at 0.9634 is 164 items. The first has roughly ±3 pp of standard
    error, the second ±1.3 pp. Do not rank across different n without noting it. 3. **Preflight 0/3
    does not mean the model is bad at its job.** `minicpm-v47-35b` fails all three preflight probes
-   and is still the box's best vision model. It refuses bare chat-format probes because its template
+   and is still this machine's best vision model. It refuses bare chat-format probes because its template
    expects image content. Preflight is a gate for *chat and agent* use, not a universal quality
    measure. 4. **Empty ≠ wrong.** Riddle failures marked empty are usually budget exhaustion, not
    misunderstanding. Check the content, not just the verdict. 5. **Speed is measured alone.** These
@@ -835,9 +844,23 @@ Five rules, in order of how much damage ignoring them causes:
 **Conventions used throughout.** Speeds appear as `t/s` inside tables and diagrams and as "tokens
 per second" in prose; they are the same unit. `pp` is prefill (prompt processing) and `tg` is decode
 (token generation). Scores are proportions in 0-1, not percentages. `HE` abbreviates HumanEval, and
-`MMLU` in compact score notation means MMLU-Pro; the full suite name is written out wherever the
-distinction matters. A "cap-burn" is an item that produced no answer because it exhausted its
-generation budget. Section numbers written as §n refer to this document.
+The conventions from §0 hold here: compact `MMLU` means MMLU-Pro, never the 14,000-item original. A
+"cap-burn" is an item that produced no answer because it exhausted its generation budget. Section numbers
+written as §n refer to this document.
+
+**How much difference is real.** Both capability axes are samples, so a gap smaller than about two standard
+errors is not evidence of anything. Use this table before ranking two adjacent rows:
+
+| items | SE at p≈0.9 | SE at p≈0.75 | gap worth arguing about |
+|---:|---:|---:|---:|
+| 164 (HumanEval full) | ±2.3 pp | ±3.4 pp | ≥ 5 pp |
+| 120 (MMLU-Pro full) | ±2.7 pp | ±4.0 pp | ≥ 6 pp |
+| 60 | ±3.9 pp | ±5.6 pp | ≥ 9 pp |
+| 40 | ±4.7 pp | ±6.8 pp | ≥ 11 pp |
+| 30 | ±5.5 pp | ±7.9 pp | ≥ 13 pp |
+
+That is why the table carries `items@cap` in every cell and why a 2-item move at n=164 (§9.1's `Ornith-1.5-35B`
+re-measure) was reported as noise rather than as an improvement.
 
 Two forward pointers: **§10** states what may and may not be inferred from one model to another in
 the same family, and **§5.1-5.6** cover quantisation, which is the variable most often confused with
@@ -850,7 +873,8 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model ever measured, best-measured run. `HE` is `score (items@cap)`; caps differ, so read
+One row per model that completed the full suite and reached a verdict — 30 of the 50 local files that have
+at least one measurement. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
 2026-10-27 onwards. The `build` column names the tree and the commit that produced the row — `fork b3-1a33095`, `bolt
@@ -907,7 +931,7 @@ Q8_0 row now carries its own file's numbers.
 
 
 **Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. Full inventory (15 model units, 602 GiB, projectors and drafters included) is in §20.3.
+capability row. Full inventory (17 model artefacts, 630 GiB, projectors and drafters included) is in §20.3.
 
 | Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -977,7 +1001,7 @@ and 605 t/s prefill. This is the honest big-model result on Strix Halo: 74 GiB f
 slightly better on code than the 26B driver and clearly worse on speed. Its niche is difficult code
 and long single-shot reasoning where 20 seconds of latency is acceptable.
 
-**nemotron-super-120b — biggest and least ergonomic.** 123.6B at Q3_K_M, 0.9329 code, 0.7667 MMLU,
+**nemotron-super-120b — biggest and least ergonomic.** 123.6B at Q3_K_M, 0.9512 code, 0.7667 MMLU,
 27.1 t/s but only 411 t/s prefill and the weakest instruction-following of the large models
 (0.600/0.533). It is beaten by the 26B driver on knowledge and instruction, and by the 122B on
 prefill. Kept because it is genuinely 120B-class and sometimes size alone matters, not because it
@@ -1015,7 +1039,7 @@ high-volume, low-latency work — classification, extraction, triage — not for
 **lfm25-24b-a2b — the fastest 24B.** 106.6 t/s, 2930 t/s prefill, 24B with 2B active. Lower quality
 (0.8537 code, 0.6917 MMLU) but the most responsive model of its size class, with a 1M-token context
 option. Its IFEval 0.3333 in the archive is an lm-eval artefact; standalone at a 4096 cap it
-measures 0.9333, which is one of the best instruction scores on the box.
+measures 0.9333, which is one of the best instruction scores on this machine.
 
 **Kimi-Linear-48B-A3B-abl — the long-context file, and the honest version of a retired one.** The
 abliterated i1-Q4_K_M build (27.66 GiB, 49.1B with ~3B active) measures **0.7866 code, 0.5833
@@ -1396,9 +1420,9 @@ Figure 11 — Routing a job to the axis that governs it, then to a model.
    latency rules   HumanEval    MMLU-Pro     1M ctx          vision
         │           + riddles                  + retrieval
         ▼               ▼           ▼            ▼                ▼
-   gemma4-26b-     minicpm-v47  gemma4-26b   lfm25-24b-a2b   minicpm-v47
-   uncen (56.9)    ornith-122b  uncen        (1M ctx; kimi   -35b
-   or mellum21     (64 / 23)    (0.8500)     retired 10-29)  (64.6 t/s)
+   gemma4-26b-     minicpm-v47  gemma4-26b   Kimi-Linear     minicpm-v47
+   uncen (56.9)    ornith-122b  uncen        (1M native)     -35b
+   or mellum21     (64 / 23)    (0.8500)     or lfm25 (1M)   (64.6 t/s)
    (111.9)
 ```
 **Table 6 — Job to axis to model.**
@@ -1408,7 +1432,7 @@ Figure 11 — Routing a job to the axis that governs it, then to a model.
 | Chat / agent behind a messaging channel | preflight + decode speed + riddles | **gemma4-26b-uncen** | 3/3 preflight, 56.9 t/s, 14/14 traps, 15.6 GiB and it is already the enabled unit on :8100 · non-uncensored fallback **gemma4-26b-qat-q4** |
 | Difficult one-shot code | HumanEval at a generous cap | **minicpm-v47-35b** or **ornith-122b** | 0.9573 at cap 4096 / 0.9512 at cap 4096; the 0.9634 gemma4-31b that used to hold this slot was retired 10-30 for being dense and 17 t/s — latency is irrelevant for a single answer, so it is the one job it was still defensible for |
 | Bulk classification, extraction, triage | decode speed + instruction strictness | **mellum21-fork** (111.9 t/s) or **lfm25** (106.6) | throughput dominates; both follow short instructions well when given room |
-| Document Q&A over 100k-1M tokens | context + retrieval, not knowledge | **lfm25-24b-a2b (1M ctx)** | the 1M option survives on the only model of that class still on disk; Kimi-Linear, which held this slot with a verified million-token window, was retired 2026-10-29 |
+| Document Q&A over 100k-1M tokens | context + retrieval, not knowledge | **Kimi-Linear-48B-A3B-abl (1M native)** or **lfm25-24b-a2b (1M option)** | Kimi carries a native 1,048,576-token window at 74.8 t/s, the largest on this machine; lfm25 is faster and scores higher on both axes, so it wins when the 1M window is an option rather than a requirement. Neither is a knowledge model — see their MMLU rows |
 | Vision: describe, OCR-adjacent, camera frames | multimodal + prefill | **minicpm-v47-35b** | 0.9573 code at 4096 and a 1 GiB projector at 64.6 t/s; the only strong VLM measured |
 | Reference answers / offline judging | MMLU + HumanEval | **gemma4-26b-uncen** | 0.8500 MMLU and 0.9573 code are the best on disk; the 31B that led both axes (0.8667 / 0.9634) went on 10-30 and its numbers remain as the all-time reference |
 | Long agent loops with many tool calls | instruction-following + riddles | **qwen3next-q6** | 0.885/0.923 IFEval and 14/14 traps; best constraint adherence of the large models |
@@ -1698,7 +1722,7 @@ advantage in latency narrows sharply while their per-token cost keeps climbing.
   reasoning share** (0-24% measured), so a fixed 4096 cap is not the same amount of *answer* budget
   across rows. - **Cost is not comparable to local cost.** Local marginal cost per sweep is
   electricity plus wear; hosted cost is per token and per cache behaviour. A like-for-like
-  comparison would need the box's power draw over the run, which was not instrumented here. -
+  comparison would need this machine's power draw over the run, which was not instrumented here. -
   **Selection.** The four hosted models were chosen because they are the plausible reference points
   for this workload, not because they are the strongest available at any price. - **n = 1 run per
   axis**, as throughout. Differences under ~1.3pp (HE) and ~3.9pp (MMLU) are not established.
@@ -1782,7 +1806,7 @@ Two observations that matter more than the absolute numbers:
   workload's. - **Sustained temperature is far below peak.** Over the final five minutes of the long
   runs, Tctl averaged 57 °C (Raon) and 66 °C (Spark), against peaks of 62-70 °C, and the hottest
   single reading in any run was 77 °C on the 234k-token needle. Nothing here is close to a throttle
-  point; the box is quiet and cool under sustained local inference, which is the practical case for
+  point; this machine is quiet and cool under sustained local inference, which is the practical case for
   it over a discrete GPU.
 
 ### 15.4 What that means in money
@@ -1817,7 +1841,7 @@ Three things follow from that.
 
 **"powersave" is not a throttle on amd-pstate.** Unlike the old acpi-cpufreq governor of the same
 name, it still ramps to full boost on demand; the EPP value only biases how eagerly. The
-measurements confirm it: package power reached 130 W and Tctl 75 °C under load, so the box was using
+measurements confirm it: package power reached 130 W and Tctl 75 °C under load, so this machine was using
 its budget, not idling at a capped clock. Anyone who reads "powersave" and assumes the numbers are
 artificially low has it backwards.
 
@@ -2157,7 +2181,8 @@ change results.
 ### 18.3 What this method cost, and what it bought
 
 **The one cost that is measured:** 118 runs totalling **47.7 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-10-31. Of the 33 model files measured, 16 remain
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-01. Of the 50 local model files with at least one
+measurement, 17 remain
 servable and 24 retirements are recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
 
@@ -2183,7 +2208,7 @@ time log. Ranges, not a point estimate.
 | publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
 | **total** | **222** | **318** | ≈ 250-300 h |
 
-Of that, roughly **40-60 hours needed a person**: the decisions the measurements cannot make — what to
+Of that total, **40–60 hours were attended by a human** — the rest is machine execution and agent time: the decisions the measurements cannot make — what to
 delete, what to publish, whether 0.57 is a fact about the model or a bug in the harness. The remainder
 is machine execution and agent time, which is why the per-byte cost of this hardware is not the scarce
 input; the discipline around it is.
@@ -2235,20 +2260,20 @@ count; hollow markers are floor estimates from a small cap or a short subset.
 
 {{svg charts/f15-quality-speed.svg}}
 
-Figure 15 — HumanEval pass@1 against decode throughput, 27 models.
+Figure 15 — HumanEval pass@1 against decode throughput, 30 models.
 
 ### 19.2 Knowledge against decode speed
 
 The same axes with the other quality measure, and a different ranking. Speed buys no knowledge: the
 two fastest files (mellum21 at 111.9 t/s, lfm25 at 106.6) read 0.8083 and 0.6917, and the best
-knowledge-per-second point on the box is mellum21, still 5.8pp under the ceiling. That ceiling belongs
+knowledge-per-second point on this machine is mellum21, still 5.8pp under the ceiling. That ceiling belongs
 to two retired files — the 31B and the Q8_0, both 0.8667 — with the live driver at 0.8500. The 2-bit Bolt load (0.3667) sits visibly detached from the rest of the nemotron family.
 
 *Does not show* the hosted tier, which is deliberately absent (§19.8).
 
 {{svg charts/f16-knowledge-speed.svg}}
 
-Figure 16 — MMLU-Pro against decode throughput, 27 models.
+Figure 16 — MMLU-Pro against decode throughput, 30 models.
 
 ### 19.3 The cap is a variable, not a detail
 
@@ -2670,7 +2695,7 @@ recipes for all ten are in `~/llama-local/RETIRED-models.md`:
                           Huihui Coder390 IQ3_S1 (11.3), Nemotron-Bolt-E4B Q8 (8.9)
 ```
 
-The models directory is 602 GiB and holds 16 artefacts, every one with a capability row — the last
+The models directory is 630 GiB and holds 17 artefacts, every one with a capability row — the last
 blank cell (`Qwen3-Next-80B UD-Q4_K_XL`) was filled on 2026-10-31. Fourteen user units remain, one of them enabled
 (`llama-gemma4-26b-uncen`, :8100), plus the system boot unit `orient-ornith` (:8094).
 
@@ -2797,7 +2822,7 @@ the window — the model is not forgetting anything, it is just getting slow.
 
 Configuration: the deployed driver (`gemma4-26b-uncen`, QAT uncensored Q4_K_M, ctx 131072) on the
 Vulkan/RADV stack, measured against the live unit with no reload. This is the behaviour of the model
-that answers this machine's traffic, not of the best model on the box — §9.1 explains why those differ.
+that answers this machine's traffic, not of the best model on this machine — §9.1 explains why those differ.
 
 ### 23.3 Cross-validation on their suite — and what their harness had to fix
 
