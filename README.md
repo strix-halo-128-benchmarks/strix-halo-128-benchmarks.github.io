@@ -1,0 +1,74 @@
+# Local LLM benchmarks on AMD Strix Halo (gfx1151)
+
+Measured capability **and** throughput for local models on a single Ryzen AI Max+ 395 box
+(Radeon 8060S, 128 GB unified memory, ~100 GiB GTT), on llama.cpp/Vulkan.
+
+**Read the report: https://strix-halo-128-benchmarks.github.io/**
+
+Two documents:
+
+| Page | What it is |
+|---|---|
+| [index.html](index.html) | the report — method, measured matrix, league tables, figures, per-model analysis |
+| [retired-models.html](retired-models.html) | the retirement ledger — every deleted model with the reason, the measured scores that justified it, file sizes, sha256s, upstream repo and the flags that worked, so any deletion can be reversed or re-tested |
+
+Every number in the report comes from a run recorded in [`data/catalogue.json`](data/catalogue.json):
+118 rows, 16 model artefacts, 2026-10-07 → 2026-10-31. Retired models keep their rows there too,
+marked with the retirement date.
+
+## Why this exists
+
+Public numbers for this platform are almost entirely tokens-per-second. That answers "how fast",
+not "is it good", and it can't answer "is this file worth 47 GiB of download". This report adds the
+capability axis — HumanEval pass@1 and MMLU-Pro accuracy, each recorded **with the max_tokens cap it
+was measured at** — joined to a specific quant and weight file, plus the retirements and the reasons.
+
+## Headline findings
+
+- **The plateau.** The top five models span 2.2 pp of HumanEval while spanning 15.6 GiB to 63 GiB of
+  weights. Above roughly 0.95 code / 0.85 knowledge, this box buys nothing with more parameters.
+- **The cap trap.** A row measured at `max_tokens` 512 is a floor, not a measurement. Re-measuring one
+  35B file at 4096 moved one item (0.5610 → 0.5671); re-measuring another moved fourteen. Only a re-run
+  tells you which.
+- **Quantisation attacks axes selectively.** One 2-bit MoE kept 0.945 HumanEval while collapsing to
+  0.3667 MMLU — procedural skill survived, factual knowledge did not.
+- **"Arch is implemented" is necessary, not sufficient.** A 119B MoE loaded and served correctly at
+  4.8 tok/s because its architecture inherits another family's decode path. Benchmark the file, not the
+  architecture registry.
+
+## Method, briefly
+
+1. Each candidate runs beside the resident driver on a transient systemd unit, so the machine's real
+   workloads never stop and the model is measured under the memory pressure it would actually see.
+2. Capability axes are HumanEval (164 items, tests executed) and MMLU-Pro (120 items, chat 0-shot),
+   each at a stated cap. Prefill (pp) and decode (tg) come from the same server.
+3. Build identity — llama.cpp commit, kernel, mesa — is recorded per run, because a kernel bump moves
+   decode 10–20% and silently invalidates comparisons.
+4. Rows are only compared at matched caps. Anything measured at 512 is flagged as a floor.
+5. Deleted models keep their rows, marked with the retirement date, and their recipes are kept so a
+   claim can be re-tested.
+
+## What it is not
+
+Not a benchmark of these models in general — it is one machine, one software stack, stated caps.
+Not a leaderboard: sample sizes are 164 and 120, so ±3–4 pp is noise, and the report says so wherever
+it compares close scores. Not affiliated with AMD, llama.cpp, or any model vendor.
+
+## Related sources
+
+| Question | Where |
+|---|---|
+| throughput on this GPU, many setups | [llamaperf.com/gpu/strix-halo-128gb](https://llamaperf.com/gpu/strix-halo-128gb) |
+| backend choice, pp/tg sweeps | [lhl/strix-halo-testing](https://github.com/lhl/strix-halo-testing/tree/main/llm-bench), [kyuz0 toolboxes](https://kyuz0.github.io/amd-strix-halo-toolboxes/) |
+| platform guides, setup | [strixhalo.wiki](https://strixhalo.wiki/) |
+| llama.cpp backend bugs and datapoints | [gfx1151 discussions](https://github.com/ggml-org/llama.cpp/discussions/20856) |
+
+## Licence and citation
+
+Text, figures and data: **CC BY 4.0**. See [LICENSE](LICENSE). Reuse the numbers freely with
+attribution; if you disagree with one, the run ids and caps are in the data so you can check it.
+
+```
+Local LLM benchmarks on AMD Strix Halo (gfx1151), measured 2026-10-07 → 2026-10-31.
+https://strix-halo-128-benchmarks.github.io/
+```
