@@ -1,0 +1,12 @@
+# Values the prose may quote that no surviving run file contains.
+#
+# Each line: <four-decimal value>  <reason>. The gate (scripts/check-prose.py) fails on any other score that
+# cannot be found in Table 4, the change log, or the run archive. Keep this file short: an entry here means
+# "the measurement existed and its source is gone", not "we did not feel like checking".
+
+0.8659  sage-a1.5 HumanEval with thinking off — file retired 10-25, run directory pruned; ledger carries the score
+0.6833  kolibri core probe (17 of 60 items cap-burned) — kolibri was a scratch tree, not a roster artefact
+0.7848  flint 60-item HumanEval probe — the flint PR tree was re-cloned and its run window is unattributable (§4.1)
+0.9756  hosted claude-sonnet-5.5 / claude-haiku-5.5 HumanEval — hosted probes, logged in §14, not in the local archive
+0.9250  hosted claude-sonnet-5.5 MMLU-Pro — as above
+0.8917  hosted deepseek-v4-pro MMLU-Pro — as above

@@ -10,6 +10,8 @@ NVMe, zram swap), on llama.cpp/Vulkan.
   knowledge, reasoning, decode, prefill, one axis per table with cap and build on every row.
 - **[Retired models](https://strix-halo-128-benchmarks.github.io/retired.html)** — what was deleted, why,
   with file sizes, sha256s and restore recipes.
+- **[Change log](https://strix-halo-128-benchmarks.github.io/changelog.html)** — every correction and the
+  measurement that forced it.
 
 Two documents:
 
