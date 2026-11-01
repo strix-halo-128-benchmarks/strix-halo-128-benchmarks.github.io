@@ -111,6 +111,16 @@ done
 printf '</urlset>\n' >> "$REPO/sitemap.xml"
 echo "   robots.txt + sitemap.xml written"
 
+echo "== 5c. provenance manifest (repo + licence + verified hashes per artefact)"
+cp "$LOCAL/provenance.json" "$REPO/data/provenance.json"
+python3 - "$REPO/data/provenance.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+v = sum(1 for x in d.values() if x.get("verified"))
+print(f"   {len(d)} artefacts, {v} verified against upstream LFS ids")
+PY
+leakcheck "$REPO/data/provenance.json"
+
 echo "== 6. sanitised data export"
 python3 - "$RUNS/catalogue.json" "$REPO/data/catalogue.json" <<'PY'
 import json, sys

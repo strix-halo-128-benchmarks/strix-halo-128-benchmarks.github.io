@@ -2489,7 +2489,72 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ---
 
+### 20.5 Where each file came from
+
+The manifest this report was missing: for every servable artefact, the upstream repository, the licence
+its card declares, and whether the bytes on disk are provably the bytes upstream publishes. **Thirteen of
+seventeen are verified by sha256 against the repository's own LFS object id** — the same check the fetch
+script performs, re-run against the files as they sit on disk now.
+
+| artefact | file | size | upstream | licence (repo card) | provenance |
+|---|---|---|---:|---|---|
+| gemma4-26b-uncen | `Gemma4-26B-A4B-QAT-Uncensored-HauhauCS-Balanced-Q4_K_M.gguf` | 15.64 GiB | [HauhauCS/Gemma4-26B-A4B-QAT-Uncensored-HauhauCS-Balanced-MTP](https://huggingface.co/HauhauCS/Gemma4-26B-A4B-QAT-Uncensored-HauhauCS-Balanced-MTP) | gemma | ✓ sha256 |
+| minicpm-v47-35b | `MiniCPM-V-4_7-35B-A3B-Q6_K.gguf` | 26.56 GiB | **not recorded** | — | unverified |
+| gemma4-26b-qat-q4 | `gemma-4-26B_q4_0-it.gguf` | 13.45 GiB | [google/gemma-4-26B-A4B-it-qat-q4_0-gguf](https://huggingface.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf) | apache-2.0 (card) — Gemma Terms upstream | ✓ sha256 |
+| ornith-122b | 2 shards | 74.23 GiB | [unsloth/Ornith-1.5-122B-GGUF](https://huggingface.co/unsloth/Ornith-1.5-122B-GGUF) | — | ✓ sha256 |
+| nemotron-super-120b | 2 shards | 61.24 GiB | [unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF) | other (NVIDIA card) | ✓ sha256 |
+| qwen3next-q6 | 2 shards | 63.81 GiB | [unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF) | apache-2.0 | ✓ sha256 |
+| gptoss | `gpt-oss-120b-MXFP4.gguf` | 59.03 GiB | **not recorded** | apache-2.0 upstream | unverified |
+| gptoss-abliterated | `gpt-oss-120b-abliterated.i1-MXFP4_MOE.gguf` | 59.03 GiB | [mradermacher/gpt-oss-120b-abliterated-i1-GGUF](https://huggingface.co/mradermacher/gpt-oss-120b-abliterated-i1-GGUF) | apache-2.0 | ✓ sha256 |
+| ornith-mtp-21g | `Ornith-1.5-35B-A3B-Abliterated-MTPv2-21G-ICE.gguf` | 19.42 GiB | [gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF](https://huggingface.co/gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF) | mit | ✓ sha256 |
+| mellum21-fork | `Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf` | 7.52 GiB | [JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF) | apache-2.0 | ✓ sha256 |
+| qwen3next-q4 | `Qwen3-Next-80B-A3B-Instruct-UD-Q4_K_XL.gguf` | 42.90 GiB | [unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF) | apache-2.0 | ✓ sha256 |
+| qwen38-35b | `Qwen3.8-35B-A3B-Distill-Q4_K_M.gguf` | 20.22 GiB | **not recorded** | apache-2.0 (empero-ai card; filename differs there) | unverified |
+| lfm25-24b-a2b | `LFM2.5-24B-A2B-QAD-Q4_0.gguf` | 12.65 GiB | [LiquidAI/LFM2.5-24B-A2B-GGUF](https://huggingface.co/LiquidAI/LFM2.5-24B-A2B-GGUF) | other (LFM Open License) | ✓ sha256 |
+| Kimi-Linear-48B-A3B-abl | `Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf` | 27.66 GiB | [mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF](https://huggingface.co/mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF) | mit | ✓ sha256 |
+| qwen38fn-abl | 2 shards | 78.10 GiB | **not recorded** | — | unverified |
+| Ornith-1.5-35B | `Ornith-1.5-35B-Q4_K_M.gguf` | 20.22 GiB | [ornith-ai/Ornith-1.5-35B-A3B-GGUF](https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B-GGUF) | mit | ✓ sha256 |
+| ornith35b (uncensored) | `Ornith-1.5-35B-Uncensored-YMQ-M.gguf` | 15.07 GiB | [zerodigest/Ornith-1.5-35B-Uncensored-YMQ-MTP-GGUF](https://huggingface.co/zerodigest/Ornith-1.5-35B-Uncensored-YMQ-MTP-GGUF) | apache-2.0 | ✓ sha256 |
+
+Four rows are *unverified* because no fetch record survived for them: the MiniCPM-V-4.7 Q6_K file, the
+`gpt-oss-120b-MXFP4` base file, `Qwen3.8-35B-A3B-Distill-Q4_K_M`, and the two
+`Qwen3.8-Flash-Next-GSQ-RCO-abliterated` IQ3_S shards. They predate this record. Their sha256s are in
+[`data/provenance.json`](data/provenance.json), so checking them against whichever repository you believe
+they came from is a one-minute job — it is just not a claim this document can make for you.
+
+Two licence notes worth not skimming. `gemma-4-26B_q4_0-it` reports **apache-2.0 on its model card**, while
+Gemma models are normally distributed under the Gemma Terms of Use — the card is what is quoted here, and
+the discrepancy belongs to the card. `LiquidAI/LFM2.5-24B-A2B-GGUF` declares `other`, which is the LFM Open
+License; "other" is not a permission, so read it before commercial use.
+
+Every shard's hash, not just the first: [`data/provenance.json`](data/provenance.json).
+
 ## 21. Change log
+
+### Version 1.14 (2026-11-01)
+
+**A provenance manifest, and licences stated for the first time.** §20.5 lists every servable artefact with
+its upstream repository and the licence the card declares, and records which bytes are provably upstream's:
+13 of 17 artefacts verify by sha256 against the repository's LFS object id, re-computed on disk rather than
+copied from the fetch log. The four that do not are named rather than filled in — they predate the record,
+and their hashes are in `data/provenance.json` so anyone can close the gap in a minute.
+
+That closes the largest hole in a document about reproducibility: it described 30 models' behaviour in
+detail while never saying where a single file came from or what licence governed it.
+
+### Version 1.13 (2026-11-01)
+
+**Eight stale facts corrected, notation moved to the front, sampling error tabulated.** The headline count
+said "33 models" when the matrix has 30 rows out of 50 measured files; the roster was described as 15 units
+and 602 GiB in two places (it is 17 and 630); §18.3 still said "33 model files, 16 remain servable"; and
+§9.1's `nemotron-super-120b` paragraph quoted **0.9329**, the number §21's own errata had already replaced
+with 0.9512 — the one defect of the kind this report exists to prevent. §12 still retired Kimi-Linear, which
+is on disk with a million-token window, and figures 15-16 said 27 models.
+
+`MMLU`, `GTT` and `SE` are now defined in §0 rather than in §8 and the glossary; "the box" is gone in favour
+of "this machine"; §18.4 states that the 40-60 h were attended time. §8 gains a sampling-error table, so
+"is two items a real difference" has one answer instead of three mentions. Figures carry `<title>`/`<desc>`
+taken from their own captions.
 
 ### Version 1.12 (2026-11-01)
 
@@ -2858,7 +2923,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.12 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
+*Version 1.14 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in

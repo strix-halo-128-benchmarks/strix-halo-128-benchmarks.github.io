@@ -1,0 +1,247 @@
+{
+ "gemma4-26b-uncen": {
+  "repository": "HauhauCS/Gemma4-26B-A4B-QAT-Uncensored-HauhauCS-Balanced-MTP",
+  "license": "gemma",
+  "files": [
+   {
+    "file": "Gemma4-26B-A4B-QAT-Uncensored-HauhauCS-Balanced-Q4_K_M.gguf",
+    "bytes": 16796015520,
+    "sha256": "3c13133469e431312fffb8b1d9c85ae42199e6bb5746ea1da84e8ddf2097d73c",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "minicpm-v47-35b": {
+  "repository": null,
+  "license": null,
+  "files": [
+   {
+    "file": "MiniCPM-V-4_7-35B-A3B-Q6_K.gguf",
+    "bytes": 28513556640,
+    "sha256": "fcbe98ad681730bc66828591c34761c2c266d54d4ffe7c0ae35e54e3ee7b4343",
+    "verified": false
+   }
+  ],
+  "verified": false
+ },
+ "gemma4-26b-qat-q4": {
+  "repository": "google/gemma-4-26B-A4B-it-qat-q4_0-gguf",
+  "license": "apache-2.0 (card) \u2014 Gemma Terms upstream",
+  "files": [
+   {
+    "file": "gemma-4-26B_q4_0-it.gguf",
+    "bytes": 14439363584,
+    "sha256": "3eca3b8f6d7baf218a7dd6bba5fb59a56ee25fe2d567b6f5f589b4f697eca51d",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "ornith-122b": {
+  "repository": "unsloth/Ornith-1.5-122B-GGUF",
+  "license": null,
+  "files": [
+   {
+    "file": "UD-Q4_K_XL/Ornith-1.5-122B-UD-Q4_K_XL-00003-of-00003.gguf",
+    "bytes": 29731729056,
+    "sha256": "21325ec18a9e3210eeffada0fc327a25a79171918f1d04f8f0a06b61866ac9ba",
+    "verified": true
+   },
+   {
+    "file": "UD-Q4_K_XL/Ornith-1.5-122B-UD-Q4_K_XL-00002-of-00003.gguf",
+    "bytes": 49971099680,
+    "sha256": "e66952128394bb4c75554c7e10a12a8b63dd1c7f049d876a02885a946e30c1c3",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "nemotron-super-120b": {
+  "repository": "unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF",
+  "license": "other (NVIDIA card)",
+  "files": [
+   {
+    "file": "UD-Q3_K_XL/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-UD-Q3_K_XL-00003-of-00003.gguf",
+    "bytes": 16528375872,
+    "sha256": "c2245a2faa51dc1aabcb6b58b7c311bc06ebada10345057e106ac94fcfcef8ce",
+    "verified": true
+   },
+   {
+    "file": "UD-Q3_K_XL/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-UD-Q3_K_XL-00002-of-00003.gguf",
+    "bytes": 49225290592,
+    "sha256": "94827cf22f98854a68127fd4a18cca136951d1181bba8c21a7d9dcd6d3c68674",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "qwen3next-q6": {
+  "repository": "unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF",
+  "license": "apache-2.0",
+  "files": [
+   {
+    "file": "Qwen3-Next-80B-A3B-Instruct-UD-Q6_K_XL-00002-of-00002.gguf",
+    "bytes": 18759949632,
+    "sha256": "5f6b8c96feeeb2fecdd2b0b7cf62c45bec91c50fdd0afdcf479a580a2999bc0d",
+    "verified": true
+   },
+   {
+    "file": "Qwen3-Next-80B-A3B-Instruct-UD-Q6_K_XL-00001-of-00002.gguf",
+    "bytes": 49757402784,
+    "sha256": "8c946c012b0f7acbd3f0311bfb56e6bd5f9de4ebe9896a1ab5959169bbd5d0b4",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "gptoss": {
+  "repository": null,
+  "license": "apache-2.0 upstream",
+  "files": [
+   {
+    "file": "gpt-oss-120b-MXFP4.gguf",
+    "bytes": 63387346208,
+    "sha256": "582bd40f6886200101f4c4ed9f25f3fe80cc14c86e9e2b37746cd8904a0c622d",
+    "verified": false
+   }
+  ],
+  "verified": false
+ },
+ "gptoss-abliterated": {
+  "repository": "mradermacher/gpt-oss-120b-abliterated-i1-GGUF",
+  "license": "apache-2.0",
+  "files": [
+   {
+    "file": "gpt-oss-120b-abliterated.i1-MXFP4_MOE.gguf",
+    "bytes": 63387347520,
+    "sha256": "9dc37877319b6fc2fbcdd4603e8e73af09326cfbe3acb2062218a954a480ae1b",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "ornith-mtp-21g": {
+  "repository": "gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF",
+  "license": "mit",
+  "files": [
+   {
+    "file": "Ornith-1.5-35B-A3B-Abliterated-MTPv2-21G-ICE.gguf",
+    "bytes": 20848395968,
+    "sha256": "421659e69912db240e245d95baf6d1650978287e577483ab2251c0def1a3c4ae",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "mellum21-fork": {
+  "repository": "JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF",
+  "license": "apache-2.0",
+  "files": [
+   {
+    "file": "Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf",
+    "bytes": 8071295264,
+    "sha256": "ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "qwen3next-q4": {
+  "repository": "unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF",
+  "license": "apache-2.0",
+  "files": [
+   {
+    "file": "Qwen3-Next-80B-A3B-Instruct-UD-Q4_K_XL.gguf",
+    "bytes": 46067137312,
+    "sha256": "49e554f954afbfc9f627b8be236adf16c1e51d8e5ecaa0e65ac8ede4e2c41a56",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "qwen38-35b": {
+  "repository": null,
+  "license": "apache-2.0 (empero-ai card; filename differs there)",
+  "files": [
+   {
+    "file": "Qwen3.8-35B-A3B-Distill-Q4_K_M.gguf",
+    "bytes": 21713462944,
+    "sha256": "196103269085bc54c9b8f49ed21e9f53e1b56b465e8b796c6d8e31e06f63cfa5",
+    "verified": false
+   }
+  ],
+  "verified": false
+ },
+ "lfm25-24b-a2b": {
+  "repository": "LiquidAI/LFM2.5-24B-A2B-GGUF",
+  "license": "other (LFM Open License)",
+  "files": [
+   {
+    "file": "LFM2.5-24B-A2B-QAD-Q4_0.gguf",
+    "bytes": 13578190880,
+    "sha256": "d1c03f73ecaf61017d70419eec9e5dc0b05d50ae26c23d522829b934fbabf8a5",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "Kimi-Linear-48B-A3B-abl": {
+  "repository": "mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF",
+  "license": "mit",
+  "files": [
+   {
+    "file": "Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf",
+    "bytes": 29702759968,
+    "sha256": "ad4eca4c37c688e9d03aaf4558ddb869bd7740bc02423451be6d33e9502cde80",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "qwen38fn-abl": {
+  "repository": null,
+  "license": null,
+  "files": [
+   {
+    "file": "IQ3_S/Qwen3.8-Flash-Next-GSQ-RCO-abliterated-IQ3_S-00001-of-00002.gguf",
+    "bytes": 55063448064,
+    "sha256": "40f369eca301ec6ea318dbb671b3132c26a2f0b89aa5458a7051b33215ee296c",
+    "verified": false
+   },
+   {
+    "file": "IQ3_S/Qwen3.8-Flash-Next-GSQ-RCO-abliterated-IQ3_S-00002-of-00002.gguf",
+    "bytes": 28800138432,
+    "sha256": "316b46f3a2dbd68c900f43136ab9449f9dcc3725dfd8c794847c204bc161e113",
+    "verified": false
+   }
+  ],
+  "verified": false
+ },
+ "Ornith-1.5-35B": {
+  "repository": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+  "license": "mit",
+  "files": [
+   {
+    "file": "Ornith-1.5-35B-Q4_K_M.gguf",
+    "bytes": 21713463040,
+    "sha256": "42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f",
+    "verified": true
+   }
+  ],
+  "verified": true
+ },
+ "ornith35b (uncensored)": {
+  "repository": "zerodigest/Ornith-1.5-35B-Uncensored-YMQ-MTP-GGUF",
+  "license": "apache-2.0",
+  "files": [
+   {
+    "file": "Ornith-1.5-35B-Uncensored-YMQ-M.gguf",
+    "bytes": 16177047904,
+    "sha256": "468eb97c17d10ba6f78d7273d5ed8a49f5de3893768ff7a27c07d9845741de4b",
+    "verified": true
+   }
+  ],
+  "verified": true
+ }
+}
