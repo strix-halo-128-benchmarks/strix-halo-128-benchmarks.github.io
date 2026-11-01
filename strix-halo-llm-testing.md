@@ -2384,9 +2384,16 @@ or named:
 - **§23.2 context curve.** The open item about no 32k needle is closed for the deployed driver: five
   depths from 1.8k to 112.9k prompt tokens, retrieval PASS at every one, prefill 1715 → 670 t/s and
   decode 57.2 → 37.7 t/s. The practical rule is to compact before 64k, not at the window edge.
+- **§23.3 cross-validation.** Their published 30-item suite, run unchanged on the deployed driver:
+  **30/30** (coding 10/10 executed against their own `gold_test`, GSM8K 10/10, math 10/10) — the same
+  score their Qwen3.8-Flash-Next deployment reported. The first pass read 26/30 and all four misses were
+  harness defects: a last-number grader that scored "$64 for the 16 glasses" as 16, a LaTeX comparison
+  that read −2/3 as different from `-\frac{2}{3}`, a `\boxed{}` regex that truncated `\frac{20}{3}`,
+  and a fixture whose `gold_answer` for math_08 says 20 where the correct value is 20/3 — a correction
+  the source itself documents.
 - **New tooling.** `~/bench/ctxcurve.py` produces the curve against a live server (no reload, no unit
   change), and `~/bench/lucebox30.py` runs the published 30-item suite from `Luce-Org/lucebox` so the
-  two datasets can be cross-checked on the same model.
+  two datasets can be cross-checked on the same model. Both record per-item evidence, not just verdicts.
 
 ### Version 1.6 (2026-10-31)
 
@@ -2592,6 +2599,38 @@ the window — the model is not forgetting anything, it is just getting slow.
 Configuration: the deployed driver (`gemma4-26b-uncen`, QAT uncensored Q4_K_M, ctx 131072) on the
 Vulkan/RADV stack, measured against the live unit with no reload. This is the behaviour of the model
 that answers this machine's traffic, not of the best model on the box — §9.1 explains why those differ.
+
+### 23.3 Cross-validation on their suite — and what their harness had to fix
+
+The strongest check available was to run *their* 30-item suite on *our* deployed driver, unchanged: same
+prompts, same per-item caps (512 / 1024 / 2048), temperature 0, coding answers executed against the
+fixture's own `gold_test`. Fixtures pinned at `Luce-Org/lucebox@90f85fa`, which is the commit their
+results cite.
+
+**Result: 30/30** — coding 10/10, GSM8K 10/10, math 10/10. The same score their Qwen3.8-Flash-Next
+deployment reported, from a different model on different hardware. Two independently built harnesses,
+same verdict: the suite is not measuring itself.
+
+**But the first pass scored 26/30, and every one of the four misses was the harness, not the model.**
+That is worth recording, because it is the failure mode this report keeps warning about in its own
+axes:
+
+| item | first-pass verdict | what actually happened |
+|---|---|---|
+| `gsm_06` | FAIL, "got 16" | answered **$64** correctly; the grader took the last number in the sentence — "for the 16 glasses" — as the result |
+| `gsm_08` | FAIL, "got 40" | answered **160 minutes** correctly; same bug, via "(or 2 hours and 40 minutes)" |
+| `math_04` | FAIL, "got -2/3" | answered **−2/3**, which is the gold `-\frac{2}{3}`; the grader compared LaTeX to plain notation without normalising |
+| `math_08` | FAIL, "got \frac{20" | answered **20/3**, which is *correct*; the fixture's `gold_answer` says 20 and the source's own results.json records "math_08 reference corrected to 20/3". A naive `\boxed{…}` regex also truncated the nested braces |
+
+Three grader defects and one fixture error, all on answers the model got right. Fixing them — answer-marker
+parsing, LaTeX-to-fraction normalisation, balanced-brace `\boxed{}` extraction, and the documented
+`math_08` correction — gives the 30/30 above, and the run is auditable: `~/runs/lucebox30-driver-final.jsonl`
+records, per item, the numbers found in the answer sentence and the raw final text.
+
+The lesson generalises, and it cuts at this report too: **a score is only as good as the grader, and the
+grader is usually not published.** Their suite publishes its fixtures and hashes, which is why the four
+errors could be diagnosed rather than argued about. Any quality number quoted without its harness and
+its normalisation rules carries an unknown error bar — on 30 items, 4 items is 13 pp.
 
 ---
 
