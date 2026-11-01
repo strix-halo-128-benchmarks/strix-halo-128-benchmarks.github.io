@@ -792,10 +792,11 @@ Figure 9 — The cap spectrum, and the same weights at two budgets.
 ```
 Two rules follow, and they are the ones most often violated when reading these tables:
 
-- **Compare within a cap band.** A row at cap 512 is a lower bound, not a measurement. `qwen38-35b`
-  at 0.8537 (cap 512) is not necessarily a worse coder than `mellum` at 0.8780 (cap 4096). - **Count
-  the burns.** If 17 of 60 items returned empty after exhausting the budget, the mean understates
-  the model. Cite the burn count next to the score or the number lies by omission.
+- **Compare within a cap band.** A score at cap 512 is a lower bound, not a measurement: `qwen38-35b`
+  read 0.8537 there and 0.8720 at 4096, and its knowledge row moved 13.3 pp for the same reason. Where
+  a row is still a floor, label it as one instead of ranking it.
+- **Count the burns.** If 17 of 60 items returned empty after exhausting the budget, the mean
+  understates the model. Cite the burn count next to the score or the number lies by omission.
 
 `lm-eval`'s IFEval task pins `max_gen_toks` internally and ignores the model argument, which is why
 the archive shows one nonsensical IFEval row. It is recorded as an artefact, not a result.

@@ -524,9 +524,13 @@ a { color:var(--acc); }
      lfm25 IFEval standalone @4096           -&gt;  0.9333</code></pre>
 <p>Two rules follow, and they are the ones most often violated when reading these tables:</p>
 <ul>
-<li><strong>Compare within a cap band.</strong> A row at cap 512 is a lower bound, not a measurement. <code>qwen38-35b</code></li>
+<li><strong>Compare within a cap band.</strong> A score at cap 512 is a lower bound, not a measurement: <code>qwen38-35b</code></li>
 </ul>
-<p>at 0.8537 (cap 512) is not necessarily a worse coder than <code>mellum</code> at 0.8780 (cap 4096). - <strong>Count the burns.</strong> If 17 of 60 items returned empty after exhausting the budget, the mean understates the model. Cite the burn count next to the score or the number lies by omission.</p>
+<p>read 0.8537 there and 0.8720 at 4096, and its knowledge row moved 13.3 pp for the same reason. Where a row is still a floor, label it as one instead of ranking it.</p>
+<ul>
+<li><strong>Count the burns.</strong> If 17 of 60 items returned empty after exhausting the budget, the mean</li>
+</ul>
+<p>understates the model. Cite the burn count next to the score or the number lies by omission.</p>
 <p><code>lm-eval</code>'s IFEval task pins <code>max_gen_toks</code> internally and ignores the model argument, which is why the archive shows one nonsensical IFEval row. It is recorded as an artefact, not a result.</p>
 <h3>7.4 Budgetting and artefacts</h3>
 <p>A full sweep is expensive, so <code>t20</code> accepts a wall-clock budget and allocates it across axes proportionally to each axis's cost at the model's measured speed:</p>
