@@ -9,6 +9,22 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.17 (2026-11-01)
+
+**An executive summary in plain language, and the technical one demoted to where it belongs.** §0 now opens
+with five findings written without jargon — the small model wins, bigger is slower for no accuracy gain,
+coding and knowledge are separate skills, compression costs knowledge before skill, uncensoring is free when
+done properly — followed by what a sweep costs (0.14 kWh, about 3.5p) and an explicit "what this cannot tell
+you" paragraph (164 code problems and 120 knowledge questions per model, so gaps under ~5 points are noise).
+
+The seven technical claims that used to open the report are now §0.1, the conventions are §0.2, and the
+roster inventory is §0.3. Nothing was discarded: the plain version answers "what did you find" and the
+technical version answers "what does that mean for this hardware".
+
+Two corrections while rewriting it: an earlier draft called the driver "the best coder", which is not true —
+`minicpm-v47-35b` ties it at 0.9573 at cap 4096 — so the claim is now "joint-first on code, first on knowledge
+among models on disk"; and the recommendation list named a model that has since been deleted.
+
 ### Version 1.16 (2026-11-01)
 
 **The week's most interesting shape does not load, and the reason is in the file.** Qwen3.8-Flash-Next-32B-A6B

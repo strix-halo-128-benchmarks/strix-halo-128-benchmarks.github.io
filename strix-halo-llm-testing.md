@@ -53,65 +53,107 @@ exactly how far that can be pushed.
 
 ## 0. Executive summary
 
-This document records a practical, repeatable method for deciding which local language models are
-worth serving on a 128 GB unified-memory AMD Strix Halo machine, and it reports what that method
-found across the 30 models in the published matrix, out of 50 local model files that have at least
-one measurement.
+### 0.0 In plain terms
 
-Three conventions run through the document. **`MMLU` in a compact score or table cell means MMLU-Pro**
-(the 120-item chat 0-shot probe described in §6.2), never the original 14,000-item MMLU; the full name is
-written out wherever the distinction matters. **GTT** is the Graphics Translation Table — the
-GPU-addressable window into system RAM, which on this machine is the 100 GiB pool that actually matters
-(§2.1), not the 8 GiB reported as VRAM. **SE** is the standard error of a proportion, quoted whenever two
-scores are close enough that sampling noise could explain the gap; at n=164 that is ±2.3 pp at p=0.9, at
-n=120 it is ±2.7 pp (§8 has the full table).
+This is a test of **30 AI models on one small computer** — a Mini-PC the size of a hardback book, with a
+single AMD chip and 128 GB of shared memory. Everything here runs on that machine, offline, with no cloud
+account. The question was simple: which of these models is worth using, and what does each one cost you in
+speed?
 
-Seven claims are worth having up front, because everything else follows from them.
+**Five things came out of it.**
 
-1. **Leaderboards do not answer the question.** A published benchmark score tells you how a model
-   behaves on someone else's hardware, at someone else's prompt length, with someone else's sampler.
-   On a bandwidth-limited integrated GPU, a model that is excellent in theory can be unusable in
-   practice — too slow, too large, or quietly broken by a chat template. The only score that matters
-   is the one this box produces at the caps this box will actually serve.
+1. **The best model on this machine is a small one.** A 26-billion-parameter model in 15.6 GB is the best
+   all-round model I tested — first on knowledge among everything on disk, joint-first on code — and it is what
+   answers my messages. The 35B and 120B files beside it beat it on neither axis.
+
+2. **Bigger is not better, because speed comes from how much of a model runs per word.** Most modern models are
+   *mixtures*: for each word they activate only a few of their many parts. A 120B model that wakes 5B parts per
+   word can be faster than a dense 31B that wakes all of them — and on this machine that is the whole game,
+   because the limit is how fast memory can feed the chip, not how much fits in it. The 120B-class models here
+   are 2-2.5× slower than the 26B and score lower on both tests. They earn their 60 GB back for nothing
+   measurable.
+
+3. **Coding ability and knowledge are different skills, and a model can have one without the other.** One 35B
+   model I tested writes good code (0.8598) and knows almost nothing (0.3250) — it answers a multiple-choice
+   question with a guess in a fifth of a second. Another is the reverse. A single "quality" score hides this, so
+   every model here is scored on both, plus a set of riddles that catches models which answer confidently and
+   wrongly.
+
+4. **Squeezing a model smaller costs knowledge before it costs skill.** Compressed to 2 bits per weight, a model
+   still writes code at 0.9451 but drops to 0.3667 on knowledge — the facts go first. On the other end, an 8-bit
+   version of a model was no better than its 4-bit sibling and ran 8 tokens/second slower, for 10.5 GB more
+   disk. Four bits is the sweet spot here.
+
+5. **Uncensoring is usually free — but only when it is done properly.** Where a well-made uncensored build
+   existed, it scored within a couple of points of the original. Where a model looked badly damaged after
+   uncensoring, the real cause turned out to be aggressive compression, not the uncensoring at all.
+
+**What it costs to run.** A full test sweep draws about 0.14 kWh — roughly 3.5 pence. The machine idles at
+6 watts, about £13 a year. The expensive part is the time, not the electricity.
+
+**What to use, in one line each.** Chat and general work: the 26B driver on port 8100. Bulk classification or
+summarising: a 12B model at 111 tokens/second. A million-token document: Kimi-Linear. Images: MiniCPM-V. Every
+one of those is on disk and measured; anything that lost its slot has been deleted, and the ledger says why.
+
+**What this cannot tell you.** Each score is 164 code problems and 120 knowledge questions, so a gap under about
+5 points is noise, not a finding. One machine, one version of the software, one set of settings — another box,
+another build or another kernel will move speed by 10-20% while the quality scores hold. Everything below is
+written to make those limits visible rather than to hide them behind a single number.
+
+### 0.1 The technical framing
+
+Seven claims carry the rest of the document.
+
+1. **Leaderboards do not answer the question.** A published benchmark score tells you how a model behaves on
+   someone else's hardware, at someone else's prompt length, with someone else's sampler. On a
+   bandwidth-limited integrated GPU, a model that is excellent in theory can be unusable in practice — too
+   slow, too large, or quietly broken by a chat template. The only score that matters is the one this machine
+   produces at the caps this machine will actually serve.
 
 2. **The binding constraint is memory bandwidth, not capacity.** With 128 GB unified and a 100 GiB
-   GPU-addressable pool, almost nothing this machine can run is too big. What separates models is
-   how many bytes each generated token must read: a 26B model with 4B active parameters runs ~3x
-   faster than a 31B dense model of similar size. Choosing a model here is mostly choosing an
-   active-parameter count.
+   GPU-addressable pool, almost nothing this machine can run is too big. What separates models is how many
+   bytes each generated token must read: a 26B model with 4B active parameters runs ~3x faster than a 31B dense
+   model of similar size. Choosing a model here is mostly choosing an active-parameter count.
 
-3. **A cheap gate catches most bad candidates.** Three probes — non-empty reply, valid JSON,
-   one-word answer — cost under a second and rejected models that scored well on published code
-   benchmarks. Run the gate first; do not spend an hour on HumanEval to discover the model repeats
-   itself.
+3. **A cheap gate catches most bad candidates.** Three probes — non-empty reply, valid JSON, one-word answer —
+   cost under a second and rejected models that scored well on published code benchmarks. Run the gate first;
+   do not spend an hour on HumanEval to discover the model repeats itself.
 
-4. **Cap-burn is not the same as being wrong.** These models are scored at a fixed generation cap. A
-   reasoning model that thinks past that cap returns nothing and is marked failed. Reading a score
-   without reading the cap and the burn count is how good models get discarded and bad ones kept.
+4. **Cap-burn is not the same as being wrong.** These models are scored at a fixed generation cap. A reasoning
+   model that thinks past that cap returns nothing and is marked failed. Reading a score without reading the cap
+   and the burn count is how good models get discarded and bad ones kept.
 
-5. **Quantisation on this machine is a performance decision before it is a capacity decision.**
-   Decode is bandwidth-bound, so fewer bits per weight means more tokens per second — measured at
-   +22% and +43% in two pairs. The conventional "quantise only to fit" framing is a CUDA habit and
-   gives the wrong answer here.
+5. **Quantisation on this machine is a performance decision before it is a capacity decision.** Decode is
+   bandwidth-bound, so fewer bits per weight means more tokens per second — measured at +22% and +43% in two
+   pairs. The conventional "quantise only to fit" framing is a CUDA habit and gives the wrong answer here.
 
-6. **Results do not transfer across a family in the way intuition suggests.** Code scores travel
-   within ±2-3pp across a family at fixed quantisation; knowledge moved by 16.7pp and 50pp inside
-   two families here, and speed does not transfer at all. §10 sets out exactly what may be inferred.
+6. **Results do not transfer across a family in the way intuition suggests.** Code scores travel within
+   ±2-3pp across a family at fixed quantisation; knowledge moved by 16.7pp and 50pp inside two families here,
+   and speed does not transfer at all. §10 sets out exactly what may be inferred.
 
-7. **The frontier's lead is axis-specific, and smaller than expected.** Measured with this harness,
-   the best hosted model is 1.2pp ahead of the best local model on code — inside the noise — but
-   5.8pp ahead on knowledge, and the cheap hosted tier scores *below* a local 30B on knowledge. §14
-   has the numbers, the cache economics and the confounds.
+7. **The frontier's lead is axis-specific, and smaller than expected.** Measured with this harness, the best
+   hosted model is 1.2pp ahead of the best local model on code — inside the noise — but 5.8pp ahead on
+   knowledge, and the cheap hosted tier scores *below* a local 30B on knowledge. §14 has the numbers, the cache
+   economics and the confounds.
 
-The practical output of all this is a roster of 17 servable models with measured profiles, a
-deployed daily driver — the uncensored QAT Q4_K_M build of gemma4-26b-a4b on port 8100, which since
-2026-10-28 is what answers WhatsApp, with Ornith-1.5-35B-Uncensored on :8094 as the system boot model
-— a documented set of models that were measured, failed or lost their slot and were deleted so nobody
-repeats the work, and a measured comparison against hosted frontier models that establishes how large
-the gap actually is. Port 8099 (the QAT Q4_0 driver named in earlier editions) still has its script
-but its unit is disabled; only one model unit is enabled at a time and :8100 holds that slot.
+### 0.2 Conventions used throughout
 
----
+**`MMLU` in a compact score or table cell means MMLU-Pro** (the 120-item chat 0-shot probe described in §6.2),
+never the original 14,000-item MMLU; the full name is written out wherever the distinction matters. **GTT** is
+the Graphics Translation Table — the GPU-addressable window into system RAM, which on this machine is the
+100 GiB pool that actually matters (§2.1), not the 8 GiB reported as VRAM. **SE** is the standard error of a
+proportion, quoted whenever two scores are close enough that sampling noise could explain the gap; at n=164
+that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (§8 has the full table).
+
+### 0.3 What exists as a result
+
+A roster of **17 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
+build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with
+Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured,
+failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against
+hosted frontier models that establishes how large the gap actually is. Port 8099 (the QAT Q4_0 driver named in
+earlier editions) still has its script but its unit is disabled; only one model unit is enabled at a time and
+:8100 holds that slot.
 
 ## 1. Why test at all — the problem this solves
 
@@ -2501,10 +2543,10 @@ was wrong is not a correction.
 
 The two most recent entries, in brief:
 
+- **v1.17** — §0 rewritten in plain language (five findings, no jargon), with the technical claims moved to §0.1
+  and the report's own limits stated as a paragraph rather than a caveat.
 - **v1.16** — Qwen3.8-Flash-Next-32B-A6B "Prune2" cannot load (header says 177 experts, tensors hold 64, the
   router still has 177 rows); recorded as unloadable rather than unmeasured, and deleted.
-- **v1.15** — Dark-Craving and Holo4 measured and rejected (dominated; and a bare-letter MMLU collapse at
-  0.3250), plus §4.2: a 1,041-commit fork rebuild measured and refused.
 
 ## 22. Credits and tooling
 
@@ -2620,7 +2662,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.16 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
+*Version 1.17 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
