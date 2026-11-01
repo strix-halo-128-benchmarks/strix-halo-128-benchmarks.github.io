@@ -80,10 +80,28 @@ echo "== 4. figures into the repo"
 cp "$DOCS"/charts/*.svg "$REPO/charts/"
 
 echo "== 5. render both pages"
+PUBLIC_URL="${PUBLIC_URL:-https://strix-halo-128-benchmarks.github.io}"
+export PUBLIC_URL
+DESC="Measured capability and throughput for local LLMs on AMD Strix Halo (gfx1151): HumanEval and MMLU-Pro at stated token caps, prefill/decode, quant and build identity per run, 2026-10-07 to 2026-10-31."
 "$PY" "$DOCS/md2html.py" "$REPO/strix-halo-llm-testing.md" "$REPO/index.html" \
-      "Local LLM benchmarks on AMD Strix Halo (gfx1151)"
+      "Local LLM benchmarks on AMD Strix Halo (gfx1151)" "$DESC"
 "$PY" "$DOCS/md2html.py" "$REPO/retired-models.md" "$REPO/retired.html" \
-      "Retired local models — restore recipes"
+      "Retired local models — restore recipes" \
+      "Every local model retired from the Strix Halo benchmark box: why it went, the scores that justified it, file sizes, sha256s and the flags to restore it."
+
+echo "== 5b. discovery files (robots + sitemap)"
+cat > "$REPO/robots.txt" <<ROBOTS
+User-agent: *
+Allow: /
+
+Sitemap: ${PUBLIC_URL}/sitemap.xml
+ROBOTS
+printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' > "$REPO/sitemap.xml"
+for page in "" "retired.html"; do
+  printf '  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>\n' "$PUBLIC_URL" "$page" "$(date +%F)" >> "$REPO/sitemap.xml"
+done
+printf '</urlset>\n' >> "$REPO/sitemap.xml"
+echo "   robots.txt + sitemap.xml written"
 
 echo "== 6. sanitised data export"
 python3 - "$RUNS/catalogue.json" "$REPO/data/catalogue.json" <<'PY'

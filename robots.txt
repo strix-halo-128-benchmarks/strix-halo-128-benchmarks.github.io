@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://strix-halo-128-benchmarks.github.io/sitemap.xml
