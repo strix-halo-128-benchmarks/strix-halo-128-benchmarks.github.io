@@ -2395,13 +2395,16 @@ idle floor 6 W. The spikes are prefill bursts; the troughs are Python executing 
 is exactly why a benchmark's average power understates a serving workload's (§15.3).
 
 This trace used to be the 2026-10-27 flint40b-abl run, whose model has since been retired and whose
-1-second samples have rolled up out of the raw window — the figure could no longer be rebuilt, so it
-now points at a run that can be. Mean and peak rose from 69/123 W to 78/123 W with the new target:
-same box, longer run, more prefill.
+1-second samples have rolled up out of the raw window — the figure could no longer be rebuilt. It now
+points at the longest full-suite run still inside that window (a 112-minute 48B sweep on 2026-11-01), so
+it is reproducible today and will stay so for as long as the raw window lasts. **The lesson is
+structural:** a figure whose source ages out does not fail loudly, it silently keeps the last SVG that
+found data. This one is now picked from a list of runs that are known to be recent, and the build prints
+the run it plotted.
 
 {{svg charts/f23-power-run.svg}}
 
-Figure 23 — CPU package power through the 2026-10-28 full suite on gemma4-26b-uncen.
+Figure 23 — CPU package power through the 2026-11-01 Kimi-Linear-48B full suite (112 min, both capability axes).
 
 ### 19.10 What abliteration cost
 
@@ -2846,8 +2849,8 @@ read the FIRST row of each axis, and
 IFEval writes an empty n=0 row before its scored n=30 row, so every IFEval score in the catalogue was
 being dropped — fixed, which is why the live driver now appears in figures 18 and 21. Figure 23 also
 used to plot the retired flint40b-abl run, whose 1-second samples had aged out of the 72 h raw window
-so it could no longer be rebuilt; it now plots the 2026-10-28 full suite on the live driver
-(2,078 samples, mean 78 W, peak 123 W).
+so it could no longer be rebuilt; it now plots the 2026-11-01 Kimi-Linear full suite, the longest run
+still inside that window.
 
 **Known open items.** `qwen38fn-abl`'s
 MMLU-Pro cell is a poisoned 1/120 rather than a score, and it cannot be re-measured without stopping
