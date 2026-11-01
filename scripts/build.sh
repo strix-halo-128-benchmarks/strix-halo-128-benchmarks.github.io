@@ -37,8 +37,9 @@ for a, b in (("`mss1-max`", "the reference host"),
              ("mss1-max-hwinfo", "the hardware monitor"),
              ("(hardware monitor, tailnet-only)", "(hardware monitor, private network only)")):
     txt = txt.replace(a, b)
-banner = ("\n> **Also published:** [Retired models — what was deleted, why, with hashes and "
-          "restore recipes](retired-models.html).\n")
+banner = ("\n> **Also published:** [Leaderboards by axis](leaderboards.html) — code, knowledge, "
+          "reasoning, decode and prefill, each row with its cap and build · [Retired models — what was "
+          "deleted, why, with hashes and restore recipes](retired-models.html).\n")
 if "retired-models.html" not in txt:
     i = txt.find("\n", txt.find("# "))
     txt = txt[:i] + banner + txt[i:]
@@ -76,6 +77,10 @@ print(f"   {len(txt)} bytes")
 PY
 leakcheck "$REPO/retired-models.md"
 
+echo "== 3c. leaderboards by axis (from the published matrix, so the two cannot disagree)"
+python3 "$REPO/scripts/leaderboards.py" "$REPO/strix-halo-llm-testing.md" "$REPO/leaderboards.md"
+leakcheck "$REPO/leaderboards.md"
+
 echo "== 4. figures into the repo"
 cp "$DOCS"/charts/*.svg "$REPO/charts/"
 
@@ -88,6 +93,9 @@ DESC="Measured capability and throughput for local LLMs on AMD Strix Halo (gfx11
 "$PY" "$DOCS/md2html.py" "$REPO/retired-models.md" "$REPO/retired.html" \
       "Retired local models — restore recipes" \
       "Every local model retired from the Strix Halo benchmark box: why it went, the scores that justified it, file sizes, sha256s and the flags to restore it."
+"$PY" "$DOCS/md2html.py" "$REPO/leaderboards.md" "$REPO/leaderboards.html" \
+      "Leaderboards by axis — local LLMs on AMD Strix Halo" \
+      "Per-axis rankings of local LLMs measured on Strix Halo: HumanEval, MMLU-Pro, reasoning traps, decode and prefill, each row with its token cap, item count and llama.cpp build."
 
 echo "== 5b. discovery files (robots + sitemap)"
 cat > "$REPO/robots.txt" <<ROBOTS
@@ -97,7 +105,7 @@ Allow: /
 Sitemap: ${PUBLIC_URL}/sitemap.xml
 ROBOTS
 printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' > "$REPO/sitemap.xml"
-for page in "" "retired.html"; do
+for page in "" "leaderboards.html" "retired.html"; do
   printf '  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>\n' "$PUBLIC_URL" "$page" "$(date +%F)" >> "$REPO/sitemap.xml"
 done
 printf '</urlset>\n' >> "$REPO/sitemap.xml"
@@ -122,6 +130,10 @@ grep -q '{{svg' "$REPO/index.html" && { echo "FAIL: unresolved figure placeholde
 test "$(grep -c '<svg' "$REPO/index.html")" -ge 10 || { echo "FAIL: expected 10 inline figures"; exit 1; }
 grep -q 'retired-models.html' "$REPO/index.html" || { echo "FAIL: report does not link the ledger"; exit 1; }
 grep -q 'index.html'          "$REPO/retired.html" || { echo "FAIL: ledger does not link the report"; exit 1; }
+grep -q 'leaderboards.html'   "$REPO/index.html"    || { echo "FAIL: report does not link the leaderboards"; exit 1; }
+grep -q 'index.html'          "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the report"; exit 1; }
+grep -q 'retired-models.html' "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the ledger"; exit 1; }
+test "$(grep -c '<table' "$REPO/leaderboards.html")" -ge 6 || { echo "FAIL: expected 6 leaderboard tables"; exit 1; }
 for f in "$REPO"/*.md "$REPO"/*.html "$REPO"/tools/*.py "$REPO"/tools/*.md; do leakcheck "$f"; done
 echo "   ok: report $(stat -c%s "$REPO/index.html") B / $(grep -c '<svg' "$REPO/index.html") figures," \
      "ledger $(stat -c%s "$REPO/retired.html") B, cross-linked"
