@@ -207,7 +207,29 @@ quantisation, expert routing and context length. That spread is why the axis tab
 and why a formula will only ever predict a new model to within ~40%. Use the tables; predict with
 the formula only to rule a model out.
 
-### 2.3 What is unusual, and what that costs
+### 2.3 Storage and paging — what the drives do and do not affect
+
+Worth one paragraph because it is the component most often over-attributed in local-LLM write-ups.
+
+```
+   system + models   BIWIN X570 PRO 4 TB NVMe      ~600 GiB of GGUF live here; the root and /home
+                                                   filesystems share one btrfs partition
+   spare             Netac 2 TB NVMe               unmounted, no filesystem in use
+   swap              /dev/zram0, 117 GiB           compressed RAM (priority 100), vm.swappiness 150
+```
+
+**Storage affects load time and nothing else measured in this report.** Decode is bound by LPDDR5X
+bandwidth (~256 GB/s shared with the CPU) and prefill by shader occupancy; neither reads the SSD once
+the weights are resident. A model loads from NVMe at the drive's sequential rate — a 42.9 GiB file
+appears in a few tens of seconds — and is then faulted into GTT and never re-read.
+
+**Paging is deliberately not disk-backed.** Swap is a zram device, so any pressure costs CPU to
+compress and decompress rather than NVMe reads. That distinction matters when reading a benchmark:
+a model whose weights were paged out still pays a fault-in on its next request, but it pays it in
+cycles, not in I/O. Every run recorded here was taken with the server's weights resident, and §5
+explains how the pool is sized to keep them that way.
+
+### 2.4 What is unusual, and what that costs
 
 **Table 1 — What Strix Halo's properties cost.**
 
@@ -2414,6 +2436,15 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ## 21. Change log
 
+### Version 1.9.2 (2026-10-31)
+
+**Storage named, and bounded.** §2.3 records the drives (BIWIN X570 PRO 4 TB for system and models, a
+Netac 2 TB spare) and the zram swap device, and states plainly what they do and do not affect: load
+time, not decode. Decode is LPDDR5X-bandwidth-bound and prefill is shader-bound, so no figure in this
+report depends on the SSD — which is worth saying, because "faster NVMe makes local LLMs faster" is a
+common and wrong inference. Paging being compressed RAM rather than disk is called out for the same
+reason.
+
 ### Version 1.9.1 (2026-10-31)
 
 **The hardware is now named.** The report described "this machine" throughout, because the sanitiser
@@ -2706,7 +2737,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.9.1 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
+*Version 1.9.2 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
