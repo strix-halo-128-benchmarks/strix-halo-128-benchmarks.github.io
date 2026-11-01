@@ -512,6 +512,18 @@ a { color:var(--acc); }
 <p>This is the least complete entry in the ledger, and it says so deliberately: <strong>no deletion date, no byte count, no sha256 and no upstream repository were recorded before the file left disk.</strong> The run and the scores above are the only surviving evidence. It cannot be restored byte-for-byte — re-obtaining it means identifying the publisher from the model name and re-measuring. If anyone does, the 14/14 riddle sweep is the number worth checking, because that is rarer on this box than a 0.78 HumanEval.</p>
 <hr>
 <p><em>Written with Hermes Agent (Nous Research) driven by DeepSeek's <code>deepseek-flash</code>, from the run archive and from the sha256 values taken immediately before each deletion. Where a hash or date was never captured, the entry says so rather than filling the gap.</em></p>
+<h2>Apexintelligence-AI Apex-35B-V1.0 Q4_K_M (bartowski) — retired 2026-11-01</h2>
+<p><strong>Rejected on evidence, not on size.</strong> Fetched 2026-11-01 11:47 → 12:06 (21.23 GiB at 40 MB/s), tested the same afternoon, deleted the same afternoon.</p>
+<h3>Why</h3>
+<p>The finetune does not terminate its reasoning on this build. Riddle items return <code>completion_n</code> equal to the cap with an <strong>empty <code>content</code></strong> — the model thinks until the budget is gone and never answers:</p>
+<table><thead><tr><th>cap</th><th>riddles</th><th>items that burned the whole cap with no answer</th></tr></thead><tbody><tr><td>4096</td><td>9/14</td><td>5 of 14 (n=4096, content empty)</td></tr><tr><td>8192</td><td>9/14</td><td>3 of 14 (n=8192, content empty)</td></tr></tbody></table>
+<p>HumanEval tells the same story at 0.4146 (68/164) with a 2203 s wall — 13.4 s/item at 61 t/s, i.e. ~800 tokens of thinking per item and zero credit when it runs out. MMLU-Pro with thinking forced off reached 0.5800 (58/100). At the same 35B-A3B shape this roster carries qwen38-35b at 0.8720/0.6417 and Ornith-1.5-35B at 0.8354/0.4417, so the model is outside the band even before the non-termination.</p>
+<h3>Measured rows</h3>
+<table><thead><tr><th>run</th><th>axes</th><th>result</th></tr></thead><tbody><tr><td><code>20261101-124818-apex35b-cap4096</code></td><td>HE 164, riddles, perf, preflight, needles</td><td>HE 0.4146 (68/164) 2203 s; riddles 9/14; pp 1991.7 / tg 61.5 / ttft 902 ms; preflight 3/3; needles 2k+8k PASS</td></tr><tr><td><code>20261101-133139-apex35b-cap8192-probe</code></td><td>core at cap 8192</td><td>riddles 9/14; pp 2005.5 / tg 60.1 / ttft 896 ms; preflight 3/3; needles PASS</td></tr></tbody></table>
+<h3>Removed</h3>
+<table><thead><tr><th>path</th><th>bytes</th><th>sha256</th></tr></thead><tbody><tr><td><code>models/Apexintelligence-AI_Apex-35B-V1.0-Q4_K_M.gguf</code></td><td>22,795,471,072</td><td><code>c1bf4a6008bda54c6da3be1e5b6137a9b31cbe7d5a5432950215b0d13da2296b</code></td></tr><tr><td><code>run-apex-35b.sh</code>, <code>run-apex-35b-bench.sh</code>, <code>apex-bench.log</code></td><td>small</td><td>—</td></tr></tbody></table>
+<h3>Restore</h3>
+<p><code>hf</code> / <code>bartowski/Apexintelligence-AI_Apex-35B-V1.0-GGUF</code> → <code>Apexintelligence-AI_Apex-35B-V1.0-Q4_K_M.gguf</code>, expect 22,795,471,072 bytes and the sha256 above. Re-download only to study the template — the harness (<code>t20</code>) and a <code>--jinja</code> server were not the problem, and a reasoning-effort cap did not fix it either.</p>
 <hr>
 <p><em>Source: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.</em></p>
 </main></body></html>

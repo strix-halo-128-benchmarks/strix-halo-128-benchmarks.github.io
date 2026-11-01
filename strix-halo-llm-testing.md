@@ -8,7 +8,7 @@
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-10-31
-- **Roster:** 16 servable artefacts on disk, 602 GiB, checked 2026-10-31 · **Change log:** §21
+- **Roster:** 17 servable artefacts on disk, 630 GiB, checked 2026-11-01 · **Change log:** §21
 
 **About this document**
 
@@ -94,7 +94,7 @@ Seven claims are worth having up front, because everything else follows from the
    5.8pp ahead on knowledge, and the cheap hosted tier scores *below* a local 30B on knowledge. §14
    has the numbers, the cache economics and the confounds.
 
-The practical output of all this is a roster of 16 servable models with measured profiles, a
+The practical output of all this is a roster of 17 servable models with measured profiles, a
 deployed daily driver — the uncensored QAT Q4_K_M build of gemma4-26b-a4b on port 8100, which since
 2026-10-28 is what answers WhatsApp, with Ornith-1.5-35B-Uncensored on :8094 as the system boot model
 — a documented set of models that were measured, failed or lost their slot and were deleted so nobody
@@ -881,6 +881,7 @@ deleted rows are why the recommendations below have reasons.
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
+| Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
 | Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 1633 | 74.1 | 2026-11-01 | fork b3-1a33095 | ✓ |
@@ -920,6 +921,7 @@ capability row. Full inventory (15 model units, 602 GiB, projectors and drafters
 | qwen3next-q4 | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 58.1 | 2026-10-31 | fork b3-1a33095 | :8082 |
 | qwen38-35b | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8093 |
 | lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | fork pre-identity | :8181 |
+| Kimi-Linear-48B-A3B-abl | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8086 |
 | qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | fork pre-identity | :8097 |
 | Ornith-1.5-35B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 74.1 | 2026-11-01 | fork b3-1a33095 | :8086 |
 | ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | fork b3-1a33095 | :8094 boot |
@@ -1012,10 +1014,18 @@ high-volume, low-latency work — classification, extraction, triage — not for
 option. Its IFEval 0.3333 in the archive is an lm-eval artefact; standalone at a 4096 cap it
 measures 0.9333, which is one of the best instruction scores on the box.
 
-**kimi (Kimi-Linear 48B-A3B) — retired 2026-10-29.** 67.4 t/s, a verified million-token window,
-13/14 riddles, but 0.7866 code and 0.5500 knowledge. It was the only million-token model this box has
-served; it went on footprint, not capability — 28 GiB for two axes both beaten by models a third its
-size. Long-document work now uses LFM2.5's 1M option (§12).
+**Kimi-Linear-48B-A3B-abl — the long-context file, and the honest version of a retired one.** The
+abliterated i1-Q4_K_M build (27.66 GiB, 49.1B with ~3B active) measures **0.7866 code, 0.5833
+knowledge, 13-14/14 riddles at 74.8 t/s** — the same code score, item for item, as the safety-tuned
+`kimi` retired on 2026-10-29 (0.7866 / 0.5500 at 67.4 t/s), so the uncensoring cost nothing measurable
+and this file is 10% faster. What it buys is **native context: 1,048,576 tokens**, the only
+million-token window on this roster, and that is the reason to keep 28 GiB of a model that two smaller
+ones beat on both scored axes.
+
+One constraint travels with it: `n_embd_head_v = 72` does not divide a q8_0 cache block of 32, and the
+model refuses mismatched K/V cache types, so the KV cache must be **f16 on both sides**. At ctx 131072
+that does not fit beside the 15.6 GiB driver; **ctx 65536 does** (GTT 59.5 of 100 GiB) and is what the
+published row was measured at. The full million-token window therefore needs the driver stopped.
 
 **hy-memory-30b-a3b — retired 2026-10-29.** 74.7 t/s, 0.7805 code, 0.7250 MMLU, and a Q8 variant
 that raised knowledge to 0.7500 while dropping to 52.3 t/s. Retired as a redundant 30B: 17 GiB for a
@@ -1149,6 +1159,7 @@ or a direct lineage. `Δ` is max − min within the family.
    mellum            3   0.8780-0.9146 Δ.037   0.7000-0.8083 Δ.108   10-11/14   92-112 t/s
    gpt-oss           2   0.9268-0.9268 Δ.000   0.5833-0.7500 Δ.167*  10-12/14   50-50 t/s
    hy-memory  ✗      2   0.7683-0.7805 Δ.012   0.7250-0.7500 Δ.025   11-12/14   52-75 t/s
+   kimi (linear)     2   0.7866-0.7866 Δ.000   0.5500-0.5833 Δ.033   13-13/14   67-75 t/s
    ──────────────────────────────────────────────────────────────────────────────────────────
    Δ values are lower bounds on family variance: n is 2-7 and one run per model.
    * gpt-oss knowledge Δ is a token-budget artefact (512 vs 2048 caps), not lineage — see §16.2.
@@ -1267,6 +1278,7 @@ without the others getting in the way.
   0.8780  cap 4096  mellum                           ✗ retired 10-29
   0.8720  cap 4096  qwen38-35b                       (re-measured; the 512 row read 0.8537)
   0.8537  cap 4096  lfm25-24b-a2b
+  0.7866  cap 8192  Kimi-Linear-48B-A3B-abl          (1M ctx, 74.8 t/s)
 ```
 ### Knowledge — MMLU-Pro
 
@@ -1289,6 +1301,7 @@ without the others getting in the way.
   0.6917  cap 4096  lfm25-24b-a2b
   0.6417  cap 4096  qwen38-35b                       (re-measured; the 512 row read 0.5083)
   0.6058  cap  —    qwen3next-q6
+  0.5833  cap 8192  Kimi-Linear-48B-A3B-abl
   0.5833  cap  —    gptoss
   0.5500  cap 2048  kimi                              ✗ retired 10-29
   0.3667  cap 2048  Nemotron-Bolt-74B-A9B             ✗ 2-bit knowledge collapse
@@ -1314,7 +1327,7 @@ without the others getting in the way.
 ```
   14/14  gemma4-26b-qat-q4 · gemma4-26b-uncen · qwen3next-q6 · qwen3next-q4 · qwen38-35b  [on disk]
   14/14  gemma4-26b-a4b Q8_0 ✗ · gemma4-31b ✗ · graft-50b-a3b ✗
-  13/14  kolibri · qwen38fn-upstream · Ornith-1.5-35B      (kimi ✗, Bolt-74B ✗)
+  13/14  kolibri · qwen38fn-upstream · Ornith-1.5-35B · Kimi-Linear-48B-A3B-abl  (kimi ✗, Bolt-74B ✗)
   12/14  gptoss · ornith-122b · ornith35b (boot)                     (hy-memory ✗, qwen35 ✗, qwen36 ✗)
   11/14  nemotron-super-120b · ornith-mtp-21g · qwen38fn-abl        (mellum ✗, hy-memory-q8 ✗)
   10/14  lfm25-24b-a2b · minicpm-v47-35b · mellum21-fork · gptoss-abliterated
@@ -1324,17 +1337,18 @@ without the others getting in the way.
 
 ```
   decode t/s      prefill t/s   model
-   111.9            2723        mellum21-fork
-   106.6            2930        lfm25-24b-a2b
-    91.8            2442        mellum                          ✗ retired 10-29
-    74.7            1515        hy-memory-30b-a3b               ✗ retired 10-29
-    72.8             577        Nemotron-Bolt-74B-A9B           ✗ retired 10-30
-    74.1            1633        Ornith-1.5-35B
-    69.9            1762        ornith35b (uncensored, boot)
-    74.8            1550        qwen38-35b
-    67.4            1597        kimi                            ✗ retired 10-29
-    65.2            1610        ornith-mtp-21g
-    64.6            1600        minicpm-v47-35b
+  111.9            2723        mellum21-fork
+  106.6            2930        lfm25-24b-a2b
+   91.8            2442        mellum                          ✗ retired 10-29
+   74.8            1774        Kimi-Linear-48B-A3B-abl
+   74.8            1550        qwen38-35b
+   74.7            1515        hy-memory-30b-a3b               ✗ retired 10-29
+   74.1            1633        Ornith-1.5-35B
+   72.8             577        Nemotron-Bolt-74B-A9B           ✗ retired 10-30
+   69.9            1762        ornith35b (uncensored, boot)
+   67.4            1597        kimi                            ✗ retired 10-29
+   65.2            1610        ornith-mtp-21g
+   64.6            1600        minicpm-v47-35b
     60.5            1297        kolibri
     59.5            1624        gemma4-26b-qat-q4
     56.9            1759        gemma4-26b-uncen                <- driver, enabled
@@ -2449,6 +2463,29 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ## 21. Change log
 
+### Version 1.11 (2026-11-01)
+
+**Two new files triaged at the same cap, one accepted and one rejected.**
+
+| model | HumanEval | MMLU-Pro | riddles | perf | verdict |
+|---|---|---|---|---|---|
+| Kimi-Linear-48B-A3B-abl i1-Q4_K_M, 27.66 GiB | **0.7866** (129/164) @8192 | **0.5833** (70/120) @8192 | 13/14 | pp 1774 / tg 74.8 | **kept** — 1M native ctx |
+| Apex-35B-V1.0 Q4_K_M, 21.23 GiB | **0.4146** (68/164) @4096 | 0.5800 (58/100) @4096, thinking off | 9/14 at both 4096 and 8192 | pp 1992 / tg 61.5 | **rejected and deleted** |
+
+Kimi's row matches the safety-tuned `kimi` retired on 2026-10-29 item for item on code (0.7866), at a
+10% higher decode rate, and it is the only million-token model on the roster. Its KV cache must be f16
+on both sides (`n_embd_head_v = 72` does not divide a q8_0 block of 32, and mixed types are refused),
+which caps the measured window at 65536 beside the driver.
+
+Apex is the more instructive failure. At 4096 five of fourteen riddle items returned `completion_n`
+equal to the cap with **empty content**; at 8192, three did. It spends the whole budget thinking and
+never emits an answer, so this is not a cap artefact and no larger budget fixes it. 2203 s for 164
+HumanEval items — 13.4 s/item at 61 t/s — is the same signature. Recorded in the rejected-candidates
+reference and deleted with its sha256, so nobody re-downloads 21 GiB to rediscover it.
+
+**Roster 16 → 17 servable; 630 GiB.** Tables 4, 4b, 5, the four league tables and the §9.1 family
+paragraph are updated. The throughput league is now actually sorted by decode, which it had not been.
+
 ### Version 1.10 (2026-11-01)
 
 **The last two cap-512 floors were re-measured at cap 4096, and they behave differently on each axis.**
@@ -2781,7 +2818,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.10 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
+*Version 1.11 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in

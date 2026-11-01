@@ -69,7 +69,7 @@ a { color:var(--acc); }
 <ul>
 <li><strong>Runtime:</strong> llama.cpp on Vulkan · <strong>Harness:</strong> <code>~/bench</code> (<code>t20</code>)</li>
 <li><strong>Archive:</strong> <code>~/runs/catalogue.json</code> · <strong>Measurements:</strong> 2026-10-07 → 2026-10-31</li>
-<li><strong>Roster:</strong> 16 servable artefacts on disk, 602 GiB, checked 2026-10-31 · <strong>Change log:</strong> §21</li>
+<li><strong>Roster:</strong> 17 servable artefacts on disk, 630 GiB, checked 2026-11-01 · <strong>Change log:</strong> §21</li>
 </ul>
 <p><strong>About this document</strong></p>
 <p><em>Audience:</em> someone deciding what to run on a 128 GB unified-memory AMD machine, and someone checking whether the numbers are honest. <em>Provenance:</em> every figure comes from a run recorded in <code>~/runs/catalogue.json</code>, a log file, or a query against the hardware monitor's database; nothing is quoted from a vendor or a leaderboard. <em>What it is not:</em> a benchmark of these models in general. It is a measurement of one machine, at one software version, at stated caps — §10.5 and §14.6 say exactly how far that can be pushed.</p>
@@ -132,7 +132,7 @@ a { color:var(--acc); }
 <li><strong>The frontier's lead is axis-specific, and smaller than expected.</strong> Measured with this harness,</li>
 </ol>
 <p>the best hosted model is 1.2pp ahead of the best local model on code — inside the noise — but 5.8pp ahead on knowledge, and the cheap hosted tier scores <em>below</em> a local 30B on knowledge. §14 has the numbers, the cache economics and the confounds.</p>
-<p>The practical output of all this is a roster of 16 servable models with measured profiles, a deployed daily driver — the uncensored QAT Q4_K_M build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with Ornith-1.5-35B-Uncensored on :8094 as the system boot model — a documented set of models that were measured, failed or lost their slot and were deleted so nobody repeats the work, and a measured comparison against hosted frontier models that establishes how large the gap actually is. Port 8099 (the QAT Q4_0 driver named in earlier editions) still has its script but its unit is disabled; only one model unit is enabled at a time and :8100 holds that slot.</p>
+<p>The practical output of all this is a roster of 17 servable models with measured profiles, a deployed daily driver — the uncensored QAT Q4_K_M build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with Ornith-1.5-35B-Uncensored on :8094 as the system boot model — a documented set of models that were measured, failed or lost their slot and were deleted so nobody repeats the work, and a measured comparison against hosted frontier models that establishes how large the gap actually is. Port 8099 (the QAT Q4_0 driver named in earlier editions) still has its script but its unit is disabled; only one model unit is enabled at a time and :8100 holds that slot.</p>
 <hr>
 <h2 id="s1">Why test at all — the problem this solves</h2>
 <p>The obvious approach to picking a local model is to read a leaderboard, pick the top entry that fits in memory, and run it. That approach fails on this class of hardware for four independent reasons.</p>
@@ -551,10 +551,10 @@ a { color:var(--acc); }
 <h2 id="s9">Results — the measured matrix</h2>
 <p>One row per model ever measured, best-measured run. <code>HE</code> is <code>score (items@cap)</code>; caps differ, so read section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from 2026-10-27 onwards. The <code>build</code> column names the tree and the commit that produced the row — <code>fork b3-1a33095</code>, <code>bolt b1-a30fb49</code>, or <code>pre-identity</code> where the run predates identity stamping (§4.1 explains why that is a window, not a guess). The full path is deliberately not published. The <code>measured</code> column is the date of the best-scoring run shown — the run id and the full build identity are in <code>data/catalogue.json</code>, so any row can be traced to the exact binary that produced it. The <code>disk</code> column is the roster as of <strong>2026-10-30</strong>: <code>✓</code> present and servable, <code>✗</code> retired (recipes in <code>~/llama-local/RETIRED-models.md</code>). Table 4 is all-time by design — the deleted rows are why the recommendations below have reasons.</p>
 <p><strong>Table 4 — The measured matrix, all-time: one row per model, best run, caps shown with item counts.</strong></p>
-<table><thead><tr><th>Model</th><th>Params</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>prefill t/s</th><th>decode t/s</th><th>measured</th><th>build</th><th>disk</th></tr></thead><tbody><tr><td>gemma4-31b</td><td>30.7B</td><td>Q4_0</td><td>0.9634 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>350</td><td>17.0</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-uncen</td><td>25.2B</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>1759</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>✓ driver</td></tr><tr><td>minicpm-v47-35b</td><td>34.7B</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>1600</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>gemma4-26b-a4b</td><td>25.2B</td><td>Q8_0</td><td>0.9573 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>—</td><td>49.4</td><td>2026-10-30</td><td>fork b3-1a33095</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-qat-q4</td><td>25.2B</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>1900</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>ornith-122b</td><td>124.6B</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>605</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>nemotron-super-120b</td><td>123.6B</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>411</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>Nemotron-Bolt-74B-A9B</td><td>74.0B</td><td>IQ2_XXS</td><td>0.9451 (164@2048)</td><td>0.3667 (120@2048)</td><td>13/14</td><td>577</td><td>72.8</td><td>2026-10-16</td><td>bolt pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q6</td><td>79.7B</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>1189</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>1045</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss-abliterated</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>1052</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen35</td><td>122.1B</td><td>Q4_K_M</td><td>0.9242 (66)</td><td>0.5417 (48)</td><td>12/14</td><td>622</td><td>22.9</td><td>2026-10-11</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>ornith-mtp-21g</td><td>35.5B</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>1610</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>flint (i1-Q4_K_M)</td><td>40.0B</td><td>Q4_K_M</td><td>0.9167 (60@4096)</td><td>—</td><td>10/14</td><td>—</td><td>71.1</td><td>2026-10-25</td><td>flint pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q4</td><td>79.7B</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>1219</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>mellum21-fork</td><td>12.1B</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>2723</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>mellum</td><td>12.1B</td><td>Q6_K</td><td>0.8780 (164@4096)</td><td>0.7000 (120@4096)</td><td>11/14</td><td>2442</td><td>91.8</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>qwen38-35b</td><td>35.5B</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>1550</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>lfm25-24b-a2b</td><td>24.0B</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>2930</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen38fn-abl</td><td>176.9B</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>448</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen36-35b</td><td>34.7B</td><td>Q4_K_M</td><td>0.8354 (164)</td><td>0.4500 (120)</td><td>12/14</td><td>1548</td><td>57.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>Ornith-1.5-35B</td><td>35.5B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>1633</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>kimi</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@2048)</td><td>0.5500 (120@2048)</td><td>13/14</td><td>1597</td><td>67.4</td><td>2026-10-14</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>hy-memory-30b-a3b</td><td>30.1B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.7250 (120@2048)</td><td>12/14</td><td>1515</td><td>74.7</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>graft-50b-a3b</td><td>50.7B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.6583 (120@2048)</td><td>14/14</td><td>1368</td><td>54.3</td><td>2026-10-19</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>hy-memory-30b-a3b-q8</td><td>30.1B</td><td>Q8_0</td><td>0.7683 (164@2048)</td><td>0.7500 (120@2048)</td><td>11/14</td><td>1459</td><td>52.3</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>Ling-3.0-flash</td><td>—</td><td>Q4_K_M</td><td>—</td><td>0.7667 (120@2048)</td><td>11/14</td><td>—</td><td>43.5</td><td>2026-10-22</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>ornith35b (uncensored)</td><td>35.5B</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>1762</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓ boot</td></tr><tr><td>nemotron-bolt (broken load)</td><td>74.0B</td><td>IQ2_XXS</td><td>0.1786 (56@512)</td><td>0.4146 (41@512)</td><td>8/14</td><td>586</td><td>22.7</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr></tbody></table>
+<table><thead><tr><th>Model</th><th>Params</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>prefill t/s</th><th>decode t/s</th><th>measured</th><th>build</th><th>disk</th></tr></thead><tbody><tr><td>gemma4-31b</td><td>30.7B</td><td>Q4_0</td><td>0.9634 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>350</td><td>17.0</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-uncen</td><td>25.2B</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>1759</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>✓ driver</td></tr><tr><td>minicpm-v47-35b</td><td>34.7B</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>1600</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>gemma4-26b-a4b</td><td>25.2B</td><td>Q8_0</td><td>0.9573 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>—</td><td>49.4</td><td>2026-10-30</td><td>fork b3-1a33095</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-qat-q4</td><td>25.2B</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>1900</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>ornith-122b</td><td>124.6B</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>605</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>nemotron-super-120b</td><td>123.6B</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>411</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>Nemotron-Bolt-74B-A9B</td><td>74.0B</td><td>IQ2_XXS</td><td>0.9451 (164@2048)</td><td>0.3667 (120@2048)</td><td>13/14</td><td>577</td><td>72.8</td><td>2026-10-16</td><td>bolt pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q6</td><td>79.7B</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>1189</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>1045</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss-abliterated</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>1052</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen35</td><td>122.1B</td><td>Q4_K_M</td><td>0.9242 (66)</td><td>0.5417 (48)</td><td>12/14</td><td>622</td><td>22.9</td><td>2026-10-11</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>ornith-mtp-21g</td><td>35.5B</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>1610</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>flint (i1-Q4_K_M)</td><td>40.0B</td><td>Q4_K_M</td><td>0.9167 (60@4096)</td><td>—</td><td>10/14</td><td>—</td><td>71.1</td><td>2026-10-25</td><td>flint pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q4</td><td>79.7B</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>1219</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>mellum21-fork</td><td>12.1B</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>2723</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>mellum</td><td>12.1B</td><td>Q6_K</td><td>0.8780 (164@4096)</td><td>0.7000 (120@4096)</td><td>11/14</td><td>2442</td><td>91.8</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>qwen38-35b</td><td>35.5B</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>1550</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>lfm25-24b-a2b</td><td>24.0B</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>2930</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>1774</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen38fn-abl</td><td>176.9B</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>448</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen36-35b</td><td>34.7B</td><td>Q4_K_M</td><td>0.8354 (164)</td><td>0.4500 (120)</td><td>12/14</td><td>1548</td><td>57.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>Ornith-1.5-35B</td><td>35.5B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>1633</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>kimi</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@2048)</td><td>0.5500 (120@2048)</td><td>13/14</td><td>1597</td><td>67.4</td><td>2026-10-14</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>hy-memory-30b-a3b</td><td>30.1B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.7250 (120@2048)</td><td>12/14</td><td>1515</td><td>74.7</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>graft-50b-a3b</td><td>50.7B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.6583 (120@2048)</td><td>14/14</td><td>1368</td><td>54.3</td><td>2026-10-19</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>hy-memory-30b-a3b-q8</td><td>30.1B</td><td>Q8_0</td><td>0.7683 (164@2048)</td><td>0.7500 (120@2048)</td><td>11/14</td><td>1459</td><td>52.3</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>Ling-3.0-flash</td><td>—</td><td>Q4_K_M</td><td>—</td><td>0.7667 (120@2048)</td><td>11/14</td><td>—</td><td>43.5</td><td>2026-10-22</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>ornith35b (uncensored)</td><td>35.5B</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>1762</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓ boot</td></tr><tr><td>nemotron-bolt (broken load)</td><td>74.0B</td><td>IQ2_XXS</td><td>0.1786 (56@512)</td><td>0.4146 (41@512)</td><td>8/14</td><td>586</td><td>22.7</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr></tbody></table>
 <p>New in this edition: the <code>gemma4-26b-uncen</code> row (measured 2026-10-28, the model that now answers the channel) and the <code>disk</code> column. <strong>Three rows were wrong in version 1.2 and are corrected.</strong> <code>qwen3next-q6</code> was published as 0.9207 (164@2048) — no run supports that: its best is 0.9296 over 142 items, and 0.9207 is <code>ornith-mtp-21g</code>'s figure, copied onto it. <code>nemotron-super-120b</code> reads 0.9512 (156/164) at cap 4096 rather than 0.9329; two runs exist (156/164 and 153/164) and the old row quoted neither cleanly. And <code>gemma4-26b-a4b</code> and <code>gemma4-26b-qat-q4</code> were listed as two models when they are <strong>one weight file measured twice</strong> (156/164 and 154/164, cap 2048, MMLU 101/120 in both): the run alias was shared across the Q8_0 and QAT files, which is how a table comes to compare a file with itself. The Q8_0 row now carries its own file's numbers.</p>
 <p><strong>Table 4b — what is actually servable on 2026-10-31.</strong> Sixteen artefacts, every one now carrying a capability row. Full inventory (15 model units, 602 GiB, projectors and drafters included) is in §20.3.</p>
-<table><thead><tr><th>Model</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>decode t/s</th><th>measured</th><th>build</th><th>endpoint</th></tr></thead><tbody><tr><td>gemma4-26b-uncen</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>:8100 enabled</td></tr><tr><td>minicpm-v47-35b</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>:8186</td></tr><tr><td>gemma4-26b-qat-q4</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>:8099 script only</td></tr><tr><td>ornith-122b</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>:8084</td></tr><tr><td>nemotron-super-120b</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>:8189</td></tr><tr><td>qwen3next-q6</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>:8083</td></tr><tr><td>gptoss</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>:8085</td></tr><tr><td>gptoss-abliterated</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>:8096</td></tr><tr><td>ornith-mtp-21g</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>:8185</td></tr><tr><td>mellum21-fork</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>—</td></tr><tr><td>qwen3next-q4</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>:8082</td></tr><tr><td>qwen38-35b</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8093</td></tr><tr><td>lfm25-24b-a2b</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>:8181</td></tr><tr><td>qwen38fn-abl</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>:8097</td></tr><tr><td>Ornith-1.5-35B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8086</td></tr><tr><td>ornith35b (uncensored)</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>:8094 boot</td></tr></tbody></table>
+<table><thead><tr><th>Model</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>decode t/s</th><th>measured</th><th>build</th><th>endpoint</th></tr></thead><tbody><tr><td>gemma4-26b-uncen</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>:8100 enabled</td></tr><tr><td>minicpm-v47-35b</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>:8186</td></tr><tr><td>gemma4-26b-qat-q4</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>:8099 script only</td></tr><tr><td>ornith-122b</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>:8084</td></tr><tr><td>nemotron-super-120b</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>:8189</td></tr><tr><td>qwen3next-q6</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>:8083</td></tr><tr><td>gptoss</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>:8085</td></tr><tr><td>gptoss-abliterated</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>:8096</td></tr><tr><td>ornith-mtp-21g</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>:8185</td></tr><tr><td>mellum21-fork</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>—</td></tr><tr><td>qwen3next-q4</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>:8082</td></tr><tr><td>qwen38-35b</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8093</td></tr><tr><td>lfm25-24b-a2b</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>:8181</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8086</td></tr><tr><td>qwen38fn-abl</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>:8097</td></tr><tr><td>Ornith-1.5-35B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8086</td></tr><tr><td>ornith35b (uncensored)</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>:8094 boot</td></tr></tbody></table>
 <p>The last blank cell was filled on 2026-10-31: <code>Qwen3-Next-80B UD-Q4_K_XL</code> now has a full row (0.9146 code, 0.7417 knowledge, 14/14, 58.1 t/s) and it is the weakest large model on disk — see §9.1 and §21. Every artefact in this table has been scored on both capability axes.</p>
 <p>Models measured on the core axes only (no HumanEval row, all-time): <code>qwen38-flash-next-abl</code> (31.5 t/s, retired 10-30), <code>coder390-abl</code> (16.3 t/s, retired 10-30), <code>nemotron-bolt-e4b</code> (never measured, retired 10-30), <code>kolibri</code> (78.1B, 60.5 t/s, 13/14 — an <code>reasoning_effort=none</code> arm on the same file also measured HE 0.8293 (136/164 @512) and MMLU-Pro 0.4000 (48/120 @512), and is excluded from the matrix only because it disables deliberation and its MMLU grader accepts refusal-shaped strings containing the letter), <code>qwen38</code> (27.3B Q6_K, 8.8 t/s), <code>qwen38fn</code> / <code>qwen38fn-upstream</code> (176.9B Q2_K, 29.6 / 42.9 t/s), <code>qwen38-27b-fable</code> (12.0 t/s), <code>muse-glimmer</code> (10.9 t/s), <code>mellum21-12b-thinking</code> (28.0 t/s).</p>
 <h3>9.1 Per-model analysis</h3>
@@ -569,7 +569,8 @@ a { color:var(--acc); }
 <p><strong>qwen3next-q4 — same family, three times the footprint, no gain.</strong> Measured 2026-10-31, the first capability row this file has ever had: 0.9146 code (150/164) and <strong>0.7417 knowledge</strong> (89/120) at cap 2048, 14/14 riddles, both needles, 3/3 preflight, 58.1 t/s decode at 1219 t/s prefill. Against the driver that is −4.3 pp code and −10.8 pp knowledge for 42.9 GiB instead of 15.6 — at the same decode speed. It also loses to gpt-oss-abliterated, an 18.7 GiB file, on both axes. The 80B/3B-active architecture spreads its active experts too thin: it matches the Q6 sibling on code (0.9146 vs 0.9296 over 142 items, inside noise) but the knowledge axis shows what the extra 42 GiB of weights buys, which is nothing. Retire candidate on evidence, not on opinion.</p>
 <p><strong>mellum21-fork — the speed champion and best value.</strong> 12.1B with 2.5B active, <strong>111.9 t/s decode, 2723 t/s prefill</strong>, 0.9146 code at an 8192 cap, 0.8083 MMLU. Nothing else on this box comes close on throughput per byte, and 0.91 code from a 7.5 GiB file is remarkable. The catch is the 8192 cap: at 4096 it truncates mid-derivation and scores lower. It is also a fork-specific build. Use it for high-volume, low-latency work — classification, extraction, triage — not for hard reasoning.</p>
 <p><strong>lfm25-24b-a2b — the fastest 24B.</strong> 106.6 t/s, 2930 t/s prefill, 24B with 2B active. Lower quality (0.8537 code, 0.6917 MMLU) but the most responsive model of its size class, with a 1M-token context option. Its IFEval 0.3333 in the archive is an lm-eval artefact; standalone at a 4096 cap it measures 0.9333, which is one of the best instruction scores on the box.</p>
-<p><strong>kimi (Kimi-Linear 48B-A3B) — retired 2026-10-29.</strong> 67.4 t/s, a verified million-token window, 13/14 riddles, but 0.7866 code and 0.5500 knowledge. It was the only million-token model this box has served; it went on footprint, not capability — 28 GiB for two axes both beaten by models a third its size. Long-document work now uses LFM2.5's 1M option (§12).</p>
+<p><strong>Kimi-Linear-48B-A3B-abl — the long-context file, and the honest version of a retired one.</strong> The abliterated i1-Q4_K_M build (27.66 GiB, 49.1B with ~3B active) measures <strong>0.7866 code, 0.5833 knowledge, 13-14/14 riddles at 74.8 t/s</strong> — the same code score, item for item, as the safety-tuned <code>kimi</code> retired on 2026-10-29 (0.7866 / 0.5500 at 67.4 t/s), so the uncensoring cost nothing measurable and this file is 10% faster. What it buys is <strong>native context: 1,048,576 tokens</strong>, the only million-token window on this roster, and that is the reason to keep 28 GiB of a model that two smaller ones beat on both scored axes.</p>
+<p>One constraint travels with it: <code>n_embd_head_v = 72</code> does not divide a q8_0 cache block of 32, and the model refuses mismatched K/V cache types, so the KV cache must be <strong>f16 on both sides</strong>. At ctx 131072 that does not fit beside the 15.6 GiB driver; <strong>ctx 65536 does</strong> (GTT 59.5 of 100 GiB) and is what the published row was measured at. The full million-token window therefore needs the driver stopped.</p>
 <p><strong>hy-memory-30b-a3b — retired 2026-10-29.</strong> 74.7 t/s, 0.7805 code, 0.7250 MMLU, and a Q8 variant that raised knowledge to 0.7500 while dropping to 52.3 t/s. Retired as a redundant 30B: 17 GiB for a knowledge row 12.5 pp behind the 26B driver at two-thirds the speed. The Q4/Q8 pair remains the cleanest quant-ladder datapoint in the archive (§10.3).</p>
 <p><strong>qwen38-35b / qwen36-35b / ornith35b / Ornith-1.5-35B — the 35B trough.</strong> All four land between 0.82 and 0.87 code with mediocre knowledge and 57-75 t/s. They are not bad; they are simply dominated by the 26B MoE (faster and better) and the 122B (slower but much better).</p>
 <p>Two of the four were re-measured at cap 4096 on 2026-11-01, and the two verdicts differ on <strong>which axis</strong> the cap was suppressing. <code>qwen38-35b</code> gained 3 HumanEval items (0.8537 → <strong>0.8720</strong>) but <strong>16 MMLU items</strong> (0.5083 → <strong>0.6417</strong>, +13.3 pp, ≫ SE at n=120) and its riddles went 13/14 → 14/14: for that model the 512 cap was cutting off reasoning before the answer, and the damage showed up in knowledge far more than in code. <code>Ornith-1.5-35B</code> (Q4_K_M) gained 2 HumanEval items (0.8232 → <strong>0.8354</strong>) and 3 knowledge items (0.4167 → <strong>0.4417</strong>, +2.5 pp, inside SE) — a row that was close to honest already, and whose remaining weakness is the model, not the budget. So the lesson is not "512 understates" or "512 is fine": it is that the cap's damage is <strong>axis-dependent</strong>, and a single axis read at 512 cannot tell you which case you are in.</p>
@@ -643,6 +644,7 @@ a { color:var(--acc); }
    mellum            3   0.8780-0.9146 Δ.037   0.7000-0.8083 Δ.108   10-11/14   92-112 t/s
    gpt-oss           2   0.9268-0.9268 Δ.000   0.5833-0.7500 Δ.167*  10-12/14   50-50 t/s
    hy-memory  ✗      2   0.7683-0.7805 Δ.012   0.7250-0.7500 Δ.025   11-12/14   52-75 t/s
+   kimi (linear)     2   0.7866-0.7866 Δ.000   0.5500-0.5833 Δ.033   13-13/14   67-75 t/s
    ──────────────────────────────────────────────────────────────────────────────────────────
    Δ values are lower bounds on family variance: n is 2-7 and one run per model.
    * gpt-oss knowledge Δ is a token-budget artefact (512 vs 2048 caps), not lineage — see §16.2.
@@ -706,7 +708,8 @@ a { color:var(--acc); }
   0.9146  cap 2048  qwen3next-q4              [loses to an 18.7 GiB file on both axes]
   0.8780  cap 4096  mellum                           ✗ retired 10-29
   0.8720  cap 4096  qwen38-35b                       (re-measured; the 512 row read 0.8537)
-  0.8537  cap 4096  lfm25-24b-a2b</code></pre>
+  0.8537  cap 4096  lfm25-24b-a2b
+  0.7866  cap 8192  Kimi-Linear-48B-A3B-abl          (1M ctx, 74.8 t/s)</code></pre>
 <h3>Knowledge — MMLU-Pro</h3>
 <pre><code>  0.8667  cap 2048  gemma4-31b                        ✗ retired 10-30 (all-time leader)
   0.8667  cap 2048  gemma4-26b-a4b Q8_0              ✗ retired 10-30
@@ -726,6 +729,7 @@ a { color:var(--acc); }
   0.6917  cap 4096  lfm25-24b-a2b
   0.6417  cap 4096  qwen38-35b                       (re-measured; the 512 row read 0.5083)
   0.6058  cap  —    qwen3next-q6
+  0.5833  cap 8192  Kimi-Linear-48B-A3B-abl
   0.5833  cap  —    gptoss
   0.5500  cap 2048  kimi                              ✗ retired 10-29
   0.3667  cap 2048  Nemotron-Bolt-74B-A9B             ✗ 2-bit knowledge collapse
@@ -745,24 +749,25 @@ a { color:var(--acc); }
 <h3>Reasoning — riddles + arithmetic (/14)</h3>
 <pre><code>  14/14  gemma4-26b-qat-q4 · gemma4-26b-uncen · qwen3next-q6 · qwen3next-q4 · qwen38-35b  [on disk]
   14/14  gemma4-26b-a4b Q8_0 ✗ · gemma4-31b ✗ · graft-50b-a3b ✗
-  13/14  kolibri · qwen38fn-upstream · Ornith-1.5-35B      (kimi ✗, Bolt-74B ✗)
+  13/14  kolibri · qwen38fn-upstream · Ornith-1.5-35B · Kimi-Linear-48B-A3B-abl  (kimi ✗, Bolt-74B ✗)
   12/14  gptoss · ornith-122b · ornith35b (boot)                     (hy-memory ✗, qwen35 ✗, qwen36 ✗)
   11/14  nemotron-super-120b · ornith-mtp-21g · qwen38fn-abl        (mellum ✗, hy-memory-q8 ✗)
   10/14  lfm25-24b-a2b · minicpm-v47-35b · mellum21-fork · gptoss-abliterated
    8/14  nemotron-bolt ✗</code></pre>
 <h3>Throughput</h3>
 <pre><code>  decode t/s      prefill t/s   model
-   111.9            2723        mellum21-fork
-   106.6            2930        lfm25-24b-a2b
-    91.8            2442        mellum                          ✗ retired 10-29
-    74.7            1515        hy-memory-30b-a3b               ✗ retired 10-29
-    72.8             577        Nemotron-Bolt-74B-A9B           ✗ retired 10-30
-    74.1            1633        Ornith-1.5-35B
-    69.9            1762        ornith35b (uncensored, boot)
-    74.8            1550        qwen38-35b
-    67.4            1597        kimi                            ✗ retired 10-29
-    65.2            1610        ornith-mtp-21g
-    64.6            1600        minicpm-v47-35b
+  111.9            2723        mellum21-fork
+  106.6            2930        lfm25-24b-a2b
+   91.8            2442        mellum                          ✗ retired 10-29
+   74.8            1774        Kimi-Linear-48B-A3B-abl
+   74.8            1550        qwen38-35b
+   74.7            1515        hy-memory-30b-a3b               ✗ retired 10-29
+   74.1            1633        Ornith-1.5-35B
+   72.8             577        Nemotron-Bolt-74B-A9B           ✗ retired 10-30
+   69.9            1762        ornith35b (uncensored, boot)
+   67.4            1597        kimi                            ✗ retired 10-29
+   65.2            1610        ornith-mtp-21g
+   64.6            1600        minicpm-v47-35b
     60.5            1297        kolibri
     59.5            1624        gemma4-26b-qat-q4
     56.9            1759        gemma4-26b-uncen                &lt;- driver, enabled
@@ -1530,6 +1535,24 @@ z
    </g>
    <g id="PathCollection_3">
     <defs>
+     <path id="mabe607d8fe" d="M 0 3.16981 
+C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
+C 2.835819 1.646969 3.16981 0.840643 3.16981 0 
+C 3.16981 -0.840643 2.835819 -1.646969 2.241394 -2.241394 
+C 1.646969 -2.835819 0.840643 -3.16981 0 -3.16981 
+C -0.840643 -3.16981 -1.646969 -2.835819 -2.241394 -2.241394 
+C -2.835819 -1.646969 -3.16981 -0.840643 -3.16981 0 
+C -3.16981 0.840643 -2.835819 1.646969 -2.241394 2.241394 
+C -1.646969 2.835819 -0.840643 3.16981 0 3.16981 
+z
+" style="stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+    </defs>
+    <g clip-path="url(#p0f31717e25)">
+     <use xlink:href="#mabe607d8fe" x="343.777087" y="199.953006" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+    </g>
+   </g>
+   <g id="PathCollection_4">
+    <defs>
      <path id="ma512b988d2" d="M 0 3.273599 
 C 0.868169 3.273599 1.700896 2.928672 2.314784 2.314784 
 C 2.928672 1.700896 3.273599 0.868169 3.273599 0 
@@ -1546,7 +1569,7 @@ z
      <use xlink:href="#ma512b988d2" x="340.953877" y="100.871538" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_4">
+   <g id="PathCollection_5">
     <defs>
      <path id="m5f0315c0f3" d="M 0 2.905629 
 C 0.770582 2.905629 1.509706 2.599473 2.05459 2.05459 
@@ -1564,17 +1587,17 @@ z
      <use xlink:href="#m5f0315c0f3" x="309.616123" y="39.632456" style="fill: #0072b2; fill-opacity: 0.9; stroke: #0072b2; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_5">
+   <g id="PathCollection_6">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m5f0315c0f3" x="338.645177" y="41.434474" style="fill: #0072b2; fill-opacity: 0.9; stroke: #0072b2; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_6">
+   <g id="PathCollection_7">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m5f0315c0f3" x="332.999601" y="39.632456" style="fill: #0072b2; fill-opacity: 0.9; stroke: #0072b2; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_7">
+   <g id="PathCollection_8">
     <defs>
      <path id="m5f285a425c" d="M 0 3.04901 
 C 0.808607 3.04901 1.584204 2.727747 2.155975 2.155975 
@@ -1592,7 +1615,7 @@ z
      <use xlink:href="#m5f285a425c" x="143.940773" y="37.830437" style="fill: #0072b2; fill-opacity: 0.9; stroke: #0072b2; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_8">
+   <g id="PathCollection_9">
     <path d="M 315.27009 53.412721 
 C 316.535154 53.412721 317.748576 52.910106 318.643112 52.01557 
 C 319.537648 51.121034 320.040263 49.907612 320.040263 48.642548 
@@ -1606,7 +1629,7 @@ L 315.27009 53.412721
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #56b4e9; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_9">
+   <g id="PathCollection_10">
     <defs>
      <path id="mf58df8a11e" d="M 0 4.770174 
 C 1.265065 4.770174 2.478486 4.267558 3.373022 3.373022 
@@ -1624,7 +1647,7 @@ z
      <use xlink:href="#mf58df8a11e" x="318.08222" y="48.642548" style="fill: #56b4e9; fill-opacity: 0.9; stroke: #56b4e9; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_10">
+   <g id="PathCollection_11">
     <defs>
      <path id="m7239fcea7d" d="M 0 3.523681 
 C 0.934491 3.523681 1.830834 3.152404 2.491619 2.491619 
@@ -1642,7 +1665,7 @@ z
      <use xlink:href="#m7239fcea7d" x="324.258517" y="91.861447" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_11">
+   <g id="PathCollection_12">
     <defs>
      <path id="m329840d118" d="M 0 3.032757 
 C 0.804296 3.032757 1.575759 2.713206 2.144483 2.144483 
@@ -1660,12 +1683,12 @@ z
      <use xlink:href="#m329840d118" x="374.253479" y="91.861447" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_12">
+   <g id="PathCollection_13">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m329840d118" x="318.599858" y="95.465483" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_13">
+   <g id="PathCollection_14">
     <defs>
      <path id="m3c52065c17" d="M 0 3.489329 
 C 0.925381 3.489329 1.812985 3.121672 2.467328 2.467328 
@@ -1683,7 +1706,12 @@ z
      <use xlink:href="#m3c52065c17" x="358.199117" y="90.059428" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_14">
+   <g id="PathCollection_15">
+    <g clip-path="url(#p0f31717e25)">
+     <use xlink:href="#m3c52065c17" x="374.416468" y="90.059428" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+    </g>
+   </g>
+   <g id="PathCollection_16">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -1701,7 +1729,7 @@ z
      <use xlink:href="#mc028a00990" x="435.462672" y="70.237226" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_15">
+   <g id="PathCollection_17">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -1719,12 +1747,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="63.058694" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_16">
+   <g id="PathCollection_18">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="52.246584" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_17">
+   <g id="PathCollection_19">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -1742,7 +1770,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="39.632456" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_18">
+   <g id="PathCollection_20">
     <path d="M 234.22131 273.679075 
 C 235.284413 273.679075 236.304118 273.2567 237.055845 272.504972 
 C 237.807573 271.753245 238.229948 270.733541 238.229948 269.670437 
@@ -1756,7 +1784,7 @@ L 234.22131 273.679075
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_19">
+   <g id="PathCollection_21">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -1774,7 +1802,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="43.236493" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_20">
+   <g id="PathCollection_22">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -1792,7 +1820,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="41.434474" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_21">
+   <g id="PathCollection_23">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -1810,17 +1838,17 @@ z
      <use xlink:href="#m8fde69458a" x="192.097471" y="41.434474" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_22">
+   <g id="PathCollection_24">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="50.444566" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_23">
+   <g id="PathCollection_25">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="154.902548" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_24">
+   <g id="PathCollection_26">
     <path d="M 189.317516 54.266538 
 C 190.60532 54.266538 191.840553 53.754888 192.751168 52.844273 
 C 193.661783 51.933658 194.173433 50.698425 194.173433 49.410621 
@@ -1834,7 +1862,7 @@ L 189.317516 54.266538
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_25">
+   <g id="PathCollection_27">
     <path d="M 332.269501 78.792205 
 C 333.104605 78.792205 333.905618 78.460415 334.496126 77.869907 
 C 335.086634 77.279399 335.418424 76.478386 335.418424 75.643282 
@@ -1848,7 +1876,7 @@ L 332.269501 78.792205
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_26">
+   <g id="PathCollection_28">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -1866,7 +1894,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="64.831171" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_27">
+   <g id="PathCollection_29">
     <defs>
      <path id="m0b407346a4" d="M 0 5.669875 
 C 1.503668 5.669875 2.945953 5.072461 4.009207 4.009207 
@@ -1884,7 +1912,7 @@ z
      <use xlink:href="#m0b407346a4" x="320.350354" y="72.039245" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_28">
+   <g id="PathCollection_30">
     <path d="M 297.508633 51.932323 
 C 298.600456 51.932323 299.647707 51.498537 300.419743 50.726502 
 C 301.191778 49.954466 301.625564 48.907215 301.625564 47.815392 
@@ -3969,7 +3997,7 @@ z
    </g>
   </g>
   <g id="text_32">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 28 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 30 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>
@@ -4448,6 +4476,11 @@ z
     </g>
    </g>
    <g id="PathCollection_14">
+    <g clip-path="url(#p0f31717e25)">
+     <use xlink:href="#m3c52065c17" x="374.416468" y="169.237349" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+    </g>
+   </g>
+   <g id="PathCollection_15">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -4465,7 +4498,7 @@ z
      <use xlink:href="#mc028a00990" x="435.462672" y="118.974437" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_15">
+   <g id="PathCollection_16">
     <defs>
      <path id="mf66fbd696a" d="M 0 4.941634 
 C 1.310537 4.941634 2.567574 4.420953 3.494263 3.494263 
@@ -4483,7 +4516,7 @@ z
      <use xlink:href="#mf66fbd696a" x="289.591646" y="84.198437" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_16">
+   <g id="PathCollection_17">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -4501,12 +4534,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="115.125893" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_17">
+   <g id="PathCollection_18">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="64.909349" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_18">
+   <g id="PathCollection_19">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -4524,7 +4557,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="80.349893" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_19">
+   <g id="PathCollection_20">
     <path d="M 234.22131 251.468803 
 C 235.284413 251.468803 236.304118 251.046428 237.055845 250.2947 
 C 237.807573 249.542973 238.229948 248.523269 238.229948 247.460165 
@@ -4538,7 +4571,7 @@ L 234.22131 251.468803
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_20">
+   <g id="PathCollection_21">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -4556,7 +4589,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="269.670437" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_21">
+   <g id="PathCollection_22">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -4574,7 +4607,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="84.198437" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_22">
+   <g id="PathCollection_23">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -4592,17 +4625,17 @@ z
      <use xlink:href="#m8fde69458a" x="192.097471" y="72.606437" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_23">
+   <g id="PathCollection_24">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="80.349893" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_24">
+   <g id="PathCollection_25">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="146.053349" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_25">
+   <g id="PathCollection_26">
     <path d="M 189.317516 193.382354 
 C 190.60532 193.382354 191.840553 192.870704 192.751168 191.960089 
 C 193.661783 191.049474 194.173433 189.814242 194.173433 188.526437 
@@ -4616,7 +4649,7 @@ L 189.317516 193.382354
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_26">
+   <g id="PathCollection_27">
     <path d="M 332.269501 234.194817 
 C 333.104605 234.194817 333.905618 233.863027 334.496126 233.272519 
 C 335.086634 232.682011 335.418424 231.880998 335.418424 231.045893 
@@ -4630,7 +4663,7 @@ L 332.269501 234.194817
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_27">
+   <g id="PathCollection_28">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -4648,7 +4681,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="142.158437" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_28">
+   <g id="PathCollection_29">
     <path d="M 297.508633 162.921481 
 C 298.600456 162.921481 299.647707 162.487695 300.419743 161.71566 
 C 301.191778 160.943624 301.625564 159.896372 301.625564 158.804549 
@@ -6733,7 +6766,7 @@ z
    </g>
   </g>
   <g id="text_28">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 28 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 29 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>
@@ -7300,6 +7333,8 @@ z
      <use xlink:href="#m59aad4ac2e" x="253.719497" y="37.59074" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
      <use xlink:href="#m59aad4ac2e" x="253.719497" y="37.59074" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
      <use xlink:href="#m59aad4ac2e" x="253.719497" y="48.260854" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
+     <use xlink:href="#m59aad4ac2e" x="334.480357" y="173.203646" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
+     <use xlink:href="#m59aad4ac2e" x="415.241216" y="80.246209" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
     </g>
    </g>
    <g id="patch_3">
@@ -14607,7 +14642,7 @@ L 295.814381 238.629455
 " clip-path="url(#p1e580e2761)" style="fill: none; stroke: #0072b2; stroke-opacity: 0.85; stroke-width: 2.4; stroke-linecap: round"/>
    </g>
    <g id="line2d_23">
-    <path d="M 247.549577 216.943091 
+    <path d="M 171.691962 216.943091 
 L 294.43474 216.943091 
 " clip-path="url(#p1e580e2761)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.85; stroke-width: 2.4; stroke-linecap: round"/>
    </g>
@@ -14703,12 +14738,12 @@ z
 " style="stroke: #7a828e"/>
     </defs>
     <g clip-path="url(#p1e580e2761)">
-     <use xlink:href="#m76b86153b7" x="247.549577" y="216.943091" style="fill: #7a828e; stroke: #7a828e"/>
+     <use xlink:href="#m76b86153b7" x="171.691962" y="216.943091" style="fill: #7a828e; stroke: #7a828e"/>
      <use xlink:href="#m76b86153b7" x="294.43474" y="216.943091" style="fill: #7a828e; stroke: #7a828e"/>
     </g>
    </g>
    <g id="text_17">
-    <text style="font-size: 6.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="296.244105" y="218.605591" transform="rotate(-0 296.244105 218.605591)">Δ 0.207</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="296.244105" y="218.605591" transform="rotate(-0 296.244105 218.605591)">Δ 0.543</text>
    </g>
    <g id="PathCollection_3">
     <defs>
@@ -23813,6 +23848,12 @@ curl -s localhost:8099/props | jq -r .build_info          # -&gt; b3-1a33095
 <table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>prefill (pp)</strong></td><td>tokens/second while reading the prompt; governed by compute</td></tr><tr><td><strong>decode (tg)</strong></td><td>tokens/second while generating; governed by memory bandwidth</td></tr><tr><td><strong>ttft</strong></td><td>time to first token — for long prompts this is almost entirely prefill</td></tr><tr><td><strong>GTT</strong></td><td>Graphics Translation Table: the GPU-addressable window into system RAM</td></tr><tr><td><strong>MoE</strong></td><td>Mixture of Experts: many parameters, only a few active per token — fast but large</td></tr><tr><td><strong>active parameters</strong></td><td>the subset read per token; the number that sets decode speed</td></tr><tr><td><strong>quantisation</strong></td><td>storing weights in fewer bits (Q4 = ~4 bits); trades fidelity for speed and size</td></tr><tr><td><strong>bpw</strong></td><td>bits per weight — the actual density of a quantisation</td></tr><tr><td><strong>KV cache</strong></td><td>per-conversation attention memory; grows linearly with context length</td></tr><tr><td><strong>cap</strong></td><td>maximum tokens a model may generate per test item</td></tr><tr><td><strong>cap-burn</strong></td><td>an item that produced nothing because it exhausted the cap</td></tr><tr><td><strong>preflight</strong></td><td>the three-probe gate: non-empty, valid JSON, one-word answer</td></tr><tr><td><strong>needle</strong></td><td>a planted fact that must be retrieved from the middle of a long context</td></tr><tr><td><strong>IFEval</strong></td><td>instruction-following benchmark with verifiable constraints</td></tr><tr><td><strong>HumanEval</strong></td><td>code benchmark scored by executing unit tests against generated functions</td></tr><tr><td><strong>MMLU-Pro</strong></td><td>four-option knowledge benchmark</td></tr><tr><td><strong>PPL / temp / top-p</strong></td><td>sampling controls; all measurements here use temp 0 for determinism</td></tr></tbody></table>
 <hr>
 <h2 id="s21">Change log</h2>
+<h3>Version 1.11 (2026-11-01)</h3>
+<p><strong>Two new files triaged at the same cap, one accepted and one rejected.</strong></p>
+<table><thead><tr><th>model</th><th>HumanEval</th><th>MMLU-Pro</th><th>riddles</th><th>perf</th><th>verdict</th></tr></thead><tbody><tr><td>Kimi-Linear-48B-A3B-abl i1-Q4_K_M, 27.66 GiB</td><td><strong>0.7866</strong> (129/164) @8192</td><td><strong>0.5833</strong> (70/120) @8192</td><td>13/14</td><td>pp 1774 / tg 74.8</td><td><strong>kept</strong> — 1M native ctx</td></tr><tr><td>Apex-35B-V1.0 Q4_K_M, 21.23 GiB</td><td><strong>0.4146</strong> (68/164) @4096</td><td>0.5800 (58/100) @4096, thinking off</td><td>9/14 at both 4096 and 8192</td><td>pp 1992 / tg 61.5</td><td><strong>rejected and deleted</strong></td></tr></tbody></table>
+<p>Kimi's row matches the safety-tuned <code>kimi</code> retired on 2026-10-29 item for item on code (0.7866), at a 10% higher decode rate, and it is the only million-token model on the roster. Its KV cache must be f16 on both sides (<code>n_embd_head_v = 72</code> does not divide a q8_0 block of 32, and mixed types are refused), which caps the measured window at 65536 beside the driver.</p>
+<p>Apex is the more instructive failure. At 4096 five of fourteen riddle items returned <code>completion_n</code> equal to the cap with <strong>empty content</strong>; at 8192, three did. It spends the whole budget thinking and never emits an answer, so this is not a cap artefact and no larger budget fixes it. 2203 s for 164 HumanEval items — 13.4 s/item at 61 t/s — is the same signature. Recorded in the rejected-candidates reference and deleted with its sha256, so nobody re-downloads 21 GiB to rediscover it.</p>
+<p><strong>Roster 16 → 17 servable; 630 GiB.</strong> Tables 4, 4b, 5, the four league tables and the §9.1 family paragraph are updated. The throughput league is now actually sorted by decode, which it had not been.</p>
 <h3>Version 1.10 (2026-11-01)</h3>
 <p><strong>The last two cap-512 floors were re-measured at cap 4096, and they behave differently on each axis.</strong> Both models were served from a transient unit on :8086 beside the driver, so no resident model moved and GTT stayed at 53 of 100 GiB.</p>
 <table><thead><tr><th>run</th><th>model</th><th>HumanEval @4096</th><th>was @512</th><th>MMLU-Pro @4096</th><th>was @512</th><th>riddles</th><th>perf</th></tr></thead><tbody><tr><td><code>20261101-034435</code></td><td>qwen38-35b</td><td><strong>0.8720</strong> (143/164)</td><td>0.8537 (140/164)</td><td><strong>0.6417</strong> (77/120)</td><td>0.5083 (61/120)</td><td>14/14 (was 13/14)</td><td>pp 1550 / tg 74.8</td></tr><tr><td><code>20261101-040537</code></td><td>Ornith-1.5-35B Q4_K_M</td><td><strong>0.8354</strong> (137/164)</td><td>0.8232 (135/164)</td><td><strong>0.4417</strong> (53/120)</td><td>0.4167 (50/120)</td><td>13/14</td><td>pp 1633 / tg 74.1</td></tr></tbody></table>
@@ -23947,7 +23988,7 @@ curl -s localhost:8099/props | jq -r .build_info          # -&gt; b3-1a33095
 <p>Three grader defects and one fixture error, all on answers the model got right. Fixing them — answer-marker parsing, LaTeX-to-fraction normalisation, balanced-brace <code>\boxed{}</code> extraction, and the documented <code>math_08</code> correction — gives the 30/30 above, and the run is auditable: <code>~/runs/lucebox30-driver-final.jsonl</code> records, per item, the numbers found in the answer sentence and the raw final text.</p>
 <p>The lesson generalises, and it cuts at this report too: <strong>a score is only as good as the grader, and the grader is usually not published.</strong> Their suite publishes its fixtures and hashes, which is why the four errors could be diagnosed rather than argued about. Any quality number quoted without its harness and its normalisation rules carries an unknown error bar — on 30 items, 4 items is 13 pp.</p>
 <hr>
-<p><em>Version 1.10 · measurements 2026-10-07 → 2026-11-01; build register (§4.1) and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4 capability row 2026-10-31 (§21). Numbers are reproducible from <code>~/runs/catalogue.json</code>; per-model recipes for anything deleted live in <code>~/llama-local/RETIRED-models.md</code>.</em></p>
+<p><em>Version 1.11 · measurements 2026-10-07 → 2026-11-01; build register (§4.1) and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4 capability row 2026-10-31 (§21). Numbers are reproducible from <code>~/runs/catalogue.json</code>; per-model recipes for anything deleted live in <code>~/llama-local/RETIRED-models.md</code>.</em></p>
 <hr>
 <p><em>Source, data and build scripts: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Every row above is backed by a run id in <a href="data/catalogue.json"><code>data/catalogue.json</code></a>; corrections are welcome as issues there.</em></p>
 </main></body></html>

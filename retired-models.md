@@ -868,6 +868,46 @@ riddle sweep is the number worth checking, because that is rarer on this box tha
 and from the sha256 values taken immediately before each deletion. Where a hash or date was never
 captured, the entry says so rather than filling the gap.*
 
+## Apexintelligence-AI Apex-35B-V1.0 Q4_K_M (bartowski) — retired 2026-11-01
+
+**Rejected on evidence, not on size.** Fetched 2026-11-01 11:47 → 12:06 (21.23 GiB at 40 MB/s), tested
+the same afternoon, deleted the same afternoon.
+
+### Why
+
+The finetune does not terminate its reasoning on this build. Riddle items return `completion_n` equal to
+the cap with an **empty `content`** — the model thinks until the budget is gone and never answers:
+
+| cap | riddles | items that burned the whole cap with no answer |
+|---|---|---|
+| 4096 | 9/14 | 5 of 14 (n=4096, content empty) |
+| 8192 | 9/14 | 3 of 14 (n=8192, content empty) |
+
+HumanEval tells the same story at 0.4146 (68/164) with a 2203 s wall — 13.4 s/item at 61 t/s, i.e. ~800
+tokens of thinking per item and zero credit when it runs out. MMLU-Pro with thinking forced off reached
+0.5800 (58/100). At the same 35B-A3B shape this roster carries qwen38-35b at 0.8720/0.6417 and
+Ornith-1.5-35B at 0.8354/0.4417, so the model is outside the band even before the non-termination.
+
+### Measured rows
+
+| run | axes | result |
+|---|---|---|
+| `20261101-124818-apex35b-cap4096` | HE 164, riddles, perf, preflight, needles | HE 0.4146 (68/164) 2203 s; riddles 9/14; pp 1991.7 / tg 61.5 / ttft 902 ms; preflight 3/3; needles 2k+8k PASS |
+| `20261101-133139-apex35b-cap8192-probe` | core at cap 8192 | riddles 9/14; pp 2005.5 / tg 60.1 / ttft 896 ms; preflight 3/3; needles PASS |
+
+### Removed
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `models/Apexintelligence-AI_Apex-35B-V1.0-Q4_K_M.gguf` | 22,795,471,072 | `c1bf4a6008bda54c6da3be1e5b6137a9b31cbe7d5a5432950215b0d13da2296b` |
+| `run-apex-35b.sh`, `run-apex-35b-bench.sh`, `apex-bench.log` | small | — |
+
+### Restore
+
+`hf` / `bartowski/Apexintelligence-AI_Apex-35B-V1.0-GGUF` → `Apexintelligence-AI_Apex-35B-V1.0-Q4_K_M.gguf`,
+expect 22,795,471,072 bytes and the sha256 above. Re-download only to study the template — the harness
+(`t20`) and a `--jinja` server were not the problem, and a reasoning-effort cap did not fix it either.
+
 ---
 
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*
