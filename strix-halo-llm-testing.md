@@ -44,6 +44,7 @@ exactly how far that can be pushed.
   20   Appendix                         commands, port map, file map, glossary
   21   Change log                       what each edition changed, and why
   22   Credits and tooling              who measured, what wrote the text
+  23   Prior art                        the four other sources, and which question each answers
 
    Figures 1-24 · Tables 1-13
 ```
@@ -2370,6 +2371,23 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ## 21. Change log
 
+### Version 1.7 (2026-10-31)
+
+**Prior art, and the context curve that was missing.** Reading two other public datasets — `lhl`'s
+llama-bench sweeps and `pepuscz`'s Flash-class results — made two gaps obvious and both are now closed
+or named:
+
+- **§23 prior art.** Four sources tabulated with what each answers and what it does not, plus §23.1 on
+  the single model measured by both (Qwen3.8-Flash-Next: their 465/42.8 t/s at Q4_XL on Ubuntu vs this
+  report's 448/52.9 at IQ3_S on CachyOS — different quant, consistent result). Their 30-item quality
+  suite cannot rank models because one item is 3.3 pp; that is the gap 164 HumanEval items fills.
+- **§23.2 context curve.** The open item about no 32k needle is closed for the deployed driver: five
+  depths from 1.8k to 112.9k prompt tokens, retrieval PASS at every one, prefill 1715 → 670 t/s and
+  decode 57.2 → 37.7 t/s. The practical rule is to compact before 64k, not at the window edge.
+- **New tooling.** `~/bench/ctxcurve.py` produces the curve against a live server (no reload, no unit
+  change), and `~/bench/lucebox30.py` runs the published 30-item suite from `Luce-Org/lucebox` so the
+  two datasets can be cross-checked on the same model.
+
 ### Version 1.6 (2026-10-31)
 
 **Every row now says when it was measured.** Tables 4 and 4b gained a `measured` column — the date of
@@ -2490,8 +2508,8 @@ so it could no longer be rebuilt; it now plots the 2026-10-28 full suite on the 
 
 **Known open items.** `qwen38fn-abl`'s
 MMLU-Pro cell is a poisoned 1/120 rather than a score; `qwen38-35b` and `Ornith-1.5-35B` were both
-measured only at cap 512, so their code rows are floors, not ceilings; and no model on disk has been
-measured at a 32k needle since the kernel moved to 7.3.0-5.
+measured only at cap 512, so their code rows are floors, not ceilings; and the driver's context curve (§23.2) now covers 32k, 64k and 113k prompts — but no *other* model
+on disk has been measured beyond an 8k needle since the kernel moved to 7.3.0-5.
 
 ---
 
@@ -2513,7 +2531,71 @@ report. Corrections are welcome as issues on the repository.
 
 ---
 
-*Version 1.6 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
+## 23. Prior art — what exists already, and which question each source answers
+
+This is not the first measurement set for this hardware, and pretending otherwise would be the
+fastest way to be dismissed. Four public sources cover overlapping ground; none of them covers the
+capability axis at a usable sample size, which is the gap this report exists to fill.
+
+| Source | Hardware / stack | Answers | Does not |
+|---|---|---|---|
+| [`lhl/strix-halo-testing`](https://github.com/lhl/strix-halo-testing/tree/main/llm-bench) | pre-production Framework Desktop, Arch, ROCm 7.0 nightlies, llama.cpp b5863 (Aug 2025) | `llama-bench` p/n sweeps 128→8192 across flash-attn on/off and Vulkan vs ROCm, plus the tuning that actually moves this box: `amd_iommu=off`, a GTT `modprobe` fragment, `tuned accelerator-performance`, ~215 GB/s of the 256 GB/s theoretical | any capability axis; models from 2025 that are no longer on this roster |
+| [`kyuz0` toolboxes](https://kyuz0.github.io/amd-strix-halo-toolboxes/) | containerised backends | pp512/tg128 per backend, kept currentish, so it answers "which runtime" rather than "which model" | capability, caps, per-quant attribution |
+| [`pepuscz/strix-halo-llm`](https://github.com/pepuscz/strix-halo-llm) | BOSGAME M5, Ubuntu 26.04, kernels 7.0.0-29/31, ROCm and Vulkan arms | context scaling from 2K to **491K** with cold five-needle retrieval and a `prompt_sha256` per point; a 30-item quality suite (10 coding / 10 GSM8K / 10 math, thinking off, caps 512/1024/2048, published fixture hashes) over four Flash-class models | sample size (30 items ⇒ 3.3 pp per item); quant lines that are deployable at 128 GB; anything under 24B |
+| [`llamaperf.com`](https://llamaperf.com/gpu/strix-halo-128gb) | community, mixed setups | 323 reported throughput figures for "Strix Halo 128GB", sortable by context and quant, plus a fit calculator | normalisation — context, quant and offloading differ per report, so two rows are rarely comparable |
+| **this report** | CachyOS, kernel 7.3.0-5, Mesa/RADV, llama.cpp fork `1a33095` | capability at n=164 and n=120 **with the cap stated**, per-file quant attribution, build identity per run, and a ledger of every model retired and why | long-context behaviour (until §23.1), prompt-level hashes, and anything that does not fit in 100 GiB beside a resident driver |
+
+### 23.1 Where the datasets overlap, and where they disagree
+
+Exactly one model is measured on this GPU by both this report and `pepuscz/strix-halo-llm`:
+Qwen3.8-Flash-Next. Theirs, at Q4_XL on Ubuntu's Vulkan stack: **465 t/s prefill, 42.8 t/s decode**
+at a 1.9k prompt. Ours, `qwen38fn-abl` at IQ3_S on CachyOS/RADV: **448 t/s prefill, 52.9 t/s decode**.
+Different quant (smaller here, hence faster decode), different kernel and driver — the two are
+consistent rather than contradictory, which is the useful outcome: two independent stacks landing
+within 10 % of each other on prefill is evidence the harness is measuring the machine and not itself.
+
+Their quality suite and this one are not comparable either, and the arithmetic says why: 30 items
+means one task is 3.3 pp, so "30/30" versus "29/30" is a single question. That is not a criticism of
+their suite — it is the right size for "did this deployment break the model" — but it cannot rank
+models, which is what 164 HumanEval items with executed tests and 120 MMLU-Pro items can do.
+
+What this report borrowed after reading theirs: the prefill/decode split recorded per point rather
+than per run (§23.2), and the practice of hashing the prompt. What it did not borrow: their hardware
+assumptions, which are Ubuntu's ROCm/Vulkan stack on a different kernel — every throughput figure
+here would need re-measuring to be quoted against theirs.
+
+### 23.2 Context scaling of the deployed driver
+
+The open-items list has said since the kernel moved to 7.3.0-5 that no 32k needle had been run. It
+has now, on the model that actually answers this machine's traffic, with no model load and no unit
+change — `checks.needle` at five depths, recording the prompt length the server reported and its own
+prefill/decode rates. Run `20261031-ctxcurve-driver`, rows in `~/runs/ctxcurve-driver-20261031.jsonl`.
+
+| prompt tokens (server-reported) | needle retrieved | prefill t/s | decode t/s |
+|---|---|---|---|
+| 1,809 | PASS | 1715 | 57.2 |
+| 7,098 | PASS | 1671 | 57.7 |
+| 28,251 | PASS | 1342 | 50.2 |
+| 57,810 | PASS | 1006 | 46.4 |
+| 112,862 | PASS | 670 | 37.7 |
+
+Five depths, one run each, no retries needed. Retrieval **held at every depth**, including a 112,862-token
+prompt — the answer came back correct with the needle planted in the middle of the haystack.
+
+What degrades is throughput, and the two curves are not the same shape. Prefill falls **2.6×** from
+1,715 t/s at 1.8k to 670 t/s at 113k, because attention cost grows with context. Decode falls **1.5×**,
+from 57.2 to 37.7 t/s. For chat the decode number is the one that matters: a conversation that reaches
+113k tokens answers about a third slower than one at 2k, and the cliff between 58k and 113k is steeper
+than the one before it. The practical reading is to compact well before 64k rather than at the edge of
+the window — the model is not forgetting anything, it is just getting slow.
+
+Configuration: the deployed driver (`gemma4-26b-uncen`, QAT uncensored Q4_K_M, ctx 131072) on the
+Vulkan/RADV stack, measured against the live unit with no reload. This is the behaviour of the model
+that answers this machine's traffic, not of the best model on the box — §9.1 explains why those differ.
+
+---
+
+*Version 1.7 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
