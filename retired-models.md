@@ -808,3 +808,56 @@ Restore:
     #   --reasoning off -np 1 -b 4096 -ub 2048 --metrics   (mtmd has PIXTRAL but no MISTRAL projector
     #   type, so vision was never probed; add --mmproj only as a separate test)
     # If the IQ4_XS is ever tried: 64.5 GiB, needs the driver stopped, KL 0.0609 vs 0.1279 for this file.
+
+## SandLogic Hy-Memory-30B-A3B Q4_K_M — retired 2026-10-29 (record backfilled)
+
+Deleted in the 2026-10-29 pass (61.6 GiB batch: Kimi-Linear-48B-A3B, Hy-Memory-30B-A3B, Mellum2.1-12B
+Q6_K and its MXFP4 twin). This section was written afterwards: that pass predates the rule that every
+deletion is recorded *before* the files go, so **no sha256 was captured and the byte figure is the
+17.0 GiB from the batch summary, not a measured stat**.
+
+Measured — best run `20261017-110734-hy-memory-placement`:
+
+    HumanEval   0.7805 (128/164 @ 2048)
+    MMLU-Pro    0.7250 ( 87/120 @ 2048)
+    riddles     12/14
+    perf        pp 1514.6 t/s   tg 74.7 t/s
+
+Why it went: 0.78 code is ordinary, and its one strength — 74.7 t/s — does not distinguish it.
+`gptoss-abliterated` scores 0.9268 on code at 50 t/s for 59 GiB, and the 15.6 GiB gemma driver beats
+it on both axes at 57 t/s. Nothing it did justified 17 GiB of resident space on a box that has to
+choose.
+
+Restore: upstream is `SandLogicTechnologies/Hy-Memory-30B-A3B`, Q4_K_M. There is no hash to verify
+against, so verify by measuring: HumanEval should land near 0.78 at cap 2048 and decode near 74–75 t/s
+on Vulkan. A materially different number means a different quant from the one that was tested.
+
+## SandLogic Hy-Memory-30B-A3B Q8_0 — retired (record backfilled)
+
+The Q8 arm of the same model, measured as the quant-ladder datapoint against the Q4_K_M above
+(`20261017-124731-hy-memory-q8`):
+
+    HumanEval   0.7683 (126/164 @ 2048)   ← −1.2 pp against Q4
+    MMLU-Pro    0.7500 ( 90/120 @ 2048)   ← +2.5 pp against Q4
+    riddles     11/14
+    perf        pp 1459.2 t/s   tg 52.3 t/s   ← 30 % slower than Q4 for the extra bits
+
+Deletion date, size and hashes were never recorded — the file left disk before the ledger rule
+existed, so treat all three as unknown rather than reconstruct them. What survives is the run and the
+delta, which is the useful part: doubling weight precision bought 2.5 pp of knowledge and cost 30 % of
+decode speed, at identical caps. Expect roughly 32 GiB if it is ever restored from the same publisher.
+
+## graft-50b-a3b (50.7B Q4_K_M) — retired (deletion record incomplete)
+
+Measured 2026-10-19, run `20261019-122149-graft-50b-a3b`:
+
+    HumanEval   0.7805 (128/164 @ 2048)
+    MMLU-Pro    0.6583 ( 79/120 @ 2048)
+    riddles     14/14     ← one of only seven 14/14 sweeps on this box
+    perf        pp 1367.7 t/s   tg 54.3 t/s
+
+This is the least complete entry in the ledger, and it says so deliberately: **no deletion date, no
+byte count, no sha256 and no upstream repository were recorded before the file left disk.** The run
+and the scores above are the only surviving evidence. It cannot be restored byte-for-byte — re-obtaining
+it means identifying the publisher from the model name and re-measuring. If anyone does, the 14/14
+riddle sweep is the number worth checking, because that is rarer on this box than a 0.78 HumanEval.
