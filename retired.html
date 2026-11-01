@@ -44,7 +44,7 @@ a { color:var(--acc); }
 <h1>Retired local models — restore recipes</h1>
 <nav><strong>Contents</strong><ol></ol></nav>
 
-<p>&gt; Part of [Local LLM benchmarks on AMD Strix Halo](index.html). Every deletion here is reversible: each entry carries file sizes, sha256s, the upstream repo and the flags that worked.</p>
+<p>&gt; Part of <a href="index.html">Local LLM benchmarks on AMD Strix Halo</a>. Every deletion here is reversible: each entry carries file sizes, sha256s, the upstream repo and the flags that worked.</p>
 <p>Kept so a deletion is reversible without re-researching URLs, hashes and flags.</p>
 <h2>Instella-MoE-16B-A3B-Think (retired 2026-10-12)</h2>
 <p>Removed at the user's request: the weights, its unit, run script, switch entry, log files, and the bespoke <code>instella-moe</code> llama.cpp fork tree it needed.</p>
@@ -494,4 +494,6 @@ a { color:var(--acc); }
 <p>Measured 2026-10-19, run <code>20261019-122149-graft-50b-a3b</code>:</p>
 <p>HumanEval   0.7805 (128/164 @ 2048) MMLU-Pro    0.6583 ( 79/120 @ 2048) riddles     14/14     ← one of only seven 14/14 sweeps on this box perf        pp 1367.7 t/s   tg 54.3 t/s</p>
 <p>This is the least complete entry in the ledger, and it says so deliberately: <strong>no deletion date, no byte count, no sha256 and no upstream repository were recorded before the file left disk.</strong> The run and the scores above are the only surviving evidence. It cannot be restored byte-for-byte — re-obtaining it means identifying the publisher from the model name and re-measuring. If anyone does, the 14/14 riddle sweep is the number worth checking, because that is rarer on this box than a 0.78 HumanEval.</p>
+<hr>
+<p><em>Source: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.</em></p>
 </main></body></html>

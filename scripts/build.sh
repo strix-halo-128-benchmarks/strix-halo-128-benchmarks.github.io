@@ -42,6 +42,13 @@ banner = ("\n> **Also published:** [Retired models — what was deleted, why, wi
 if "retired-models.html" not in txt:
     i = txt.find("\n", txt.find("# "))
     txt = txt[:i] + banner + txt[i:]
+footer = ("\n---\n\n*Source, data and build scripts: "
+          "[github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io]"
+          "(https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). "
+          "Every row above is backed by a run id in "
+          "[`data/catalogue.json`](data/catalogue.json); corrections are welcome as issues there.*\n")
+if "Source, data and build scripts" not in txt:
+    txt = txt.rstrip("\n") + "\n" + footer
 open(dst, "w", encoding="utf-8").write(txt)
 print(f"   {len(txt)} bytes")
 PY
@@ -58,6 +65,12 @@ nav = ("\n> Part of [Local LLM benchmarks on AMD Strix Halo](index.html). Every 
 if "index.html" not in txt:
     i = txt.find("\n", txt.find("# "))
     txt = txt[:i] + nav + txt[i:]
+footer = ("\n---\n\n*Source: [github.com/strix-halo-128-benchmarks/"
+          "strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/"
+          "strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the "
+          "sha256 before deleting; earlier ones say when a hash was never captured.*\n")
+if "Source: [github.com/strix-halo-128-benchmarks" not in txt:
+    txt = txt.rstrip("\n") + "\n" + footer
 open(dst, "w", encoding="utf-8").write(txt)
 print(f"   {len(txt)} bytes")
 PY

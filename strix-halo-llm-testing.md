@@ -2484,3 +2484,7 @@ and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
 `~/llama-local/RETIRED-models.md`.*
+
+---
+
+*Source, data and build scripts: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Every row above is backed by a run id in [`data/catalogue.json`](data/catalogue.json); corrections are welcome as issues there.*

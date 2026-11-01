@@ -861,3 +861,7 @@ byte count, no sha256 and no upstream repository were recorded before the file l
 and the scores above are the only surviving evidence. It cannot be restored byte-for-byte — re-obtaining
 it means identifying the publisher from the model name and re-measuring. If anyone does, the 14/14
 riddle sweep is the number worth checking, because that is rarer on this box than a 0.78 HumanEval.
+
+---
+
+*Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*
