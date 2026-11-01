@@ -122,7 +122,7 @@ grep -q '{{svg' "$REPO/index.html" && { echo "FAIL: unresolved figure placeholde
 test "$(grep -c '<svg' "$REPO/index.html")" -ge 10 || { echo "FAIL: expected 10 inline figures"; exit 1; }
 grep -q 'retired-models.html' "$REPO/index.html" || { echo "FAIL: report does not link the ledger"; exit 1; }
 grep -q 'index.html'          "$REPO/retired.html" || { echo "FAIL: ledger does not link the report"; exit 1; }
-for f in "$REPO"/*.md "$REPO"/*.html; do leakcheck "$f"; done
+for f in "$REPO"/*.md "$REPO"/*.html "$REPO"/tools/*.py "$REPO"/tools/*.md; do leakcheck "$f"; done
 echo "   ok: report $(stat -c%s "$REPO/index.html") B / $(grep -c '<svg' "$REPO/index.html") figures," \
      "ledger $(stat -c%s "$REPO/retired.html") B, cross-linked"
 echo "== done — review 'git diff', then commit"
