@@ -2563,6 +2563,23 @@ Every shard's hash, not just the first: [`data/provenance.json`](data/provenance
 
 ## 21. Change log
 
+### Version 1.16 (2026-11-01)
+
+**The week's most interesting shape does not load, and the reason is in the file.** Qwen3.8-Flash-Next-32B-A6B
+"Prune2" (48.31 GiB, `qwen4exp`, 32B total / 6B active) was fetched to test the one gap in this roster — an
+active-parameter count between the driver's 4B and the 120B class's 12B. It fails in both trees:
+
+    check_tensor_dims: 'blk.0.ffn_down_exps.weight' expected 640, 2560, 177, got 640, 2560, 64, 1
+
+The header claims 177 experts, the expert tensors hold 64, and the router still has 177 rows — so no single
+`expert_count` satisfies the file. Patching the header to 64 moves the error one tensor along to
+`ffn_gate_inp`, which is the proof that the export is internally inconsistent rather than mistagged. Recorded
+in the not-runnable reference, deleted with its hash, and noted in the ledger so nobody re-downloads 48 GiB to
+rediscover it. A re-export with matching counts would be worth testing on shape alone.
+
+That makes three arrivals measured or rejected today (Dark-Craving, Holo4, this one) and none added: the roster
+is 17, at 630 GiB.
+
 ### Version 1.15 (2026-11-01)
 
 **Two of the week's most-downloaded releases measured, both dominated; and a rebuild tested and refused.**
@@ -2974,7 +2991,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.15 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
+*Version 1.16 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in

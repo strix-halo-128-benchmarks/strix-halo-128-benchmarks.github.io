@@ -960,6 +960,28 @@ collapse only shows on the knowledge axis.
 
 Restore: `prithivMLmods/Holo4-35B-A3B-MXFP4-MoE-GGUF`, file above, byte count and hash as recorded.
 
+## Qwen3.8-Flash-Next-32B-A6B-Prune2-QMix (WeeAIResearch) — retired 2026-11-01, never ran
+
+Fetched the same evening it was spotted, then deleted without a measurement, because it cannot load. The
+"Prune2" export kept the pre-prune metadata: `qwen4exp.expert_count` says **177**, the expert tensors hold
+**64**, and the router (`ffn_gate_inp`) still has 177 rows. No single expert_count satisfies both checks, so
+neither tree will load it and a header patch only moves the error one tensor along:
+
+    check_tensor_dims: tensor 'blk.0.ffn_down_exps.weight' expected 640, 2560, 177, got 640, 2560, 64, 1
+    (after patching expert_count to 64)
+    check_tensor_dims: tensor 'blk.0.ffn_gate_inp.weight'  expected 2560, 64, got 2560, 177, 1, 1
+
+The file was restored to its upstream bytes after the patch experiment (sha256 verified back to the LFS oid)
+before deletion, so the record below is the pristine artefact.
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `models/Qwen3.8-Flash-Next-32B-A6B-Prune2-Mixed.gguf` | 51,869,664,064 | `faea180d49c5494b18443a9db0f4f4be68b72b22b4f9e5bbda7f470f831ea0c0` |
+
+Restore: `WeeAIResearch/Qwen3.8-Flash-Next-32B-A6B-Coder-Mixed`, file `..Prune2-Mixed.gguf`, byte count and
+hash as above. **Only worth re-fetching if a re-export appears with matching router and expert counts** —
+the shape itself (32B total / 6B active in 48 GiB, `qwen4exp`) is the one gap this roster has never covered.
+
 ---
 
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*
