@@ -15,6 +15,21 @@ export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
 export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 
 cd "$REPO"
+
+# Never publish mid-measurement: a run in flight has written its identity and perf rows but not its
+# capability rows, so building now would commit a row that looks unmeasured. A bench unit is the
+# reliable signal (the harness always runs under bench-*), and a fresh run file is the backstop for a
+# manual run outside systemd.
+if systemctl --user list-units --state=active --no-legend 'bench-*' | grep -q bench; then
+    echo "skip: a bench unit is active — $(systemctl --user list-units --state=active --no-legend 'bench-*' | awk '{print $1}' | paste -sd' ')"
+    exit 0
+fi
+NEWEST=$(find "$HOME/runs" -maxdepth 1 -name '2026*.jsonl' -newermt '-15 minutes' -print -quit 2>/dev/null || true)
+if [ -n "$NEWEST" ]; then
+    echo "skip: run file written in the last 15 minutes ($(basename "$NEWEST")) — measurement may still be finishing"
+    exit 0
+fi
+
 echo "=== $(date -Is) regenerate"
 ./scripts/build.sh
 

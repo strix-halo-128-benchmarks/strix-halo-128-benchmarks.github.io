@@ -4266,23 +4266,27 @@
   "ttft_ms": 1101.825,
   "preflight": "3/3",
   "needle": "PP",
-  "riddles": null,
-  "humaneval": null,
-  "humaneval_n": null,
-  "cap_he": null,
-  "mmlu": null,
-  "mmlu_n": null,
-  "cap_mmlu": null,
-  "mmlu_method": null,
+  "riddles": "13/14",
+  "humaneval": 0.8354,
+  "humaneval_n": 164,
+  "cap_he": 4096,
+  "mmlu": 0.4417,
+  "mmlu_n": 120,
+  "cap_mmlu": 4096,
+  "mmlu_method": "chat 0-shot probe (NOT 5-shot loglikelihood)",
   "ifeval_p": null,
   "ifeval_i": null,
-  "ifeval_n": null,
-  "wall_s": 8.535303354263306,
+  "ifeval_n": 0,
+  "wall_s": 661.0463714599609,
   "axes": [
+   "humaneval",
    "identity",
+   "ifeval",
+   "mmlu_pro",
    "needle",
    "perf",
-   "preflight"
+   "preflight",
+   "riddles"
   ]
  }
 ]

@@ -878,11 +878,11 @@ deleted rows are why the recommendations below have reasons.
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
 | mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✓ |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
-| qwen38-35b | 35.5B | Q4_K_M | 0.8537 (164@512) | 0.5083 (120@512) | 13/14 | 1560 | 68.3 | 2026-10-12 | fork pre-identity | ✓ |
+| qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
-| Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8232 (164@512) | 0.4167 (120@512) | 13/14 | 1629 | 72.5 | 2026-10-12 | fork pre-identity | ✓ |
+| Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 1633 | 74.1 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | kimi | 49.1B | Q4_K_M | 0.7866 (164@2048) | 0.5500 (120@2048) | 13/14 | 1597 | 67.4 | 2026-10-14 | fork pre-identity | ✗ 10-29 |
 | hy-memory-30b-a3b | 30.1B | Q4_K_M | 0.7805 (164@2048) | 0.7250 (120@2048) | 12/14 | 1515 | 74.7 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
 | graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | fork pre-identity | ✗ |
@@ -917,10 +917,10 @@ capability row. Full inventory (15 model units, 602 GiB, projectors and drafters
 | ornith-mtp-21g | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 65.2 | 2026-10-17 | fork pre-identity | :8185 |
 | mellum21-fork | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 111.9 | 2026-10-18 | fork pre-identity | — |
 | qwen3next-q4 | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 58.1 | 2026-10-31 | fork b3-1a33095 | :8082 |
-| qwen38-35b | Q4_K_M | 0.8537 (164@512) | 0.5083 (120@512) | 13/14 | 68.3 | 2026-10-12 | fork pre-identity | :8093 |
+| qwen38-35b | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8093 |
 | lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | fork pre-identity | :8181 |
 | qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | fork pre-identity | :8097 |
-| Ornith-1.5-35B | Q4_K_M | 0.8232 (164@512) | 0.4167 (120@512) | 13/14 | 72.5 | 2026-10-12 | fork pre-identity | :8086 |
+| Ornith-1.5-35B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 74.1 | 2026-11-01 | fork b3-1a33095 | :8086 |
 | ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | fork b3-1a33095 | :8094 boot |
 The last blank cell was filled on 2026-10-31: `Qwen3-Next-80B UD-Q4_K_XL` now has a full row
 (0.9146 code, 0.7417 knowledge, 14/14, 58.1 t/s) and it is the weakest large model on disk — see §9.1
@@ -1022,8 +1022,18 @@ knowledge row 12.5 pp behind the 26B driver at two-thirds the speed. The Q4/Q8 p
 cleanest quant-ladder datapoint in the archive (§10.3).
 
 **qwen38-35b / qwen36-35b / ornith35b / Ornith-1.5-35B — the 35B trough.** All four land between
-0.82 and 0.85 code with mediocre knowledge and 57-72 t/s. They are not bad; they are simply
+0.82 and 0.87 code with mediocre knowledge and 57-75 t/s. They are not bad; they are simply
 dominated by the 26B MoE (faster and better) and the 122B (slower but much better).
+
+Two of the four were re-measured at cap 4096 on 2026-11-01, and the two verdicts differ on **which
+axis** the cap was suppressing. `qwen38-35b` gained 3 HumanEval items (0.8537 → **0.8720**) but
+**16 MMLU items** (0.5083 → **0.6417**, +13.3 pp, ≫ SE at n=120) and its riddles went 13/14 → 14/14:
+for that model the 512 cap was cutting off reasoning before the answer, and the damage showed up in
+knowledge far more than in code. `Ornith-1.5-35B` (Q4_K_M) gained 2 HumanEval items (0.8232 →
+**0.8354**) and 3 knowledge items (0.4167 → **0.4417**, +2.5 pp, inside SE) — a row that was close to
+honest already, and whose remaining weakness is the model, not the budget. So the
+lesson is not "512 understates" or "512 is fine": it is that the cap's damage is **axis-dependent**,
+and a single axis read at 512 cannot tell you which case you are in.
 
 `ornith35b` is the exception, and it was re-measured on 2026-10-31 to prove it: at **cap 4096** it
 scores 0.5671 code (93/164) and 0.6333 knowledge (76/120), against 0.5610 / 0.6000 at cap 512. One
@@ -1132,8 +1142,8 @@ or a direct lineage. `Δ` is max − min within the family.
    family            n   HumanEval             MMLU-Pro              riddles    decode
    ──────────────────────────────────────────────────────────────────────────────────────────
    gemma4            4   0.9390-0.9634 Δ.024   0.8417-0.8667 Δ.025   14-14/14   17-59 t/s
-   ornith / qwen3.5  6   0.5610-0.9512 Δ.390   0.4167-0.7917 Δ.375   11-13/14   23-73 t/s
-   qwen3.6 / 3.8     7   0.8354-0.8537 Δ.018   0.0083-0.5083 Δ.500   11-13/14   53-68 t/s
+   ornith / qwen3.5  6   0.5610-0.9512 Δ.390   0.4417-0.7917 Δ.350   11-13/14   23-74 t/s
+   qwen3.6 / 3.8     7   0.8354-0.8720 Δ.037   0.0083-0.6417 Δ.633   11-14/14   53-75 t/s
    nemotron          3   0.1786-0.9512 Δ.773   0.3667-0.7667 Δ.400    8-13/14   23-73 t/s
    mellum            3   0.8780-0.9146 Δ.037   0.7000-0.8083 Δ.108   10-11/14   92-112 t/s
    gpt-oss           2   0.9268-0.9268 Δ.000   0.5833-0.7500 Δ.167*  10-12/14   50-50 t/s
@@ -1254,7 +1264,7 @@ without the others getting in the way.
   0.9146  cap 8192  mellum21-fork
   0.9146  cap 2048  qwen3next-q4              [loses to an 18.7 GiB file on both axes]
   0.8780  cap 4096  mellum                           ✗ retired 10-29
-  0.8537  cap  512  qwen38-35b                       <- floor estimate
+  0.8720  cap 4096  qwen38-35b                       (re-measured; the 512 row read 0.8537)
   0.8537  cap 4096  lfm25-24b-a2b
 ```
 ### Knowledge — MMLU-Pro
@@ -1276,6 +1286,7 @@ without the others getting in the way.
   0.7250  cap 2048  hy-memory-30b-a3b                ✗ retired 10-29
   0.7000  cap 4096  mellum                            ✗ retired 10-29
   0.6917  cap 4096  lfm25-24b-a2b
+  0.6417  cap 4096  qwen38-35b                       (re-measured; the 512 row read 0.5083)
   0.6058  cap  —    qwen3next-q6
   0.5833  cap  —    gptoss
   0.5500  cap 2048  kimi                              ✗ retired 10-29
@@ -1300,9 +1311,9 @@ without the others getting in the way.
 ### Reasoning — riddles + arithmetic (/14)
 
 ```
-  14/14  gemma4-26b-qat-q4 · gemma4-26b-uncen · qwen3next-q6 · qwen3next-q4 · Ornith-1.5-35B  [on disk]
+  14/14  gemma4-26b-qat-q4 · gemma4-26b-uncen · qwen3next-q6 · qwen3next-q4 · qwen38-35b  [on disk]
   14/14  gemma4-26b-a4b Q8_0 ✗ · gemma4-31b ✗ · graft-50b-a3b ✗
-  13/14  qwen38-35b · kolibri · qwen38fn-upstream        (kimi ✗, Bolt-74B ✗)
+  13/14  kolibri · qwen38fn-upstream · Ornith-1.5-35B      (kimi ✗, Bolt-74B ✗)
   12/14  gptoss · ornith-122b · ornith35b (boot)                     (hy-memory ✗, qwen35 ✗, qwen36 ✗)
   11/14  nemotron-super-120b · ornith-mtp-21g · qwen38fn-abl        (mellum ✗, hy-memory-q8 ✗)
   10/14  lfm25-24b-a2b · minicpm-v47-35b · mellum21-fork · gptoss-abliterated
@@ -1317,9 +1328,9 @@ without the others getting in the way.
     91.8            2442        mellum                          ✗ retired 10-29
     74.7            1515        hy-memory-30b-a3b               ✗ retired 10-29
     72.8             577        Nemotron-Bolt-74B-A9B           ✗ retired 10-30
-    72.5            1629        Ornith-1.5-35B
+    74.1            1633        Ornith-1.5-35B
     69.9            1762        ornith35b (uncensored, boot)
-    68.3            1560        qwen38-35b
+    74.8            1550        qwen38-35b
     67.4            1597        kimi                            ✗ retired 10-29
     65.2            1610        ornith-mtp-21g
     64.6            1600        minicpm-v47-35b
@@ -1927,10 +1938,11 @@ nothing about abliteration either way.
 
 The same trap catches the boot model. `Ornith-1.5-35B-Uncensored-YMQ-M` (15.1 GiB, IQ3_XXS) was
 measured on 2026-10-31 at cap 4096 — **0.5671 code, 0.6333 knowledge, 12/14 riddles** — and at 0.57
-it looks like a 26-point ablation bill against the 0.8232 that the standard `Ornith-1.5-35B` build
-scores. It is not: that standard row is an `Q4_K_M` file measured at **cap 512**, so the comparison
-moves two variables at once (a 3.06 bpw quant against 4.9, and a floor against a real budget) and
-the 0.57 figure is the uncensored file *and* its quantisation together. What the run does establish
+it looks like a 26.8-point ablation bill against the **0.8354** that the standard `Ornith-1.5-35B`
+build scores at the same cap since 2026-11-01. The comparison is now like-for-like on budget, so the
+remaining gap is the quantisation rung (3.06 bpw against 4.9) plus the uncensoring tune, and it cannot
+be attributed to the cap: re-measuring the standard file at four times its original budget moved two
+code items and three knowledge items, not 27 points. What the run does establish
 is that the cap is not the explanation — re-measuring at four times the budget moved one code item —
 so the honest label is "an IQ3-class uncensored fine-tune, not a clean abliteration datapoint".
 
@@ -2436,6 +2448,35 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ## 21. Change log
 
+### Version 1.10 (2026-11-01)
+
+**The last two cap-512 floors were re-measured at cap 4096, and they behave differently on each axis.**
+Both models were served from a transient unit on :8086 beside the driver, so no resident model moved
+and GTT stayed at 53 of 100 GiB.
+
+| run | model | HumanEval @4096 | was @512 | MMLU-Pro @4096 | was @512 | riddles | perf |
+|---|---|---|---:|---|---:|---|---|
+| `20261101-034435` | qwen38-35b | **0.8720** (143/164) | 0.8537 (140/164) | **0.6417** (77/120) | 0.5083 (61/120) | 14/14 (was 13/14) | pp 1550 / tg 74.8 |
+| `20261101-040537` | Ornith-1.5-35B Q4_K_M | **0.8354** (137/164) | 0.8232 (135/164) | **0.4417** (53/120) | 0.4167 (50/120) | 13/14 | pp 1633 / tg 74.1 |
+
+Both scored 3/3 preflight and passed both needles; wall 1237 s and 661 s. The verdicts differ in the
+way that matters: `qwen38-35b` was a **genuine floor** — the 512 cap cost it 16 knowledge items
+(+13.3 pp, far outside SE at n=120) while costing only 3 code items — whereas `Ornith-1.5-35B` was
+**already honest** (+2 code, +3 knowledge items, both inside noise). §9.1 now carries that as a
+principle rather than a footnote: the cap's damage is axis-dependent, so one axis read at 512 cannot
+tell you which case you are in.
+
+**Rows updated:** Tables 4 and 4b (both rows, with `measured` 2026-11-01 and `build` `fork b3-1a33095`),
+the §9.1 "35B trough" paragraph, §16.4's ablation comparison (it excused the boot file's 0.5671 against
+a cap-512 row that no longer exists), Table 5's two family rows, the riddles/throughput/knowledge
+league tables, and the open-items paragraph. §16.4 also gains the reason `qwen38fn-abl` stays poisoned:
+78.1 GiB cannot sit beside a resident model, and the driver is not stopped for a measurement.
+
+**Publication fault, fixed:** the weekly timer fired at 04:05 GMT while these runs were in flight and
+published a row that had only its identity and perf axes written. `scripts/publish.sh` now refuses to
+build while a `bench-*` unit is active or any run file is younger than 15 minutes, logging the skip
+instead.
+
 ### Version 1.9.2 (2026-10-31)
 
 **Storage named, and bounded.** §2.3 records the drives (BIWIN X570 PRO 4 TB for system and models, a
@@ -2527,7 +2568,8 @@ been measured only at **cap 512**, which the table's own rules call a floor. It 
 - **Rows updated:** Table 4, Table 4b, the §9.1 "35B trough" paragraph (which previously excused
   the score as "an aggressive IQ3_XXS load" without having tested that claim), the family-spread
   section, the riddles and throughput league tables.
-- **Still a floor:** `qwen38-35b` and `Ornith-1.5-35B` (the Q4_K_M file) remain cap-512 rows.
+- **No cap-512 floor remains on disk:** `qwen38-35b` and `Ornith-1.5-35B` (the Q4_K_M file) were both
+  re-measured at cap 4096 on 2026-11-01 — see v1.10 in the change log for the numbers.
 - **§16.4 corrected:** it listed the uncensored boot file as "unmeasured, no row, no verdict". It now
   has a row (0.5671 / 0.6333 at cap 4096) and the section states plainly that its low score is the
   IQ3_XXS rung plus the tune, not a measured abliteration cost, because the comparison file is a
@@ -2617,8 +2659,9 @@ so it could no longer be rebuilt; it now plots the 2026-10-28 full suite on the 
 (2,078 samples, mean 78 W, peak 123 W).
 
 **Known open items.** `qwen38fn-abl`'s
-MMLU-Pro cell is a poisoned 1/120 rather than a score; `qwen38-35b` and `Ornith-1.5-35B` were both
-measured only at cap 512, so their code rows are floors, not ceilings; and the driver's context curve (§23.2) now covers 32k, 64k and 113k prompts — but no *other* model
+MMLU-Pro cell is a poisoned 1/120 rather than a score, and it cannot be re-measured without stopping
+the driver (the file is 78.1 GiB, past the pool beside a resident model), which this project does not
+do; and the driver's context curve (§23.2) now covers 32k, 64k and 113k prompts — but no *other* model
 on disk has been measured beyond an 8k needle since the kernel moved to 7.3.0-5.
 
 ---
@@ -2737,7 +2780,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.9.2 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
+*Version 1.10 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
