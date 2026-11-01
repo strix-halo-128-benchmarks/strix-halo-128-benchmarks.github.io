@@ -908,6 +908,58 @@ Ornith-1.5-35B at 0.8354/0.4417, so the model is outside the band even before th
 expect 22,795,471,072 bytes and the sha256 above. Re-download only to study the template — the harness
 (`t20`) and a `--jinja` server were not the problem, and a reasoning-effort cap did not fix it either.
 
+## Dark-Craving-26B-A4B v0.3 (ReadyArt) — retired 2026-11-01, dominated by the driver
+
+Fetched and measured the same afternoon; it is a good model that loses to a smaller, faster one on every
+axis. `gemma4` arch, 26B total / 4B active — the driver's exact shape, so the comparison is finetune-only.
+
+| axis | Dark-Craving v0.3 Q4_K_M | gemma4-26b-uncen Q4_K_M (driver) |
+|---|---|---|
+| HumanEval @4096 | 0.9390 (154/164) | **0.9573 (157/164)** |
+| MMLU-Pro @4096 | 0.8167 (98/120) | **0.8500 (102/120)** |
+| riddles | 14/14 | 14/14 |
+| decode | 47.3 t/s | **56.9 t/s** |
+| size | 16.45 GiB | **15.64 GiB** |
+
+Run `20261101-165147-darkcraving-26b-a4b-cap4096`, 2399 s, preflight 3/3, needles 2k+8k PASS, pp 1755.8.
+The capability gaps (3 and 4 items) sit inside the sampling error at n=164/120, so this is a draw on
+quality; the 17% decode deficit is not noise. It answers riddles crisply and its knowledge is strong for the
+shape — it simply has nothing the driver does not do better, in less space.
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `models/Dark-Craving-26B-A4B-v0.3-HB16-Q4_K_M.gguf` | 17,666,860,256 | `4ef7c7f0c343267861beb29a0c10d59f390bef4ef1993bdfbc0ceab566f526af` |
+
+Restore: `ReadyArt/Dark-Craving-26B-A4B-v0.3-GGUF`, file above, expect the byte count and hash. Script
+`run-darkcraving-26b.sh` (port 8086, gemma4 flags) is in the transcript and trivially rewritable.
+
+## Holo4-35B-A3B (Hcompany) MXFP4_MOE — retired 2026-11-01, no knowledge retrieval
+
+18.43 GiB for 35B total / 3B active, `qwen3_5_moe` base, MXFP4 — capacity per byte is the best of any 35B
+here. Code holds up; knowledge does not.
+
+| axis | Holo4 MXFP4 | qwen38-35b Q4_K_M | Ornith-1.5-35B Q4_K_M |
+|---|---|---|---|
+| HumanEval @4096 | 0.8598 (141/164) | **0.8720 (157→143/164)** | 0.8354 (137/164) |
+| MMLU-Pro @4096 | **0.3250 (39/120)** | 0.6417 (77/120) | 0.4417 (53/120) |
+| riddles | 13/14 | 14/14 | 13/14 |
+| decode | 60.5 t/s | 74.8 t/s | 74.1 t/s |
+| size | **18.43 GiB** | 20.22 GiB | 20.22 GiB |
+
+Run `20261101-173210-holo4-35b-a3b-cap4096`, 382 s, preflight 3/3, needles PASS, pp 2062.9.
+
+The MMLU number is the finding, not a bug: **all 120 items came back as a bare letter in 0.2 s**, one
+unextractable. At 10 options the chance floor is 25%, so 32.5% is 1.6 SE above guessing — this finetune does
+not retrieve knowledge when asked for a single token, and it is not a thinking model that would recover with a
+larger cap. HumanEval and riddles force generation, and there it is competent, which is exactly why the
+collapse only shows on the knowledge axis.
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `models/Holo4-35B-A3B.MXFP4_MOE.gguf` | 19,790,379,456 | `8e9a845fb6bcec527626c9a1e5c3929314c311af0f49dee450e83e821dc2a252` |
+
+Restore: `prithivMLmods/Holo4-35B-A3B-MXFP4-MoE-GGUF`, file above, byte count and hash as recorded.
+
 ---
 
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*

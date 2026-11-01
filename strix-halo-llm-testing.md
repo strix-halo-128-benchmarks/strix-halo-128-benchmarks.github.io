@@ -407,6 +407,35 @@ the first test item runs. Legacy rows were annotated once with `~/bench/annotate
 
 ---
 
+### 4.2 What a rebuild would buy — measured, 2026-11-01
+
+The fork's own `origin/HEAD` was **1,041 commits ahead** of the build every row in this report was measured
+on, and its delta contained exactly the two changes that could plausibly move numbers here: a Vulkan
+**MoE gate+up+SwiGLU fusion in one weight-streaming MUL_MAT_ID launch** (#223, q4_K/q5_K/f16/f32 chains) and
+a fix that **stops chunking q8_0/q6_K mat-vec batches of up to 8 columns** (#241) — the cache type most
+recipes here use. So it was built and A/B'd rather than taken on faith: scratch worktree at `f5c0a7a34`
+(server `0.6.0-dev build 12294`, libggml ABI **0.26.0**), same weights, same flags, same day, only the
+binary differing.
+
+| arm | model | decode (reps) | prefill (reps) | quality |
+|---|---|---|---|---|
+| `1a33095` (served) | gemma4-26b-uncen Q4_K_M | **57.2** (58.0, 56.4) | 1714 (1696, 1732) | riddles 14/14 · HE60 59/60 |
+| `f5c0a7a34` (new) | gemma4-26b-uncen Q4_K_M | 55.6 (57.8, 53.5) | 1566 (1213, 1918) | riddles 14/14 · HE60 59/60 |
+| `1a33095` (served) | gpt-oss-120b MXFP4 MoE | **51.4** (53.1, 51.2, 49.9) | 1137 (1136, 1160, 1116) | — |
+| `f5c0a7a34` (new) | gpt-oss-120b MXFP4 MoE | 51.7 (53.0, 51.2, 51.0) | 1195 (1159, 1213, 1213) | — |
+
+**Verdict: not adopted.** Decode is flat to −2.8 % across two weight classes (a 4B-active 26B and a 5B-active
+120B MoE), prefill is noise in one arm and +5 % in the other, and quality is identical item for item on the
+60-item probe. The two headline changes do not reach this backend's hot path for these graphs. The prefill
+spread inside a single arm (1213 → 1918 t/s) is the shader-cache cold start, and the served build's own reps
+drift 53.1 → 49.9 under sustained 120B load — which is why the decision rests on paired reps, not on the best
+one.
+
+That is the useful part of a negative result: the matrix stays on **one build identity**, §9's rows stay
+comparable, and the next person can read this instead of spending two hours rebuilding to find out. The A/B
+runs themselves are archived outside the catalogue (`~/runs/ab-build-ab-20261101/`) so they cannot pollute the
+per-model "best run" selection with 60-item probes.
+
 ## 5. Memory accounting and quantisation
 
 Weights are only part of the footprint. KV cache scales linearly with context length and is charged
@@ -2531,6 +2560,25 @@ Every shard's hash, not just the first: [`data/provenance.json`](data/provenance
 
 ## 21. Change log
 
+### Version 1.15 (2026-11-01)
+
+**Two of the week's most-downloaded releases measured, both dominated; and a rebuild tested and refused.**
+
+| model | HE @4096 | MMLU @4096 | riddles | decode | size | verdict |
+|---|---|---|---|---|---|---|
+| Dark-Craving-26B-A4B v0.3 Q4_K_M | 0.9390 (154/164) | 0.8167 (98/120) | 14/14 | 47.3 t/s | 16.45 GiB | deleted — dominated by the driver on every axis |
+| Holo4-35B-A3B MXFP4 | 0.8598 (141/164) | **0.3250 (39/120)** | 13/14 | 60.5 t/s | 18.43 GiB | deleted — no knowledge retrieval |
+
+Dark-Craving is the driver's exact shape and lands 3 and 4 items behind it — inside sampling error — while
+decoding 17 % slower in 0.8 GiB more. Holo4 returns all 120 MMLU items as a bare letter in 0.2 s each; against
+a 25 % chance floor for ten options, 32.5 % is a finetune that does not retrieve knowledge when the answer is a
+single token, while its generative axes (0.8598 code, 13/14 riddles) stay competent. Both were deleted with
+byte counts, sha256s and restore recipes in the ledger.
+
+§4.2 is new: the fork's `origin/HEAD` was 1,041 commits ahead with a Vulkan MoE MUL_MAT_ID fusion and a q8_0
+mat-vec fix, so it was built and A/B'd on two weight classes. Decode flat to −2.8 %, quality identical, prefill
+noise — **not adopted**, and the matrix stays on one build identity rather than becoming a mixture.
+
 ### Version 1.14 (2026-11-01)
 
 **A provenance manifest, and licences stated for the first time.** §20.5 lists every servable artefact with
@@ -2923,7 +2971,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.14 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
+*Version 1.15 · measurements 2026-10-07 → 2026-11-01; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
