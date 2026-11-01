@@ -259,7 +259,7 @@ L 284.777256 130.197636
    </g>
    <g id="line2d_28">
     <path d="M 266.864546 108.511273 
-L 271.003467 108.511273 
+L 275.142389 108.511273 
 " clip-path="url(#p1e580e2761)" style="fill: none; stroke: #009e73; stroke-opacity: 0.85; stroke-width: 2.4; stroke-linecap: round"/>
    </g>
    <g id="line2d_29">
@@ -440,11 +440,11 @@ z
     </defs>
     <g clip-path="url(#p1e580e2761)">
      <use xlink:href="#m929a2a712e" x="266.864546" y="108.511273" style="fill: #009e73; stroke: #009e73"/>
-     <use xlink:href="#m929a2a712e" x="271.003467" y="108.511273" style="fill: #009e73; stroke: #009e73"/>
+     <use xlink:href="#m929a2a712e" x="275.142389" y="108.511273" style="fill: #009e73; stroke: #009e73"/>
     </g>
    </g>
    <g id="text_22">
-    <text style="font-size: 6.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="272.812832" y="110.173773" transform="rotate(-0 272.812832 110.173773)">Δ 0.018</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="276.951754" y="110.173773" transform="rotate(-0 276.951754 110.173773)">Δ 0.037</text>
    </g>
    <g id="PathCollection_8">
     <g clip-path="url(#p1e580e2761)">
@@ -664,7 +664,7 @@ L 544.905528 130.197636
    </g>
    <g id="line2d_56">
     <path d="M 453.786476 108.511273 
-L 468.612713 108.511273 
+L 502.537585 108.511273 
 " clip-path="url(#p98be6df2d5)" style="fill: none; stroke: #009e73; stroke-opacity: 0.85; stroke-width: 2.4; stroke-linecap: round"/>
    </g>
    <g id="line2d_57">
@@ -754,11 +754,11 @@ L 566.114931 56.464
    <g id="PathCollection_16">
     <g clip-path="url(#p98be6df2d5)">
      <use xlink:href="#m929a2a712e" x="453.786476" y="108.511273" style="fill: #009e73; stroke: #009e73"/>
-     <use xlink:href="#m929a2a712e" x="468.612713" y="108.511273" style="fill: #009e73; stroke: #009e73"/>
+     <use xlink:href="#m929a2a712e" x="502.537585" y="108.511273" style="fill: #009e73; stroke: #009e73"/>
     </g>
    </g>
    <g id="text_37">
-    <text style="font-size: 6.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="470.647188" y="110.173773" transform="rotate(-0 470.647188 110.173773)">Δ 0.058</text>
+    <text style="font-size: 6.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="504.57206" y="110.173773" transform="rotate(-0 504.57206 110.173773)">Δ 0.192</text>
    </g>
    <g id="PathCollection_17">
     <g clip-path="url(#p98be6df2d5)">

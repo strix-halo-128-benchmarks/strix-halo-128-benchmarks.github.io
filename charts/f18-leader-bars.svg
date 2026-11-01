@@ -1463,7 +1463,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_104">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="439.032219" transform="rotate(-0 402.598464 439.032219)">gemma4-26b-uncen</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="439.032219" transform="rotate(-0 402.598464 439.032219)">coder390-abl</text>
      </g>
     </g>
     <g id="ytick_47">
@@ -1473,7 +1473,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_105">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="427.952828" transform="rotate(-0 402.598464 427.952828)">coder390-abl</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="427.952828" transform="rotate(-0 402.598464 427.952828)">claude-sonnet-5.5</text>
      </g>
     </g>
     <g id="ytick_48">
@@ -1483,7 +1483,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_106">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="416.873438" transform="rotate(-0 402.598464 416.873438)">claude-sonnet-5.5</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="416.873438" transform="rotate(-0 402.598464 416.873438)">claude-haiku-5.5</text>
      </g>
     </g>
     <g id="ytick_49">
@@ -1493,7 +1493,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_107">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="405.794047" transform="rotate(-0 402.598464 405.794047)">claude-haiku-5.5</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="405.793789" transform="rotate(-0 402.598464 405.793789)">sage-a1.5</text>
      </g>
     </g>
     <g id="ytick_50">
@@ -1503,7 +1503,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_108">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="394.714398" transform="rotate(-0 402.598464 394.714398)">sage-a1.5</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="394.714656" transform="rotate(-0 402.598464 394.714656)">gemma4-31b</text>
      </g>
     </g>
     <g id="ytick_51">
@@ -1513,7 +1513,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_109">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="383.635266" transform="rotate(-0 402.598464 383.635266)">gemma4-31b</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="383.635266" transform="rotate(-0 402.598464 383.635266)">graft-50b-a3b</text>
      </g>
     </g>
     <g id="ytick_52">
@@ -1523,7 +1523,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_110">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="372.555875" transform="rotate(-0 402.598464 372.555875)">graft-50b-a3b</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="372.555875" transform="rotate(-0 402.598464 372.555875)">gemma4-26b-qat-q4</text>
      </g>
     </g>
     <g id="ytick_53">
@@ -1533,7 +1533,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_111">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="361.476484" transform="rotate(-0 402.598464 361.476484)">gemma4-26b-qat-q4</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="361.476484" transform="rotate(-0 402.598464 361.476484)">nemotron-bolt-74b</text>
      </g>
     </g>
     <g id="ytick_54">
@@ -1543,7 +1543,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_112">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="350.397094" transform="rotate(-0 402.598464 350.397094)">nemotron-bolt-74b</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="350.397094" transform="rotate(-0 402.598464 350.397094)">gemma4-26b Q8_0</text>
      </g>
     </g>
     <g id="ytick_55">
@@ -1553,7 +1553,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_113">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="339.317703" transform="rotate(-0 402.598464 339.317703)">gemma4-26b Q8_0</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="339.317703" transform="rotate(-0 402.598464 339.317703)">kimi</text>
      </g>
     </g>
     <g id="ytick_56">
@@ -1563,7 +1563,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_114">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="328.238312" transform="rotate(-0 402.598464 328.238312)">kimi</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="328.238312" transform="rotate(-0 402.598464 328.238312)">Ornith-1.5-35B</text>
      </g>
     </g>
     <g id="ytick_57">
@@ -1573,7 +1573,7 @@ L 594.156945 269.514
       </g>
      </g>
      <g id="text_115">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="317.158922" transform="rotate(-0 402.598464 317.158922)">Ornith-1.5-35B</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="402.598464" y="317.158922" transform="rotate(-0 402.598464 317.158922)">qwen38-35b</text>
      </g>
     </g>
     <g id="ytick_58">
@@ -1613,7 +1613,7 @@ L 571.087135 440.291727
 L 571.087135 432.757742 
 L 409.598464 432.757742 
 z
-" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
+" clip-path="url(#pd13d881631)" style="fill: #7a828e"/>
    </g>
    <g id="patch_64">
     <path d="M 409.598464 429.212337 
@@ -1645,7 +1645,7 @@ L 571.087135 395.974165
 L 571.087135 388.440179 
 L 409.598464 388.440179 
 z
-" clip-path="url(#pd13d881631)" style="fill: #7a828e"/>
+" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
    </g>
    <g id="patch_68">
     <path d="M 409.598464 384.894774 
@@ -1653,7 +1653,7 @@ L 571.087135 384.894774
 L 571.087135 377.360788 
 L 409.598464 377.360788 
 z
-" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
+" clip-path="url(#pd13d881631)" style="fill: #7a828e"/>
    </g>
    <g id="patch_69">
     <path d="M 409.598464 373.815383 
@@ -1661,7 +1661,7 @@ L 571.087135 373.815383
 L 571.087135 366.281398 
 L 409.598464 366.281398 
 z
-" clip-path="url(#pd13d881631)" style="fill: #7a828e"/>
+" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
    </g>
    <g id="patch_70">
     <path d="M 409.598464 362.735993 
@@ -1669,7 +1669,7 @@ L 571.087135 362.735993
 L 571.087135 355.202007 
 L 409.598464 355.202007 
 z
-" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
+" clip-path="url(#pd13d881631)" style="fill: #cc79a7"/>
    </g>
    <g id="patch_71">
     <path d="M 409.598464 351.656602 
@@ -1677,7 +1677,7 @@ L 571.087135 351.656602
 L 571.087135 344.122617 
 L 409.598464 344.122617 
 z
-" clip-path="url(#pd13d881631)" style="fill: #cc79a7"/>
+" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
    </g>
    <g id="patch_72">
     <path d="M 409.598464 340.577212 
@@ -1685,7 +1685,7 @@ L 571.087135 340.577212
 L 571.087135 333.043226 
 L 409.598464 333.043226 
 z
-" clip-path="url(#pd13d881631)" style="fill: #0072b2"/>
+" clip-path="url(#pd13d881631)" style="fill: #7a828e"/>
    </g>
    <g id="patch_73">
     <path d="M 409.598464 329.497821 
@@ -1693,7 +1693,7 @@ L 571.087135 329.497821
 L 571.087135 321.963835 
 L 409.598464 321.963835 
 z
-" clip-path="url(#pd13d881631)" style="fill: #7a828e"/>
+" clip-path="url(#pd13d881631)" style="fill: #d55e00"/>
    </g>
    <g id="patch_74">
     <path d="M 409.598464 318.41843 
@@ -1701,7 +1701,7 @@ L 571.087135 318.41843
 L 571.087135 310.884445 
 L 409.598464 310.884445 
 z
-" clip-path="url(#pd13d881631)" style="fill: #d55e00"/>
+" clip-path="url(#pd13d881631)" style="fill: #009e73"/>
    </g>
    <g id="patch_75">
     <path d="M 409.598464 307.33904 
