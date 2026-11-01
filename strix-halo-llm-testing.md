@@ -820,7 +820,9 @@ model quality in comparisons of this kind.
 One row per model ever measured, best-measured run. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
-2026-10-27 onwards. The `measured` column is the date of the best-scoring run shown — the run id and the full build
+2026-10-27 onwards. The `build` column names the tree and the commit that produced the row — `fork b3-1a33095`, `bolt
+b1-a30fb49`, or `pre-identity` where the run predates identity stamping (§4.1 explains why that is a
+window, not a guess). The full path is deliberately not published. The `measured` column is the date of the best-scoring run shown — the run id and the full build
 identity are in `data/catalogue.json`, so any row can be traced to the exact binary that produced it.
 The `disk` column is the roster as of **2026-10-30**: `✓` present and servable,
 `✗` retired (recipes in `~/llama-local/RETIRED-models.md`). Table 4 is all-time by design — the
@@ -828,37 +830,37 @@ deleted rows are why the recommendations below have reasons.
 
 **Table 4 — The measured matrix, all-time: one row per model, best run, caps shown with item counts.**
 
-| Model | Params | Quant | HumanEval | MMLU-Pro | Riddles | prefill t/s | decode t/s | measured | disk |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| gemma4-31b | 30.7B | Q4_0 | 0.9634 (164@2048) | 0.8667 (120@2048) | 14/14 | 350 | 17.0 | 2026-10-21 | ✗ 10-30 |
-| gemma4-26b-uncen | 25.2B | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 1759 | 56.9 | 2026-10-28 | ✓ driver |
-| minicpm-v47-35b | 34.7B | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 1600 | 64.6 | 2026-10-18 | ✓ |
-| gemma4-26b-a4b | 25.2B | Q8_0 | 0.9573 (164@2048) | 0.8667 (120@2048) | 14/14 | — | 49.4 | 2026-10-30 | ✗ 10-30 |
-| gemma4-26b-qat-q4 | 25.2B | Q4_0 | 0.9512 (164@2048) | 0.8417 (120@2048) | 14/14 | 1900 | 59.5 | 2026-10-21 | ✓ |
-| ornith-122b | 124.6B | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 605 | 23.3 | 2026-10-20 | ✓ |
-| nemotron-super-120b | 123.6B | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 411 | 27.1 | 2026-10-18 | ✓ |
-| Nemotron-Bolt-74B-A9B | 74.0B | IQ2_XXS | 0.9451 (164@2048) | 0.3667 (120@2048) | 13/14 | 577 | 72.8 | 2026-10-16 | ✗ 10-30 |
-| qwen3next-q6 | 79.7B | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 1189 | 45.8 | 2026-10-10 | ✓ |
-| gptoss | 116.8B | MXFP4 | 0.9268 (164) | 0.5833 (120) | 12/14 | 1045 | 50.1 | 2026-10-12 | ✓ |
-| gptoss-abliterated | 116.8B | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 1052 | 50.5 | 2026-10-13 | ✓ |
-| qwen35 | 122.1B | Q4_K_M | 0.9242 (66) | 0.5417 (48) | 12/14 | 622 | 22.9 | 2026-10-11 | ✗ |
-| ornith-mtp-21g | 35.5B | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 1610 | 65.2 | 2026-10-17 | ✓ |
-| flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | ✗ 10-30 |
-| qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | ✓ |
-| mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | ✓ |
-| mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | ✗ 10-29 |
-| qwen38-35b | 35.5B | Q4_K_M | 0.8537 (164@512) | 0.5083 (120@512) | 13/14 | 1560 | 68.3 | 2026-10-12 | ✓ |
-| lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | ✓ |
-| qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 448 | 52.9 | 2026-10-13 | ✓ |
-| qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | ✗ |
-| Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8232 (164@512) | 0.4167 (120@512) | 13/14 | 1629 | 72.5 | 2026-10-12 | ✓ |
-| kimi | 49.1B | Q4_K_M | 0.7866 (164@2048) | 0.5500 (120@2048) | 13/14 | 1597 | 67.4 | 2026-10-14 | ✗ 10-29 |
-| hy-memory-30b-a3b | 30.1B | Q4_K_M | 0.7805 (164@2048) | 0.7250 (120@2048) | 12/14 | 1515 | 74.7 | 2026-10-17 | ✗ 10-29 |
-| graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | ✗ |
-| hy-memory-30b-a3b-q8 | 30.1B | Q8_0 | 0.7683 (164@2048) | 0.7500 (120@2048) | 11/14 | 1459 | 52.3 | 2026-10-17 | ✗ 10-29 |
-| Ling-3.0-flash | — | Q4_K_M | — | 0.7667 (120@2048) | 11/14 | — | 43.5 | 2026-10-22 | ✗ 10-30 |
-| ornith35b (uncensored) | 35.5B | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 1762 | 69.9 | 2026-10-31 | ✓ boot |
-| nemotron-bolt (broken load) | 74.0B | IQ2_XXS | 0.1786 (56@512) | 0.4146 (41@512) | 8/14 | 586 | 22.7 | 2026-10-21 | ✗ 10-30 |
+| Model | Params | Quant | HumanEval | MMLU-Pro | Riddles | prefill t/s | decode t/s | measured | build | disk |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| gemma4-31b | 30.7B | Q4_0 | 0.9634 (164@2048) | 0.8667 (120@2048) | 14/14 | 350 | 17.0 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
+| gemma4-26b-uncen | 25.2B | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 1759 | 56.9 | 2026-10-28 | fork b3-1a33095 | ✓ driver |
+| minicpm-v47-35b | 34.7B | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 1600 | 64.6 | 2026-10-18 | bolt pre-identity | ✓ |
+| gemma4-26b-a4b | 25.2B | Q8_0 | 0.9573 (164@2048) | 0.8667 (120@2048) | 14/14 | — | 49.4 | 2026-10-30 | fork b3-1a33095 | ✗ 10-30 |
+| gemma4-26b-qat-q4 | 25.2B | Q4_0 | 0.9512 (164@2048) | 0.8417 (120@2048) | 14/14 | 1900 | 59.5 | 2026-10-21 | fork pre-identity | ✓ |
+| ornith-122b | 124.6B | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 605 | 23.3 | 2026-10-20 | fork pre-identity | ✓ |
+| nemotron-super-120b | 123.6B | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 411 | 27.1 | 2026-10-18 | bolt pre-identity | ✓ |
+| Nemotron-Bolt-74B-A9B | 74.0B | IQ2_XXS | 0.9451 (164@2048) | 0.3667 (120@2048) | 13/14 | 577 | 72.8 | 2026-10-16 | bolt pre-identity | ✗ 10-30 |
+| qwen3next-q6 | 79.7B | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 1189 | 45.8 | 2026-10-10 | fork pre-identity | ✓ |
+| gptoss | 116.8B | MXFP4 | 0.9268 (164) | 0.5833 (120) | 12/14 | 1045 | 50.1 | 2026-10-12 | fork pre-identity | ✓ |
+| gptoss-abliterated | 116.8B | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 1052 | 50.5 | 2026-10-13 | fork pre-identity | ✓ |
+| qwen35 | 122.1B | Q4_K_M | 0.9242 (66) | 0.5417 (48) | 12/14 | 622 | 22.9 | 2026-10-11 | fork pre-identity | ✗ |
+| ornith-mtp-21g | 35.5B | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 1610 | 65.2 | 2026-10-17 | fork pre-identity | ✓ |
+| flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | flint pre-identity | ✗ 10-30 |
+| qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
+| mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✓ |
+| mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
+| qwen38-35b | 35.5B | Q4_K_M | 0.8537 (164@512) | 0.5083 (120@512) | 13/14 | 1560 | 68.3 | 2026-10-12 | fork pre-identity | ✓ |
+| lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
+| qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
+| qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
+| Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8232 (164@512) | 0.4167 (120@512) | 13/14 | 1629 | 72.5 | 2026-10-12 | fork pre-identity | ✓ |
+| kimi | 49.1B | Q4_K_M | 0.7866 (164@2048) | 0.5500 (120@2048) | 13/14 | 1597 | 67.4 | 2026-10-14 | fork pre-identity | ✗ 10-29 |
+| hy-memory-30b-a3b | 30.1B | Q4_K_M | 0.7805 (164@2048) | 0.7250 (120@2048) | 12/14 | 1515 | 74.7 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
+| graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | fork pre-identity | ✗ |
+| hy-memory-30b-a3b-q8 | 30.1B | Q8_0 | 0.7683 (164@2048) | 0.7500 (120@2048) | 11/14 | 1459 | 52.3 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
+| Ling-3.0-flash | — | Q4_K_M | — | 0.7667 (120@2048) | 11/14 | — | 43.5 | 2026-10-22 | fork pre-identity | ✗ 10-30 |
+| ornith35b (uncensored) | 35.5B | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 1762 | 69.9 | 2026-10-31 | fork b3-1a33095 | ✓ boot |
+| nemotron-bolt (broken load) | 74.0B | IQ2_XXS | 0.1786 (56@512) | 0.4146 (41@512) | 8/14 | 586 | 22.7 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
 New in this edition: the `gemma4-26b-uncen` row (measured 2026-10-28, the model that now answers the
 channel) and the `disk` column. **Three rows were wrong in version 1.2 and are corrected.** `qwen3next-q6`
 was published as 0.9207 (164@2048) — no run supports that: its best is 0.9296 over 142 items, and
@@ -869,30 +871,32 @@ weight file measured twice** (156/164 and 154/164, cap 2048, MMLU 101/120 in bot
 shared across the Q8_0 and QAT files, which is how a table comes to compare a file with itself. The
 Q8_0 row now carries its own file's numbers.
 
+
 **Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
 capability row. Full inventory (15 model units, 602 GiB, projectors and drafters included) is in §20.3.
 
-| Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | endpoint |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| gemma4-26b-uncen | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 56.9 | 2026-10-28 | :8100 enabled |
-| minicpm-v47-35b | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 64.6 | 2026-10-18 | :8186 |
-| gemma4-26b-qat-q4 | Q4_0 | 0.9512 (164@2048) | 0.8417 (120@2048) | 14/14 | 59.5 | 2026-10-21 | :8099 script only |
-| ornith-122b | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 23.3 | 2026-10-20 | :8084 |
-| nemotron-super-120b | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 27.1 | 2026-10-18 | :8189 |
-| qwen3next-q6 | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 45.8 | 2026-10-10 | :8083 |
-| gptoss | MXFP4 | 0.9268 (164) | 0.5833 (120) | 12/14 | 50.1 | 2026-10-12 | :8085 |
-| gptoss-abliterated | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 50.5 | 2026-10-13 | :8096 |
-| ornith-mtp-21g | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 65.2 | 2026-10-17 | :8185 |
-| mellum21-fork | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 111.9 | 2026-10-18 | — |
-| qwen3next-q4 | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 58.1 | 2026-10-31 | :8082 |
-| qwen38-35b | Q4_K_M | 0.8537 (164@512) | 0.5083 (120@512) | 13/14 | 68.3 | 2026-10-12 | :8093 |
-| lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | :8181 |
-| qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | :8097 |
-| Ornith-1.5-35B | Q4_K_M | 0.8232 (164@512) | 0.4167 (120@512) | 13/14 | 72.5 | 2026-10-12 | :8086 |
-| ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | :8094 boot |
+| Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| gemma4-26b-uncen | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 56.9 | 2026-10-28 | fork b3-1a33095 | :8100 enabled |
+| minicpm-v47-35b | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 64.6 | 2026-10-18 | bolt pre-identity | :8186 |
+| gemma4-26b-qat-q4 | Q4_0 | 0.9512 (164@2048) | 0.8417 (120@2048) | 14/14 | 59.5 | 2026-10-21 | fork pre-identity | :8099 script only |
+| ornith-122b | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 23.3 | 2026-10-20 | fork pre-identity | :8084 |
+| nemotron-super-120b | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 27.1 | 2026-10-18 | bolt pre-identity | :8189 |
+| qwen3next-q6 | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 45.8 | 2026-10-10 | fork pre-identity | :8083 |
+| gptoss | MXFP4 | 0.9268 (164) | 0.5833 (120) | 12/14 | 50.1 | 2026-10-12 | fork pre-identity | :8085 |
+| gptoss-abliterated | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 50.5 | 2026-10-13 | fork pre-identity | :8096 |
+| ornith-mtp-21g | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 65.2 | 2026-10-17 | fork pre-identity | :8185 |
+| mellum21-fork | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 111.9 | 2026-10-18 | fork pre-identity | — |
+| qwen3next-q4 | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 58.1 | 2026-10-31 | fork b3-1a33095 | :8082 |
+| qwen38-35b | Q4_K_M | 0.8537 (164@512) | 0.5083 (120@512) | 13/14 | 68.3 | 2026-10-12 | fork pre-identity | :8093 |
+| lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | fork pre-identity | :8181 |
+| qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | fork pre-identity | :8097 |
+| Ornith-1.5-35B | Q4_K_M | 0.8232 (164@512) | 0.4167 (120@512) | 13/14 | 72.5 | 2026-10-12 | fork pre-identity | :8086 |
+| ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | fork b3-1a33095 | :8094 boot |
 The last blank cell was filled on 2026-10-31: `Qwen3-Next-80B UD-Q4_K_XL` now has a full row
 (0.9146 code, 0.7417 knowledge, 14/14, 58.1 t/s) and it is the weakest large model on disk — see §9.1
 and §21. Every artefact in this table has been scored on both capability axes.
+
 
 
 Models measured on the core axes only (no HumanEval row, all-time): `qwen38-flash-next-abl`
@@ -2371,6 +2375,18 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ## 21. Change log
 
+### Version 1.8 (2026-10-31)
+
+**Every row now names the build that produced it.** §4.1 has always recorded the commit behind each
+flavour, but only at flavour-and-window granularity, and the published catalogue carried nothing finer
+than `fork`/`upstream`. Both matrices gain a `build` column (`fork b3-1a33095`, `bolt b1-a30fb49`,
+`flint pre-identity` …), and the data export now carries `tree` plus `build_info` per run — the commit,
+without the absolute path. 28 of 29 matrix rows and all 16 servable rows resolved; `Ling-3.0-flash`
+carries `fork pre-identity` because its row has no HumanEval cell and its run predates stamping.
+
+That closes the difference between a claim and a checkable claim: the document says "build identity per
+run", and it is now possible, from the published data, to see which commit sits behind every row.
+
 ### Version 1.7 (2026-10-31)
 
 **Prior art, and the context curve that was missing.** Reading two other public datasets — `lhl`'s
@@ -2634,7 +2650,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.7 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
+*Version 1.8 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
