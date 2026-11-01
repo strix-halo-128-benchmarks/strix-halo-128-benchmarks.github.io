@@ -4,7 +4,8 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Host:** the reference host · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
+- **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
+  · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-10-31
 - **Roster:** 16 servable artefacts on disk, 602 GiB, checked 2026-10-31 · **Change log:** §21
@@ -139,6 +140,12 @@ servable here, and what does it cost in speed and memory to use it.**
 ---
 
 ## 2. The platform: what Strix Halo actually is
+
+The box is a **Minisforum MS-S1 MAX** — `product_family: MINISFORUM`, `product_name: MS-S1 MAX`,
+`sys_vendor: Micro Computer (HK) Tech Limited`, board `SHWSA` (Meigao ODM), BIOS 1.06, EC firmware
+0.15. All of that is readable from DMI on the machine itself, which is the point of quoting it: it is
+checkable rather than asserted. The hostname is deliberately not published — it is the operator's, not
+the hardware's.
 
 Two numbers describe this machine and explain most of its behaviour: about 100 GiB of
 GPU-addressable memory, and roughly 256 GB/s of bandwidth shared between CPU and GPU.
@@ -2407,6 +2414,14 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 
 ## 21. Change log
 
+### Version 1.9.1 (2026-10-31)
+
+**The hardware is now named.** The report described "this machine" throughout, because the sanitiser
+replaced the hostname; that over-corrected, since the chassis model is public product information and
+is the first thing a reader needs to place the numbers. It is now stated as a **Minisforum MS-S1 MAX**
+with the DMI values that prove it (`product_family`, `product_name`, `sys_vendor`, board, BIOS, EC) in
+the header and §2. The hostname, addresses and paths remain unpublished.
+
 ### Version 1.9 (2026-10-31)
 
 **What it cost, stated as a range and labelled an estimate.** §18.3 now leads with the only measured
@@ -2691,7 +2706,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.9 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
+*Version 1.9.1 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in

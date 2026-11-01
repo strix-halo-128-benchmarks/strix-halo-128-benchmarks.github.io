@@ -1,7 +1,7 @@
 # Local LLM benchmarks on AMD Strix Halo (gfx1151)
 
-Measured capability **and** throughput for local models on a single Ryzen AI Max+ 395 box
-(Radeon 8060S, 128 GB unified memory, ~100 GiB GTT), on llama.cpp/Vulkan.
+Measured capability **and** throughput for local models on a single **Minisforum MS-S1 MAX**
+(Ryzen AI Max+ 395, Radeon 8060S, 128 GB unified memory, ~100 GiB GTT), on llama.cpp/Vulkan.
 
 **Read the report: https://strix-halo-128-benchmarks.github.io/**
 
