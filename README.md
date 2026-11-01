@@ -63,6 +63,13 @@ it compares close scores. Not affiliated with AMD, llama.cpp, or any model vendo
 | platform guides, setup | [strixhalo.wiki](https://strixhalo.wiki/) |
 | llama.cpp backend bugs and datapoints | [gfx1151 discussions](https://github.com/ggml-org/llama.cpp/discussions/20856) |
 
+## Cost
+
+118 measured runs, **47.7 hours of benchmark execution** — that figure is exact, from the archive.
+Building the report around them was an estimated 220–320 hours, of which 40–60 needed a person;
+reproducing the numbers elsewhere is roughly 40–60 hours now that the harness and tools are public
+(§18.4 of the report). Decode rates will not transfer between builds even when the quality rows do.
+
 ## Credits
 
 Measurements, analysis and the writing of these documents were done with **Hermes Agent**

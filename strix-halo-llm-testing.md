@@ -2097,12 +2097,44 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-Roughly 33 models were measured across ~3 weeks, of which 24 remain servable and 7 were deleted
-after measurement (about 109 GiB reclaimed: flint 24, sage+groot 32.8, REAP50-Ornith 20, Raon 15,
-SenseNova 14, Spark 3.3). The cost is real: a full sweep on a 120B model takes 2-4 hours. The
-benefit is that every one of those decisions is now a line in `catalogue.json` rather than an
-opinion, and a re-test — of a new quantisation, a new llama.cpp build, or a new model — is a command
-rather than a project.
+**The one cost that is measured:** 118 runs totalling **47.7 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-10-31. Of the 33 model files measured, 16 remain
+servable and 24 retirements are recorded in the ledger; the two largest deletion passes alone released
+61.6 GiB and 245.1 GiB.
+
+A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive
+one at 20 minutes to 2 hours depending on the model. The benefit is that every decision is a line in
+the catalogue rather than an opinion, and a re-test — of a new quantisation, a new llama.cpp build, or
+a model released next week — is a command rather than a project.
+
+
+### 18.4 Effort: what it took, and what it would take you
+
+Every other number in this report traces to a run. This one does not, and is labelled accordingly:
+it is a **reconstruction from artefacts** — line counts, run wall times, document revisions — not a
+time log. Ranges, not a point estimate.
+
+| phase | low (h) | high (h) | what drives it |
+|---|---:|---:|---|
+| planning and design | 15 | 25 | seven axes, the cap policy, the memory and quantisation model (§5) |
+| harness and tooling | 70 | 100 | ~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline |
+| running and supervising | 45 | 60 | 47.7 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
+| analysis and correlation | 30 | 45 | alias-collision audits, cap-floor re-measurements, four external sources compared |
+| writing and revision | 50 | 70 | 2,655 lines across six editions, the ledger, ten captioned figures |
+| publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
+| **total** | **222** | **318** | ≈ 250-300 h |
+
+Of that, roughly **40-60 hours needed a person**: the decisions the measurements cannot make — what to
+delete, what to publish, whether 0.57 is a fact about the model or a bug in the harness. The remainder
+is machine execution and agent time, which is why the per-byte cost of this hardware is not the scarce
+input; the discipline around it is.
+
+**Reproducing it elsewhere is far cheaper than making it once.** The harness, the pipeline and this
+document's structure are public (`tools/` in the repository), so reproducing the numbers on another
+board is roughly **40-60 hours**, mostly bench wall time and per-model setup. One caveat that matters:
+capability rows should reproduce within a couple of percentage points, but decode will not — a
+different kernel, Mesa version or llama.cpp build moves throughput 10-20 %, which is exactly why every
+row here carries a build column.
 
 ---
 
@@ -2374,6 +2406,15 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 ---
 
 ## 21. Change log
+
+### Version 1.9 (2026-10-31)
+
+**What it cost, stated as a range and labelled an estimate.** §18.3 now leads with the only measured
+figure — 118 runs, 47.7 hours of benchmark execution — and drops the stale "33 models, 24 servable,
+109 GiB" sentence, which predated this month's retirements. §18.4 adds the effort accounting: 222-318
+hours total, of which 40-60 needed a person, and 40-60 to reproduce elsewhere now that the tools are
+published. It is the only number in the report that is not traceable to a run, so it says that about
+itself in the first line.
 
 ### Version 1.8 (2026-10-31)
 
@@ -2650,7 +2691,7 @@ its normalisation rules carries an unknown error bar — on 30 items, 4 items is
 
 ---
 
-*Version 1.8 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
+*Version 1.9 · measurements 2026-10-07 → 2026-10-31; build register (§4.1)
 and plotted figures (§19) added 2026-10-27; roster and row corrections 2026-10-30; the Qwen3-Next Q4
 capability row 2026-10-31 (§21). Numbers are
 reproducible from `~/runs/catalogue.json`; per-model recipes for anything deleted live in
