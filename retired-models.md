@@ -982,6 +982,50 @@ Restore: `WeeAIResearch/Qwen3.8-Flash-Next-32B-A6B-Coder-Mixed`, file `..Prune2-
 hash as above. **Only worth re-fetching if a re-export appears with matching router and expert counts** —
 the shape itself (32B total / 6B active in 48 GiB, `qwen4exp`) is the one gap this roster has never covered.
 
+## NVIDIA-Nemotron-3.5-Lightning-30B-A3B (ggml-org Q4_0) — measured 2026-11-01, deleted: parity quality, dominated on speed and termination
+
+The coverable coverage gap from `verified-not-runnable.md` ("released 2026-08-11, never on this box"),
+finally measured. Arch `nemotron_h_moe`, 128 routed experts / top-6 + 1 shared, 52 layers hybrid
+mamba/moe/attention, 31.58B params, header `context_length` 1048576 but config `max_position_embeddings`
+262144 (serve 262k as the trained window). 18.90 GB weights + 1.16 GB MTP drafter.
+
+**The finding is that its two arms are mutually exclusive.** Thinking off (template default overridden with
+`--chat-template-kwargs '{"enable_thinking":false}'`) is the only arm that finishes code; thinking on is the
+only arm that retrieves knowledge — and it does not terminate often enough to be served for code at all.
+
+| axis | thinking off | thinking on |
+|---|---|---|
+| HumanEval 164 @2048 | **0.8598 (141/164)**, wall 629 s, 3.8 s/item, ZERO items at the cap | killed at 9 items: 5 pinned at 2048 with `NameError: name '…' is not defined`, 33 s/item (~90 min projected) |
+| MMLU-Pro @2048 | 0.4667 (56/120), 0.6 s/item, every answer 2 tokens | **0.6667 (20/30 probe)**, committed 20/24 = 0.8333, **6/30 pinned at 2048**, mean 19.0 s/item |
+| riddles | 7/14 @512 (7 pinned, empty content) | **11/14 @2048**, and the same 3 items still pin at **4096** with 13,277 / 14,834 / 15,793 chars of reasoning and empty content |
+
+Perf (plain decode, no drafter, 65k ctx, driver resident): pp 2200.4 t/s, tg 63.8 t/s, ttft 820 ms.
+With the MTP drafter (`--spec-type draft-mtp --spec-draft-n-max 1 --spec-draft-n-min 0 --spec-draft-p-min 0.75 -md mtp-…Q4_0.gguf`): tg 70.4-72.3 t/s, acceptance 261/292 = **89.4%** — the head pays, but +11% does not
+change the verdict.
+
+Protocol: preflight 3/3, needles 2k + 8k PASS (`finish=stop`), single-shot tool gate PASS
+(`finish_reason: tool_calls`, correct `{"city":"Bern"}`, 45 tokens), agentic probe **2/3** (advances the
+loop, then reads `src/pay.py` instead of the file holding the 110 assertion).
+
+**Verdict: dominated by the resident `qwen38-35b`** — HE 0.8598 vs 0.8720 (2 items, parity against a 1.7 pp
+SE), MMLU 0.6667 vs 0.6417 (parity), but 63.8 / 71.5 t/s vs 74.8 plain, riddles 11/14 vs 14/14 with three
+items that never terminate at any cap, and 2/3 on the agentic loop. It is 1.3 GB smaller, which is not a
+reason to carry a second 30B-A3B that needs a per-axis config switch to be usable.
+
+Run rows kept: `~/runs/20261101-212604-nemotron-lightning-30b.jsonl` (cap 512, riddles 7/14),
+`~/runs/20261101-212857-nemotron-lightning-30b-cap2048.jsonl` (riddles 11/14),
+`~/bench/runs/humaneval-20261101-215421.jsonl` (141/164), `~/bench/runs/mmlupro-20261101-215628.jsonl`
+(56/120), `~/bench/runs/mmlupro-20261101-220000-nemotron-lightning-think30.json` (20/30, thinking on).
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `models/Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf` | 18,898,091,584 | `61f87e75974e4b535dcdf9aad056541a9514f1dfa4538b463b081d19b7a00e3c` |
+| `models/mtp-Nemotron-3.5-Lightning-30B-A3B-Q4_0.gguf` | 1,155,907,520 | `19f964207d5236dc88662686f00604a5494974c23fb04dd16a5ad7b2eebbd5b4` |
+
+Restore: `ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF`, files as above, byte counts and hashes as
+recorded (both were sha-verified against the repo's LFS oids on fetch). Worth re-fetching only for a
+**tool-use / agentic** comparison, where its 2/3 is the one number not already covered by a resident model.
+
 ---
 
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*
