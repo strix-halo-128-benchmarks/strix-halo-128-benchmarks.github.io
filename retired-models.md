@@ -1026,6 +1026,44 @@ Restore: `ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF`, files as above, 
 recorded (both were sha-verified against the repo's LFS oids on fetch). Worth re-fetching only for a
 **tool-use / agentic** comparison, where its 2/3 is the one number not already covered by a resident model.
 
+## Qwopus3.6-35B-A3B-Uncensored-Genesis (APEX-Mini) — measured 2026-11-02, deleted: knowledge intact, code formatting broken
+
+Found by sweeping the `moe` tag instead of `filter=gguf` — the first candidate in weeks that was in class, runnable and
+not a duplicate: an uncensored 3B-active coder, a role the roster had empty. Header verified before download
+(`qwen35moe`, 256 experts top-8, 41 blocks, 262144 ctx, `nextn_predict_layers=1`, 753 tensors, Q4_K_M),
+base "Qwen3.6 35B A3B Uncensored HauhauCS Aggressive".
+
+| axis | value | comparator |
+|---|---|---|
+| HumanEval @2048, thinking off | **0.7012 (115/164)**, 279 s, 1.7 s/item, **0 items at cap** | ornith-mtp-21g 0.9207, minicpm-v47 0.9573, qwen38-35b 0.8720 |
+| MMLU-Pro @2048, thinking off | **0.7667 (92/120)**, 987 s, 8.2 s/item, 14 at cap | ornith-mtp-21g 0.7750, minicpm-v47 0.7750, qwen38-35b 0.6417 |
+| perf (MTP drafting) | pp 1851.0 / **tg 86.5** / ttft 971 ms | fastest 35B-A3B on the box (qwen38-35b 74.8) |
+| riddles @2048 | 10/14, 3 pinned empty at cap, 1 real wrong answer | ornith-mtp-21g 14/14 |
+| core | preflight 3/3, needle 2k PASS, needle 8k PASS | — |
+
+**The finding is a code-formatting defect that no cap can explain.** 49 failures, ZERO at the cap, median completion
+53 tokens against 98 for passes: 25 IndentationError ("unindent does not match any outer indentation level", at
+49-57 tokens), 9 SyntaxError ('return' outside function, unterminated strings), 11 AssertionError, 2 NameError,
+1 ValueError, 1 IndexError. Control on the identical harness, cap and thinking-off arm: the Nemotron Lightning run
+hours earlier produced ZERO IndentationErrors across 164 items with every failure a plain AssertionError, so this is
+the weights, not the rig. **Read the failure CLASS, not just the rate: a malformed-output defect shows as syntax
+errors at short completions, while a cap floor shows as n == max_tokens.**
+
+Disposition: dominated for every role. Knowledge is level with `ornith-mtp-21g` (0.9207 / 0.7750 at 65.2 t/s) and
+`minicpm-v47-35b` (0.9573 / 0.7750 at 64.6), which sit in the same 20.8-28.5 GB footprint and beat it by 22-26
+HumanEval items; its only win is decode (86.5 t/s), which does not outrank a 13-26 pp quality gap. Fourth uncensored
+model on this box and the first with a real quality cost — gemma-4-26B, gpt-oss and Mellum were all parity.
+
+Run rows kept: `~/runs/20261102-194814-qwopus36-35b-uncen.jsonl` (core, riddles 10/14),
+`~/bench/runs/humaneval-*` (115/164), `~/bench/runs/mmlupro-*` (92/120).
+
+| path | bytes | sha256 |
+|---|---:|---|
+| `models/qwopus36-35b-uncen-apex-mini.gguf` | 20,737,845,536 | `38a08a4d9c99b6931a10c0a36bd898dca6caaa73480f041e8b5ee49f03991b49` |
+
+Restore: `LuffyTheFox/Qwopus3.6-35B-A3B-Coder-Uncensored-Genesis-MTP-GGUF`, file
+`Qwopus3.6-35B-A3B-Uncensored-Genesis-Hermes-APEX-Mini.gguf`, byte count and hash as recorded.
+
 ---
 
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*

@@ -5148,5 +5148,40 @@
    "preflight",
    "riddles"
   ]
+ },
+ {
+  "run_id": "20261102-194814-qwopus36-35b-uncen",
+  "when": "2026-11-02 19:48:14",
+  "model": "qwopus36-35b-uncen",
+  "n_params": 35505251456,
+  "ftype": "Q4_K - Medium",
+  "build": "fork",
+  "tree": "fork",
+  "build_info": "b3-1a33095",
+  "kernel": "7.3.1-1-cachyos",
+  "pp": 1851.010639448467,
+  "tg": 86.47382074813802,
+  "ttft_ms": 970.821,
+  "preflight": "3/3",
+  "needle": "PP",
+  "riddles": "10/14",
+  "humaneval": null,
+  "humaneval_n": null,
+  "cap_he": null,
+  "mmlu": null,
+  "mmlu_n": null,
+  "cap_mmlu": null,
+  "mmlu_method": null,
+  "ifeval_p": null,
+  "ifeval_i": null,
+  "ifeval_n": null,
+  "wall_s": 160.42259287834167,
+  "axes": [
+   "identity",
+   "needle",
+   "perf",
+   "preflight",
+   "riddles"
+  ]
  }
 ]
