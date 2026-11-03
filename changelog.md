@@ -9,6 +9,45 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.18 (2026-11-03)
+
+**Two arrivals measured, both retired — and one of them reverses the verdict in v1.16.**
+
+| model | HE @4096 | MMLU @4096 | needles | decode | size | verdict |
+|---|---|---|---|---|---|---|
+| Clover-35B-A3B-Preview Q4_K_M | 0.8598 (141/164) | 0.4000 (48/120) | 2k + 8k PASS | 53.7 t/s | 20.79 GiB | deleted — dominated on both axes by a model 6 t/s slower |
+| Qwen3.8-FN-32B-A6B "Prune2" QMix | — | — | 2k PASS, 8k FAIL | 20.0 t/s | 48.31 GiB | deleted — repetition on Vulkan, no factual knowledge on CPU |
+
+Clover is the first diffusion-trained model on this box: a Qwen3.6-35B-A3B finetune under arch `clover_moe`
+(upstream PR #31306), which needed its own upstream tree because no local fork registers the arch. Its code
+is one standard error above its base family (141 vs 137 of 164) and its knowledge is at base-family level
+(0.4000 vs 0.4500), against the driver's 0.9512 / 0.8417 at 48.9 t/s. Riddles print 14/14 with three items at
+exactly 4096 tokens — the substring grader matching a restatement — so the committed rate is 11/14. Arch
+support is **AR mode only**: the self-speculative diffusion decode that is the model's whole point is a
+separate unmerged PR, so the number above is the AR fallback, not a judgement on diffusion decoding.
+
+**The v1.16 correction.** That entry recorded the 32B-A6B prune as unloadable: "header says 177 experts,
+tensors hold 64, the router still has 177 rows". The observation was right and the conclusion was wrong. The
+file has three expert banks per layer — `ffn_*_exps` at Q4_K/Q5_0, `_tier1` at Q2_K, `_tier2` at Q1_0 — and
+the bank dims sum to the router width exactly: block 0 is 64+60+53 = 177, block 1 is 64+60+30 = 154, block 24
+is 64+41+10 = 115. Reading tier 0 alone is what made it look inconsistent, and the header patch tried in
+v1.16 was never the fix. Built against llama.cpp tag b10662 plus the publisher's own
+`runtime/variable-runtime.patch`, it loads in 12 s and serves at 32k context.
+
+It is still unusable, for two separate reasons, and the split is the useful part. On Vulkan it degenerates
+into repetition on anything non-trivial — `17 * 23 = 17 * 23 = …`, a 1024-token wall of `/` at the 8k needle,
+sometimes empty content — and it does so with **q8_0 KV and flash-attn on AND with f16 KV and flash-attn
+off**, which exonerates the cache quant and implicates the hand-rolled tier graph. On the CPU arm (`-ngl 0`,
+same tree) it is fluent and terminating with instruction-following intact (2+2, 5*6, "TEST"), but the
+knowledge is gone: France and Australia both answer "No", the largest planet is "Earth", 17*23 is "37".
+Pruning 3,659 layer/expert slots plus a 1-bit tier bank cost the facts.
+
+Roster unchanged in size — both files were deleted the day they were measured — at 15 model files and
+630 GiB. The archive grew to **147 runs, 70 model aliases, 54.6 hours** of measured execution over
+2026-10-07 → 2026-11-03. Both retirements carry sha256s and restore recipes in the ledger, including the
+build recipe for the patched runtime so the Prune2 result can be re-tested if the publisher re-exports
+without the Q1_0 tier.
+
 ### Version 1.17 (2026-11-01)
 
 **An executive summary in plain language, and the technical one demoted to where it belongs.** §0 now opens

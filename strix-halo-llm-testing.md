@@ -7,8 +7,8 @@
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-10-31
-- **Roster:** 17 servable artefacts on disk, 630 GiB, checked 2026-11-01 · **Change log:** §21
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-03
+- **Roster:** 15 servable model files on disk, 630 GiB, checked 2026-11-03 · **Change log:** §21
 
 **About this document**
 
@@ -147,7 +147,7 @@ that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (§8 has the full table).
 
 ### 0.3 What exists as a result
 
-A roster of **17 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
+A roster of **15 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
 build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with
 Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured,
 failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against
@@ -944,15 +944,15 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 30 of the 50 local files that have
-at least one measurement. `HE` is `score (items@cap)`; caps differ, so read
+One row per model that completed the full suite and reached a verdict — 32 of the 70 model aliases that have
+at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
 2026-10-27 onwards. The `build` column names the tree and the commit that produced the row — `fork b3-1a33095`, `bolt
 b1-a30fb49`, or `pre-identity` where the run predates identity stamping (§4.1 explains why that is a
 window, not a guess). The full path is deliberately not published. The `measured` column is the date of the best-scoring run shown — the run id and the full build
 identity are in `data/catalogue.json`, so any row can be traced to the exact binary that produced it.
-The `disk` column is the roster as of **2026-10-30**: `✓` present and servable,
+The `disk` column is the roster as of **2026-11-03**: `✓` present and servable,
 `✗` retired (recipes in `~/llama-local/RETIRED-models.md`). Table 4 is all-time by design — the
 deleted rows are why the recommendations below have reasons.
 
@@ -978,6 +978,7 @@ deleted rows are why the recommendations below have reasons.
 | mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✓ |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
+| Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
@@ -988,6 +989,7 @@ deleted rows are why the recommendations below have reasons.
 | graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | fork pre-identity | ✗ |
 | hy-memory-30b-a3b-q8 | 30.1B | Q8_0 | 0.7683 (164@2048) | 0.7500 (120@2048) | 11/14 | 1459 | 52.3 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
 | Ling-3.0-flash | — | Q4_K_M | — | 0.7667 (120@2048) | 11/14 | — | 43.5 | 2026-10-22 | fork pre-identity | ✗ 10-30 |
+| qwen38fn32-prune2 | 32.2B | QMix, 3 banks | — | — | — | 397 | 20.0 | 2026-11-03 | qwen4exp-var b1-1844325 | ✗ 11-03 |
 | ornith35b (uncensored) | 35.5B | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 1762 | 69.9 | 2026-10-31 | fork b3-1a33095 | ✓ boot |
 | nemotron-bolt (broken load) | 74.0B | IQ2_XXS | 0.1786 (56@512) | 0.4146 (41@512) | 8/14 | 586 | 22.7 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
 New in this edition: the `gemma4-26b-uncen` row (measured 2026-10-28, the model that now answers the
@@ -1165,6 +1167,27 @@ HumanEval: a code score alone would have made this look like a 177B keeper.
 
 **graft-50b-a3b — perfect riddles, ordinary code.** 14/14 when almost nothing else scores 14/14, but
 0.7805 code and 0.6583 knowledge. A curiosity rather than a pick.
+
+**Clover-35B-A3B-Preview — diffusion pretraining, AR-mode prices.** The box's first diffusion-language
+model: a Qwen3.6-35B-A3B finetune under arch `clover_moe`, 34.7B at Q4_K_M, served from its own upstream
+tree because no local tree registers the arch. Code lands at **0.8598 (141/164) at cap 4096** with zero
+items at the cap — one standard error above its base family's 0.8354 — and knowledge at **0.4000
+(48/120)**, base-family level, while the driver reads 0.9512 / 0.8417 at 48.9 t/s against this file's
+53.7. Its riddles print 14/14, but three of those returned exactly 4096 tokens on the zebra puzzles and
+matched their own restatement, so the committed rate is 11/14. The one thing that would have made it
+interesting — parallel, self-speculative diffusion decode — is an unmerged upstream PR, so what was
+measured is the AR fallback at AR prices. Deleted 2026-11-03.
+
+**qwen38fn32-prune2 — it loads; that was the least of its problems.** The 48.31 GiB export this report
+called unloadable in v1.16 does load, on the publisher's own runtime patch, because its 177 "experts" are
+three banks (64+60+53, and 154/115 in other blocks) rather than a metadata lie — the v1.16 entry is
+corrected. What it then does is worse than not loading: **20.0 t/s decode against 74.8 for the same-shape
+Qwen3.8-35B-A3B Distill**, and on Vulkan it degenerates into repetition (`17 * 23 = 17 * 23 = …`, and a
+1024-token wall of `/` at the 8k needle) with q8_0 KV *and* with f16 KV and flash-attn off. On the CPU
+arm it is fluent and terminates — small arithmetic and instruction-following both fine — but the
+knowledge is gone: France and Australia both answer "No", the largest planet is "Earth", 17*23 is "37".
+Pruning 3,659 expert slots plus a Q1_0 tier bank cost the facts, and the GPU path never produced correct
+output at all. Deleted 2026-11-03.
 
 **Retired after measurement (recipes in `~/llama-local/RETIRED-models.md`).**
 
@@ -2183,10 +2206,10 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 118 runs totalling **47.7 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-01. Of the 50 local model files with at least one
-measurement, 17 remain
-servable and 24 retirements are recorded in the ledger; the two largest deletion passes alone released
+**The one cost that is measured:** 147 runs totalling **54.6 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-03. Of the 70 model aliases with at least one
+measurement, 15 model files remain
+servable and 31 retirements are recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
 
 A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive
@@ -2205,7 +2228,7 @@ time log. Ranges, not a point estimate.
 |---|---:|---:|---|
 | planning and design | 15 | 25 | seven axes, the cap policy, the memory and quantisation model (§5) |
 | harness and tooling | 70 | 100 | ~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline |
-| running and supervising | 45 | 60 | 47.7 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
+| running and supervising | 45 | 60 | 54.6 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
 | analysis and correlation | 30 | 45 | alias-collision audits, cap-floor re-measurements, four external sources compared |
 | writing and revision | 50 | 70 | 2,655 lines across six editions, the ledger, ten captioned figures |
 | publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
@@ -2543,15 +2566,20 @@ was wrong is not a correction.
 
 The two most recent entries, in brief:
 
+- **v1.18** — Clover-35B-A3B-Preview measured and retired (0.8598 code / 0.4000 knowledge, AR mode only);
+  the 32B-A6B "Prune2" export **loads after all** — v1.16's "cannot load" was a tier-0-only read of a
+  three-bank expert layout — and was then retired for a split failure: repetition on Vulkan, no factual
+  knowledge on CPU.
 - **v1.17** — §0 rewritten in plain language (five findings, no jargon), with the technical claims moved to §0.1
   and the report's own limits stated as a paragraph rather than a caveat.
 - **v1.16** — Qwen3.8-Flash-Next-32B-A6B "Prune2" cannot load (header says 177 experts, tensors hold 64, the
-  router still has 177 rows); recorded as unloadable rather than unmeasured, and deleted.
+  router still has 177 rows); recorded as unloadable rather than unmeasured, and deleted. **Superseded by
+  v1.18.**
 
 ## 22. Credits and tooling
 
 **Measurement.** Every figure here was produced by `~/bench/t20` and the per-axis scripts on the
-machine described in §2, run by the operator between 2026-10-07 and 2026-10-31. The numbers come from
+machine described in §2, run by the operator between 2026-10-07 and 2026-11-03. The numbers come from
 those runs and from the hardware monitor's SQLite history; none is estimated, and each is traceable to
 a run id in `~/runs/catalogue.json`.
 

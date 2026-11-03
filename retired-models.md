@@ -960,7 +960,10 @@ collapse only shows on the knowledge axis.
 
 Restore: `prithivMLmods/Holo4-35B-A3B-MXFP4-MoE-GGUF`, file above, byte count and hash as recorded.
 
-## Qwen3.8-Flash-Next-32B-A6B-Prune2-QMix (WeeAIResearch) — retired 2026-11-01, never ran
+## Qwen3.8-Flash-Next-32B-A6B-Prune2-QMix (WeeAIResearch) — re-fetched, re-tested and retired 2026-11-03 (loads; unusable)
+
+**Superseded — the file loads and was re-tested on 2026-11-03; read the correction at the end of this
+section before acting on anything below.**
 
 Fetched the same evening it was spotted, then deleted without a measurement, because it cannot load. The
 "Prune2" export kept the pre-prune metadata: `qwen4exp.expert_count` says **177**, the expert tensors hold
@@ -981,6 +984,33 @@ before deletion, so the record below is the pristine artefact.
 Restore: `WeeAIResearch/Qwen3.8-Flash-Next-32B-A6B-Coder-Mixed`, file `..Prune2-Mixed.gguf`, byte count and
 hash as above. **Only worth re-fetching if a re-export appears with matching router and expert counts** —
 the shape itself (32B total / 6B active in 48 GiB, `qwen4exp`) is the one gap this roster has never covered.
+
+### Correction + re-test, 2026-11-03 — the verdict above was WRONG
+
+The file was re-fetched (same sha256) and inspected properly: it carries THREE expert banks per layer
+(`ffn_*_exps` tier0 Q4_K/Q5_0, `_tier1` Q2_K, `_tier2` Q1_0) and those bank dims sum to the router width —
+blk.0 64+60+53 = 177, blk.1 64+60+30 = 154, blk.24 64+41+10 = 115. `expert_count` 177 was never inconsistent;
+reading tier 0 alone made it look so, and a header patch was never the fix.
+
+It LOADS on the publisher's own runtime: upstream tag b10662 (18443257) + `runtime/variable-runtime.patch`
+from the same repo (97 added lines across llama-arch.cpp/.h, llama-model.h, models/qwen4exp.cpp), Vulkan
+build, 12 s load, GTT 29.9 -> 46.6 GiB, 32k ctx.
+
+What it then does is worse than not loading:
+- tg 20.0 t/s / pp 396.8 / ttft 4534 ms at 32k (the same-shape Qwen3.8-35B-A3B Distill runs 74.8 / 1550).
+- Vulkan: repetition loops on anything non-trivial — "17 * 23 = 17 * 23 = ...", a wall of "/" on factual
+  questions, sometimes empty content. Reproduced with f16 KV and flash-attn off, so it is the tier graph on
+  the GPU backend, not the KV quant.
+- CPU (`-ngl 0`): fluent and terminating, instruction-following intact (2+2=4, 5*6=30, "TEST"), but
+  knowledge destroyed — capital of Australia "No", capital of France "No", largest planet "Earth",
+  17*23 "37". The pruning (3,659 layer/expert slots) plus a 1-bit tier bank cost the facts.
+
+Disposition: deleted 2026-11-03. Do not re-fetch until a re-export drops the Q1_0 tier (or the publisher
+fixes the Vulkan path) — the shape (32B total / ~6B active in 48 GiB) is still the one gap this roster has
+never covered, so a clean export of this shape would be worth another look.
+
+Run rows kept: `~/runs/20261103-190055-qwen38fn32-prune2.jsonl` (identity, perf, preflight, 2x needle,
+plus the backend-split probe note), `~/llama-local/t20-qwen38fn32-core.log`.
 
 ## NVIDIA-Nemotron-3.5-Lightning-30B-A3B (ggml-org Q4_0) — measured 2026-11-01, deleted: parity quality, dominated on speed and termination
 
@@ -1063,6 +1093,34 @@ Run rows kept: `~/runs/20261102-194814-qwopus36-35b-uncen.jsonl` (core, riddles 
 
 Restore: `LuffyTheFox/Qwopus3.6-35B-A3B-Coder-Uncensored-Genesis-MTP-GGUF`, file
 `Qwopus3.6-35B-A3B-Uncensored-Genesis-Hermes-APEX-Mini.gguf`, byte count and hash as recorded.
+
+## clover-35b-a3b-preview — retired 2026-11-03 (dominated, AR-only)
+
+DiffuSpace Clover-35B-A3B-Preview, a Qwen3.6-35B-A3B diffusion finetune. New arch `clover_moe`
+(upstream PR #31306, AR mode only — self-speculative diffusion decode is a separate unmerged PR),
+so it needed its own upstream tree; no fork/upstream local tree carried the arch.
+
+Measured (2026-11-03, cap 4096, zero items at cap on both heavy axes): HumanEval 0.8598 (141/164),
+MMLU-Pro 0.4000 (48/120), riddles 14/14 scored but 3 non-terminating at n=4096 (11/14 committed),
+preflight 3/3, needles 2k+8k PASS, tool gate `finish_reason=tool_calls` first try, agentic probe 2/3,
+tg 53.7 t/s / pp 1461 / ttft 1231 ms. Code parity with its base family (qwen3.6-35b 0.8354/0.45),
+knowledge at base-family level, and the gemma4-26B-A4B driver beats both axes at 48.9 t/s.
+
+Restore: `bartowski/Diffuspace_Clover-35B-A3B-Preview-GGUF`, file
+`Diffuspace_Clover-35B-A3B-Preview-Q4_K_M.gguf`, 22,318,513,056 bytes,
+sha256 `62f43125c5f08c559cb476aa96baf436683836340472116a64a9ea311587c4f1`.
+Build its own tree first (no local tree registers CLOVER_MOE):
+
+    git clone --depth 1 https://github.com/ggml-org/llama.cpp ~/llama-local/clover-llama.cpp
+    cd ~/llama-local/clover-llama.cpp && cmake -B build -DCMAKE_BUILD_TYPE=Release \
+      -DGGML_VULKAN=ON -DGGML_NATIVE=ON -DGGML_OPENMP=ON -DGGML_CCACHE=ON \
+      -DVulkan_INCLUDE_DIR=$HOME/.local/include -DVulkan_LIBRARY=/usr/lib/libvulkan.so -DLLAMA_CURL=OFF
+    cmake --build build --target llama-server llama-cli -j 28     # ~2 min, not 10
+
+Server flags: `-ngl 99 -c 131072 --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0
+--spec-type none --reasoning off --jinja -np 1 -b 4096 -ub 2048 --metrics` on port 8091.
+Run rows kept: `~/runs/20261103-181904-clover35b-q4km.jsonl`, `~/bench/runs/humaneval-20261103-182953.jsonl`,
+`~/bench/runs/mmlupro-20261103-183404.jsonl`.
 
 ---
 
