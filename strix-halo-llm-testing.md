@@ -7,8 +7,8 @@
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-03
-- **Roster:** 15 servable model files on disk, 630 GiB, checked 2026-11-03 · **Change log:** §21
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-05
+- **Roster:** 16 servable model files on disk, 708 GiB, checked 2026-11-05 · **Change log:** §21
 
 **About this document**
 
@@ -944,7 +944,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 32 of the 70 model aliases that have
+One row per model that completed the full suite and reached a verdict — 33 of the 71 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -976,6 +976,7 @@ deleted rows are why the recommendations below have reasons.
 | flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | flint pre-identity | ✗ 10-30 |
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
 | mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✓ |
+| Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✓ |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
@@ -1004,7 +1005,7 @@ Q8_0 row now carries its own file's numbers.
 
 
 **Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. Full inventory (17 model artefacts, 630 GiB, projectors and drafters included) is in §20.3.
+capability row. Full inventory (23 model artefacts, 708 GiB, projectors and drafters included) is in §20.3.
 
 | Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1177,6 +1178,26 @@ items at the cap — one standard error above its base family's 0.8354 — and k
 matched their own restatement, so the committed rate is 11/14. The one thing that would have made it
 interesting — parallel, self-speculative diffusion decode — is an unmerged upstream PR, so what was
 measured is the AR fallback at AR prices. Deleted 2026-11-03.
+
+**Groot-65B-A6B — a 116.5B model that is honest about its size.** The name says 65B; the header says
+116,514,464,640 parameters — 48 blocks, 256 experts routed 10 per token, 12 full-attention layers and 36
+Gated DeltaNet layers, under `qwen4exp` with a per-layer embedding bank. At Q4_K_M that is 79.07 GiB on
+disk plus a 4.89 GiB draft head, the largest file in this archive, and the first one that does **not** fit
+all-resident: pinned that way it held 71.0 GiB of GTT with about 1 GiB available, and a first attempt at
+four slots (32k context, vision projector loaded) was globally OOM-killed after seven minutes. With the
+fork's `--lazy-mode auto` it settles at 50.4 GiB and serves beside the driver and the boot model at no
+decode cost — 27.66 against 27.43 t/s over three greedy samples — which is why it is on disk at all.
+
+Code lands at **0.9000 (54/60 at cap 2048)** and knowledge at **0.7500 (30/40)**; both are subsets, ranked
+with their item counts shown, and comparable only to other subsample rows such as flint's 60-item figure.
+Decode is **27.6 t/s**, roughly 1.8x slower than the 116.8B gpt-oss file at similar active size, and
+instruction-following is the soft axis — IFEval 0.60 prompt-strict and 0.56 instruction-strict over 30
+items, against 0.93 for Qwen3-Next-80B. Its bundled MTP head is the one clean speed win in the archive:
+**27.66 → 35.66 t/s, +28.7%, 76.3% acceptance**, the exact opposite of every grafted draft head tried here.
+Riddles read 9/14, but all five misses returned precisely the 2048 cap with no content at all; re-asked at
+4096 the family-relations puzzle answers correctly after 1,953 thinking tokens, so that row measures
+deliberation length rather than capability. Kept, not adopted: the driver still wins on code, knowledge,
+instruction-following and speed.
 
 **qwen38fn32-prune2 — it loads; that was the least of its problems.** The 48.31 GiB export this report
 called unloadable in v1.16 does load, on the publisher's own runtime patch, because its 177 "experts" are
@@ -2206,9 +2227,9 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 147 runs totalling **54.6 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-03. Of the 70 model aliases with at least one
-measurement, 15 model files remain
+**The one cost that is measured:** 149 runs totalling **55.9 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-05. Of the 71 model aliases with at least one
+measurement, 16 model files remain
 servable and 31 retirements are recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
 
@@ -2228,7 +2249,7 @@ time log. Ranges, not a point estimate.
 |---|---:|---:|---|
 | planning and design | 15 | 25 | seven axes, the cap policy, the memory and quantisation model (§5) |
 | harness and tooling | 70 | 100 | ~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline |
-| running and supervising | 45 | 60 | 54.6 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
+| running and supervising | 45 | 60 | 55.9 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
 | analysis and correlation | 30 | 45 | alias-collision audits, cap-floor re-measurements, four external sources compared |
 | writing and revision | 50 | 70 | 2,655 lines across six editions, the ledger, ten captioned figures |
 | publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
@@ -2466,7 +2487,8 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
    8096 gptoss-abliterated 8097 qwen38fn-abl    8098 ornith35b (user unit)
    8099 gemma4-26b-a4b    (script only, unit disabled)
    8100 gemma4-26b-uncen  (ENABLED — the WhatsApp channel driver)
-   8181 lfm25-24b-a2b    8185 ornith-mtp-21g    8186 minicpm-v47-35b
+   8181 lfm25-24b-a2b    8182 groot65b-a6b (transient bench unit, on demand)
+   8185 ornith-mtp-21g    8186 minicpm-v47-35b
    8189 nemotron-super   8094 orient-ornith (SYSTEM unit, boot model)
    8090 the hardware monitor (hardware monitor, private network only)   8188 ComfyUI (image generation)
 
@@ -2564,8 +2586,13 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The two most recent entries, in brief:
+The three most recent entries, in brief:
 
+- **v1.19** — Groot-65B-A6B measured and kept on demand: 116.5B under a 65B name, **0.9000 code (54/60 at
+  cap 2048) / 0.7500 knowledge (30/40)**, 27.6 t/s, and the archive's first real drafter win (bundled MTP
+  head, **27.66 → 35.66 t/s** at 76.3% acceptance). The finding that matters is the footprint: it does not
+  fit all-resident — GTT 71.0 GiB and one OOM kill — and only serves beside the driver under the fork's
+  `--lazy-mode auto`, at 50.4 GiB and no speed cost.
 - **v1.18** — Clover-35B-A3B-Preview measured and retired (0.8598 code / 0.4000 knowledge, AR mode only);
   the 32B-A6B "Prune2" export **loads after all** — v1.16's "cannot load" was a tier-0-only read of a
   three-bank expert layout — and was then retired for a split failure: repetition on Vulkan, no factual
@@ -2579,7 +2606,7 @@ The two most recent entries, in brief:
 ## 22. Credits and tooling
 
 **Measurement.** Every figure here was produced by `~/bench/t20` and the per-axis scripts on the
-machine described in §2, run by the operator between 2026-10-07 and 2026-11-03. The numbers come from
+machine described in §2, run by the operator between 2026-10-07 and 2026-11-05. The numbers come from
 those runs and from the hardware monitor's SQLite history; none is estimated, and each is traceable to
 a run id in `~/runs/catalogue.json`.
 

@@ -473,11 +473,25 @@ z
     </g>
    </g>
    <g id="PathCollection_13">
+    <path d="M 240.694453 92.541417 
+C 241.95815 92.541417 243.17026 92.039345 244.063829 91.145776 
+C 244.957398 90.252207 245.45947 89.040097 245.45947 87.7764 
+C 245.45947 86.512703 244.957398 85.300593 244.063829 84.407025 
+C 243.17026 83.513456 241.95815 83.011383 240.694453 83.011383 
+C 239.430756 83.011383 238.218646 83.513456 237.325077 84.407025 
+C 236.431509 85.300593 235.929436 86.512703 235.929436 87.7764 
+C 235.929436 89.040097 236.431509 90.252207 237.325077 91.145776 
+C 238.218646 92.039345 239.430756 92.541417 240.694453 92.541417 
+L 240.694453 92.541417 
+z
+" clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+   </g>
+   <g id="PathCollection_14">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m0647039c0c" x="341.192007" y="269.670437" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_14">
+   <g id="PathCollection_15">
     <defs>
      <path id="m329840d118" d="M 0 3.032757 
 C 0.804296 3.032757 1.575759 2.713206 2.144483 2.144483 
@@ -495,12 +509,12 @@ z
      <use xlink:href="#m329840d118" x="374.253479" y="98.476049" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_15">
+   <g id="PathCollection_16">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m329840d118" x="318.599858" y="87.7764" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_16">
+   <g id="PathCollection_17">
     <defs>
      <path id="m3c52065c17" d="M 0 3.489329 
 C 0.925381 3.489329 1.812985 3.121672 2.467328 2.467328 
@@ -518,12 +532,12 @@ z
      <use xlink:href="#m3c52065c17" x="358.199117" y="173.373594" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_17">
+   <g id="PathCollection_18">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m3c52065c17" x="374.416468" y="159.121661" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_18">
+   <g id="PathCollection_19">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -541,7 +555,7 @@ z
      <use xlink:href="#mc028a00990" x="435.462672" y="112.727982" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_19">
+   <g id="PathCollection_20">
     <defs>
      <path id="mf66fbd696a" d="M 0 4.941634 
 C 1.310537 4.941634 2.567574 4.420953 3.494263 3.494263 
@@ -559,7 +573,7 @@ z
      <use xlink:href="#mf66fbd696a" x="289.591646" y="80.629035" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_20">
+   <g id="PathCollection_21">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -577,12 +591,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="109.175699" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_21">
+   <g id="PathCollection_22">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="62.824818" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_22">
+   <g id="PathCollection_23">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -600,7 +614,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="77.076751" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_23">
+   <g id="PathCollection_24">
     <path d="M 234.22131 235.331532 
 C 235.284413 235.331532 236.304118 234.909157 237.055845 234.157429 
 C 237.807573 233.405702 238.229948 232.385998 238.229948 231.322895 
@@ -614,7 +628,7 @@ L 234.22131 235.331532
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_24">
+   <g id="PathCollection_25">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -632,7 +646,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="251.823423" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_25">
+   <g id="PathCollection_26">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -650,7 +664,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="80.629035" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_26">
+   <g id="PathCollection_27">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -668,17 +682,17 @@ z
      <use xlink:href="#m8fde69458a" x="192.097471" y="69.929385" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_27">
+   <g id="PathCollection_28">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="77.076751" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_28">
+   <g id="PathCollection_29">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="137.722363" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_29">
+   <g id="PathCollection_30">
     <path d="M 189.317516 181.781794 
 C 190.60532 181.781794 191.840553 181.270144 192.751168 180.359529 
 C 193.661783 179.448914 194.173433 178.213682 194.173433 176.925878 
@@ -692,7 +706,7 @@ L 189.317516 181.781794
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_30">
+   <g id="PathCollection_31">
     <path d="M 332.269501 219.321115 
 C 333.104605 219.321115 333.905618 218.989324 334.496126 218.398817 
 C 335.086634 217.808309 335.418424 217.007296 335.418424 216.172191 
@@ -706,7 +720,7 @@ L 332.269501 219.321115
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_31">
+   <g id="PathCollection_32">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -724,7 +738,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="134.127281" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_32">
+   <g id="PathCollection_33">
     <path d="M 297.508633 153.608908 
 C 298.600456 153.608908 299.647707 153.175123 300.419743 152.403087 
 C 301.191778 151.631052 301.625564 150.5838 301.625564 149.491977 
@@ -2809,7 +2823,7 @@ z
    </g>
   </g>
   <g id="text_29">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 32 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 33 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>

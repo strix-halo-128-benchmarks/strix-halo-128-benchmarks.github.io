@@ -9,6 +9,53 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.19 (2026-11-05)
+
+**One arrival, kept on demand — and a footprint rule that only appears at this size.**
+
+| model | HE @2048 | MMLU @2048 | needles | decode | size | verdict |
+|---|---|---|---|---|---|---|
+| Groot-65B-A6B Q4_K_M | 0.9000 (54/60) | 0.7500 (30/40) | 2k + 8k PASS | 27.6 t/s (35.7 with MTP) | 84.91 GB / 79.07 GiB | kept, on demand — not a driver |
+
+Groot-65B-A6B-261023 is the largest file measured here, and the model name understates it: the GGUF header
+declares **116,514,464,640** parameters under `qwen4exp` — 48 blocks, 256 experts routed 10 per token, 12
+full-attention and 36 Gated DeltaNet layers, plus the per-layer embedding bank this family carries. Six
+files (four Q4_K_M shards, a BF16 projector and a 4.89 GiB MTP draft head) were fetched sequentially at
+~45 MB/s and every one was checked against the Hugging Face tree API's `lfs.oid`, size and sha256.
+
+**The number that changed the operating rules is not a score: it is MemAvailable.** Served all-resident on
+`upstream-master-bolt` it pinned 71.0 GiB of GTT and left the machine with about 1 GiB available — the
+process then carried 21 GB of anonymous RSS and 21.7 GB of zram, and a first suite attempt (four slots,
+32k context, vision projector loaded) was **globally OOM-killed after seven minutes**, with the kernel
+recording the victim's own anonymous RSS as 10 MB. GTT is unreclaimable system RAM on this box, not a
+separate pool, so "the weights fit the 100 GiB pool" is not the same claim as "the model fits the
+machine". Re-served on the halo-box fork with `--load-mode mmap --lazy-mode auto` it holds **50.4 GiB of
+GTT**, runs at the same speed within noise (27.66 vs 27.43 t/s over three greedy samples), and co-exists
+with the driver and the boot model — measured together at GTT 73.9 GiB with 38 GiB still available.
+
+**What it scores.** Code 0.9000 (54 of 60 at cap 2048) and knowledge 0.7500 (30 of 40): both subsets, so
+the row carries its item counts and is ranked against other subsample rows, not against the 164/120
+columns. Decode 27.6 t/s is about 1.8x slower than the 116.8B gpt-oss file at similar active size, and the
+weak axis is instruction-following — IFEval 0.60 prompt-strict, 0.56 instruction-strict over 30 items,
+against 0.93 for Qwen3-Next-80B. Riddles read 9/14, but all five misses returned exactly the 2048-token cap
+with empty content; re-asked at 4096 the family-relations puzzle answers correctly after 1,953 thinking
+tokens, so the row is deliberation length, not capability. Per-request `reasoning_effort` is live on this
+template: the same arithmetic probe costs 943 tokens at default, 95 at `low`, 64 at `medium`, 2 at `none`.
+
+**The drafter result reverses a rule this page has argued for a month.** Every grafted `-md` head measured
+here lost 8-11% despite 87-92% acceptance, and the standing advice was `--spec-type none` for MoE models.
+The MTP head that ships with Groot's own weights gained **+28.7%** (27.66 → 35.66 t/s, 76.3% acceptance,
+mean draft length 3.29). Provenance decides, not acceptance ratio: a head trained and exported with the
+trunk pays; a head borrowed from a sibling does not. Note also that this build exports no
+`llamacpp:spec_decode_*` gauges for `qwen4exp` — the ratio exists only in the server log.
+
+Verdict: kept, on demand, not adopted. The driver still leads on code, knowledge, instruction-following and
+speed; this is a burst model for hard reasoning and code, and the first one that can sit beside the
+driver while it does it. Recipe: `~/llama-local/run-groot65b.sh [nomtp|mtp]`, port 8182, `-c 16384 -np 1
+-b 1024 -ub 256`, q8_0 KV, `GROOT_LAZY=auto`.
+
+---
+
 ### Version 1.18 (2026-11-03)
 
 **Two arrivals measured, both retired — and one of them reverses the verdict in v1.16.**

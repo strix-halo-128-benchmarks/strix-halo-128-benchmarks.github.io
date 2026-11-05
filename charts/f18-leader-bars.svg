@@ -567,7 +567,7 @@ L 595.889097 54.084
       </g>
      </g>
      <g id="text_38">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="223.602219" transform="rotate(-0 395.995273 223.602219)">hy-memory-30b-a3b</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="223.601961" transform="rotate(-0 395.995273 223.601961)">Qwen3-Next-80B-A3B-Inst…</text>
      </g>
     </g>
     <g id="ytick_17">
@@ -577,7 +577,7 @@ L 595.889097 54.084
       </g>
      </g>
      <g id="text_39">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="212.52257" transform="rotate(-0 395.995273 212.52257)">Qwen3-Next-80B-A3B-Inst…</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="212.522828" transform="rotate(-0 395.995273 212.522828)">groot65b-a6b</text>
      </g>
     </g>
     <g id="ytick_18">
@@ -713,16 +713,16 @@ L 595.889097 54.084
    </g>
    <g id="patch_23">
     <path d="M 402.995273 224.861727 
-L 542.843295 224.861727 
-L 542.843295 217.327742 
+L 546.064622 224.861727 
+L 546.064622 217.327742 
 L 402.995273 217.327742 
 z
-" clip-path="url(#p0189f1d636)" style="fill: #f0e442"/>
+" clip-path="url(#p0189f1d636)" style="fill: #7a828e"/>
    </g>
    <g id="patch_24">
     <path d="M 402.995273 213.782337 
-L 546.064622 213.782337 
-L 546.064622 206.248351 
+L 547.665641 213.782337 
+L 547.665641 206.248351 
 L 402.995273 206.248351 
 z
 " clip-path="url(#p0189f1d636)" style="fill: #7a828e"/>

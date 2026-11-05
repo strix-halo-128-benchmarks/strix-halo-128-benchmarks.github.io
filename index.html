@@ -68,8 +68,8 @@ a { color:var(--acc); }
 <p>· OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)</p>
 <ul>
 <li><strong>Runtime:</strong> llama.cpp on Vulkan · <strong>Harness:</strong> <code>~/bench</code> (<code>t20</code>)</li>
-<li><strong>Archive:</strong> <code>~/runs/catalogue.json</code> · <strong>Measurements:</strong> 2026-10-07 → 2026-11-03</li>
-<li><strong>Roster:</strong> 15 servable model files on disk, 630 GiB, checked 2026-11-03 · <strong>Change log:</strong> §21</li>
+<li><strong>Archive:</strong> <code>~/runs/catalogue.json</code> · <strong>Measurements:</strong> 2026-10-07 → 2026-11-05</li>
+<li><strong>Roster:</strong> 16 servable model files on disk, 708 GiB, checked 2026-11-05 · <strong>Change log:</strong> §21</li>
 </ul>
 <p><strong>About this document</strong></p>
 <p><em>Audience:</em> someone deciding what to run on a 128 GB unified-memory AMD machine, and someone checking whether the numbers are honest. <em>Provenance:</em> every figure comes from a run recorded in <code>~/runs/catalogue.json</code>, a log file, or a query against the hardware monitor's database; nothing is quoted from a vendor or a leaderboard. <em>What it is not:</em> a benchmark of these models in general. It is a measurement of one machine, at one software version, at stated caps — §10.5 and §14.6 say exactly how far that can be pushed.</p>
@@ -586,11 +586,11 @@ a { color:var(--acc); }
 <hr>
 <h2 id="s9">Results — the measured matrix</h2>
 <p><em>Ranked per axis instead? <a href="leaderboards.html">Leaderboards by axis</a> — same rows, one axis per table, each carrying its cap and build.</em></p>
-<p>One row per model that completed the full suite and reached a verdict — 32 of the 70 model aliases that have at least one measurement in the archive. <code>HE</code> is <code>score (items@cap)</code>; caps differ, so read section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from 2026-10-27 onwards. The <code>build</code> column names the tree and the commit that produced the row — <code>fork b3-1a33095</code>, <code>bolt b1-a30fb49</code>, or <code>pre-identity</code> where the run predates identity stamping (§4.1 explains why that is a window, not a guess). The full path is deliberately not published. The <code>measured</code> column is the date of the best-scoring run shown — the run id and the full build identity are in <code>data/catalogue.json</code>, so any row can be traced to the exact binary that produced it. The <code>disk</code> column is the roster as of <strong>2026-11-03</strong>: <code>✓</code> present and servable, <code>✗</code> retired (recipes in <code>~/llama-local/RETIRED-models.md</code>). Table 4 is all-time by design — the deleted rows are why the recommendations below have reasons.</p>
+<p>One row per model that completed the full suite and reached a verdict — 33 of the 71 model aliases that have at least one measurement in the archive. <code>HE</code> is <code>score (items@cap)</code>; caps differ, so read section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from 2026-10-27 onwards. The <code>build</code> column names the tree and the commit that produced the row — <code>fork b3-1a33095</code>, <code>bolt b1-a30fb49</code>, or <code>pre-identity</code> where the run predates identity stamping (§4.1 explains why that is a window, not a guess). The full path is deliberately not published. The <code>measured</code> column is the date of the best-scoring run shown — the run id and the full build identity are in <code>data/catalogue.json</code>, so any row can be traced to the exact binary that produced it. The <code>disk</code> column is the roster as of <strong>2026-11-03</strong>: <code>✓</code> present and servable, <code>✗</code> retired (recipes in <code>~/llama-local/RETIRED-models.md</code>). Table 4 is all-time by design — the deleted rows are why the recommendations below have reasons.</p>
 <p><strong>Table 4 — The measured matrix, all-time: one row per model, best run, caps shown with item counts.</strong></p>
-<table><thead><tr><th>Model</th><th>Params</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>prefill t/s</th><th>decode t/s</th><th>measured</th><th>build</th><th>disk</th></tr></thead><tbody><tr><td>gemma4-31b</td><td>30.7B</td><td>Q4_0</td><td>0.9634 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>350</td><td>17.0</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-uncen</td><td>25.2B</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>1759</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>✓ driver</td></tr><tr><td>minicpm-v47-35b</td><td>34.7B</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>1600</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>gemma4-26b-a4b</td><td>25.2B</td><td>Q8_0</td><td>0.9573 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>—</td><td>49.4</td><td>2026-10-30</td><td>fork b3-1a33095</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-qat-q4</td><td>25.2B</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>1900</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>ornith-122b</td><td>124.6B</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>605</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>nemotron-super-120b</td><td>123.6B</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>411</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>Nemotron-Bolt-74B-A9B</td><td>74.0B</td><td>IQ2_XXS</td><td>0.9451 (164@2048)</td><td>0.3667 (120@2048)</td><td>13/14</td><td>577</td><td>72.8</td><td>2026-10-16</td><td>bolt pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q6</td><td>79.7B</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>1189</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>1045</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss-abliterated</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>1052</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen35</td><td>122.1B</td><td>Q4_K_M</td><td>0.9242 (66)</td><td>0.5417 (48)</td><td>12/14</td><td>622</td><td>22.9</td><td>2026-10-11</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>ornith-mtp-21g</td><td>35.5B</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>1610</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>flint (i1-Q4_K_M)</td><td>40.0B</td><td>Q4_K_M</td><td>0.9167 (60@4096)</td><td>—</td><td>10/14</td><td>—</td><td>71.1</td><td>2026-10-25</td><td>flint pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q4</td><td>79.7B</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>1219</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>mellum21-fork</td><td>12.1B</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>2723</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>mellum</td><td>12.1B</td><td>Q6_K</td><td>0.8780 (164@4096)</td><td>0.7000 (120@4096)</td><td>11/14</td><td>2442</td><td>91.8</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>qwen38-35b</td><td>35.5B</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>1550</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Clover-35B-A3B-Preview</td><td>34.7B</td><td>Q4_K_M</td><td>0.8598 (164@4096)</td><td>0.4000 (120@4096)</td><td>14/14</td><td>1461</td><td>53.7</td><td>2026-11-03</td><td>clover b1-6b9c0cf</td><td>✗ 11-03</td></tr><tr><td>lfm25-24b-a2b</td><td>24.0B</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>2930</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>1774</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen38fn-abl</td><td>176.9B</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>448</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen36-35b</td><td>34.7B</td><td>Q4_K_M</td><td>0.8354 (164)</td><td>0.4500 (120)</td><td>12/14</td><td>1548</td><td>57.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>Ornith-1.5-35B</td><td>35.5B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>1633</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>kimi</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@2048)</td><td>0.5500 (120@2048)</td><td>13/14</td><td>1597</td><td>67.4</td><td>2026-10-14</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>hy-memory-30b-a3b</td><td>30.1B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.7250 (120@2048)</td><td>12/14</td><td>1515</td><td>74.7</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>graft-50b-a3b</td><td>50.7B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.6583 (120@2048)</td><td>14/14</td><td>1368</td><td>54.3</td><td>2026-10-19</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>hy-memory-30b-a3b-q8</td><td>30.1B</td><td>Q8_0</td><td>0.7683 (164@2048)</td><td>0.7500 (120@2048)</td><td>11/14</td><td>1459</td><td>52.3</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>Ling-3.0-flash</td><td>—</td><td>Q4_K_M</td><td>—</td><td>0.7667 (120@2048)</td><td>11/14</td><td>—</td><td>43.5</td><td>2026-10-22</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen38fn32-prune2</td><td>32.2B</td><td>QMix, 3 banks</td><td>—</td><td>—</td><td>—</td><td>397</td><td>20.0</td><td>2026-11-03</td><td>qwen4exp-var b1-1844325</td><td>✗ 11-03</td></tr><tr><td>ornith35b (uncensored)</td><td>35.5B</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>1762</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓ boot</td></tr><tr><td>nemotron-bolt (broken load)</td><td>74.0B</td><td>IQ2_XXS</td><td>0.1786 (56@512)</td><td>0.4146 (41@512)</td><td>8/14</td><td>586</td><td>22.7</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr></tbody></table>
+<table><thead><tr><th>Model</th><th>Params</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>prefill t/s</th><th>decode t/s</th><th>measured</th><th>build</th><th>disk</th></tr></thead><tbody><tr><td>gemma4-31b</td><td>30.7B</td><td>Q4_0</td><td>0.9634 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>350</td><td>17.0</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-uncen</td><td>25.2B</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>1759</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>✓ driver</td></tr><tr><td>minicpm-v47-35b</td><td>34.7B</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>1600</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>gemma4-26b-a4b</td><td>25.2B</td><td>Q8_0</td><td>0.9573 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>—</td><td>49.4</td><td>2026-10-30</td><td>fork b3-1a33095</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-qat-q4</td><td>25.2B</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>1900</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>ornith-122b</td><td>124.6B</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>605</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>nemotron-super-120b</td><td>123.6B</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>411</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>Nemotron-Bolt-74B-A9B</td><td>74.0B</td><td>IQ2_XXS</td><td>0.9451 (164@2048)</td><td>0.3667 (120@2048)</td><td>13/14</td><td>577</td><td>72.8</td><td>2026-10-16</td><td>bolt pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q6</td><td>79.7B</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>1189</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>1045</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss-abliterated</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>1052</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen35</td><td>122.1B</td><td>Q4_K_M</td><td>0.9242 (66)</td><td>0.5417 (48)</td><td>12/14</td><td>622</td><td>22.9</td><td>2026-10-11</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>ornith-mtp-21g</td><td>35.5B</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>1610</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>flint (i1-Q4_K_M)</td><td>40.0B</td><td>Q4_K_M</td><td>0.9167 (60@4096)</td><td>—</td><td>10/14</td><td>—</td><td>71.1</td><td>2026-10-25</td><td>flint pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen3next-q4</td><td>79.7B</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>1219</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>mellum21-fork</td><td>12.1B</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>2723</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Groot-65B-A6B</td><td>116.5B</td><td>Q4_K_M</td><td>0.9000 (60@2048)</td><td>0.7500 (40@2048)</td><td>9/14</td><td>597</td><td>27.6</td><td>2026-11-05</td><td>bolt b1-a30fb49</td><td>✓</td></tr><tr><td>mellum</td><td>12.1B</td><td>Q6_K</td><td>0.8780 (164@4096)</td><td>0.7000 (120@4096)</td><td>11/14</td><td>2442</td><td>91.8</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>qwen38-35b</td><td>35.5B</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>1550</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Clover-35B-A3B-Preview</td><td>34.7B</td><td>Q4_K_M</td><td>0.8598 (164@4096)</td><td>0.4000 (120@4096)</td><td>14/14</td><td>1461</td><td>53.7</td><td>2026-11-03</td><td>clover b1-6b9c0cf</td><td>✗ 11-03</td></tr><tr><td>lfm25-24b-a2b</td><td>24.0B</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>2930</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>1774</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen38fn-abl</td><td>176.9B</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>448</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen36-35b</td><td>34.7B</td><td>Q4_K_M</td><td>0.8354 (164)</td><td>0.4500 (120)</td><td>12/14</td><td>1548</td><td>57.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>Ornith-1.5-35B</td><td>35.5B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>1633</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>kimi</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@2048)</td><td>0.5500 (120@2048)</td><td>13/14</td><td>1597</td><td>67.4</td><td>2026-10-14</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>hy-memory-30b-a3b</td><td>30.1B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.7250 (120@2048)</td><td>12/14</td><td>1515</td><td>74.7</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>graft-50b-a3b</td><td>50.7B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.6583 (120@2048)</td><td>14/14</td><td>1368</td><td>54.3</td><td>2026-10-19</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>hy-memory-30b-a3b-q8</td><td>30.1B</td><td>Q8_0</td><td>0.7683 (164@2048)</td><td>0.7500 (120@2048)</td><td>11/14</td><td>1459</td><td>52.3</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>Ling-3.0-flash</td><td>—</td><td>Q4_K_M</td><td>—</td><td>0.7667 (120@2048)</td><td>11/14</td><td>—</td><td>43.5</td><td>2026-10-22</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen38fn32-prune2</td><td>32.2B</td><td>QMix, 3 banks</td><td>—</td><td>—</td><td>—</td><td>397</td><td>20.0</td><td>2026-11-03</td><td>qwen4exp-var b1-1844325</td><td>✗ 11-03</td></tr><tr><td>ornith35b (uncensored)</td><td>35.5B</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>1762</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓ boot</td></tr><tr><td>nemotron-bolt (broken load)</td><td>74.0B</td><td>IQ2_XXS</td><td>0.1786 (56@512)</td><td>0.4146 (41@512)</td><td>8/14</td><td>586</td><td>22.7</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr></tbody></table>
 <p>New in this edition: the <code>gemma4-26b-uncen</code> row (measured 2026-10-28, the model that now answers the channel) and the <code>disk</code> column. <strong>Three rows were wrong in version 1.2 and are corrected.</strong> <code>qwen3next-q6</code> was published as 0.9207 (164@2048) — no run supports that: its best is 0.9296 over 142 items, and 0.9207 is <code>ornith-mtp-21g</code>'s figure, copied onto it. <code>nemotron-super-120b</code> reads 0.9512 (156/164) at cap 4096 rather than 0.9329; two runs exist (156/164 and 153/164) and the old row quoted neither cleanly. And <code>gemma4-26b-a4b</code> and <code>gemma4-26b-qat-q4</code> were listed as two models when they are <strong>one weight file measured twice</strong> (156/164 and 154/164, cap 2048, MMLU 101/120 in both): the run alias was shared across the Q8_0 and QAT files, which is how a table comes to compare a file with itself. The Q8_0 row now carries its own file's numbers.</p>
-<p><strong>Table 4b — what is actually servable on 2026-10-31.</strong> Sixteen artefacts, every one now carrying a capability row. Full inventory (17 model artefacts, 630 GiB, projectors and drafters included) is in §20.3.</p>
+<p><strong>Table 4b — what is actually servable on 2026-10-31.</strong> Sixteen artefacts, every one now carrying a capability row. Full inventory (23 model artefacts, 708 GiB, projectors and drafters included) is in §20.3.</p>
 <table><thead><tr><th>Model</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>decode t/s</th><th>measured</th><th>build</th><th>endpoint</th></tr></thead><tbody><tr><td>gemma4-26b-uncen</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>:8100 enabled</td></tr><tr><td>minicpm-v47-35b</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>:8186</td></tr><tr><td>gemma4-26b-qat-q4</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>:8099 script only</td></tr><tr><td>ornith-122b</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>:8084</td></tr><tr><td>nemotron-super-120b</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>:8189</td></tr><tr><td>qwen3next-q6</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>:8083</td></tr><tr><td>gptoss</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>:8085</td></tr><tr><td>gptoss-abliterated</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>:8096</td></tr><tr><td>ornith-mtp-21g</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>:8185</td></tr><tr><td>mellum21-fork</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>—</td></tr><tr><td>qwen3next-q4</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>:8082</td></tr><tr><td>qwen38-35b</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8093</td></tr><tr><td>lfm25-24b-a2b</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>:8181</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8086</td></tr><tr><td>qwen38fn-abl</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>invalid (1/120)</td><td>11/14</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>:8097</td></tr><tr><td>Ornith-1.5-35B</td><td>Q4_K_M</td><td>0.8354 (164@4096)</td><td>0.4417 (120@4096)</td><td>13/14</td><td>74.1</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>:8086</td></tr><tr><td>ornith35b (uncensored)</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>:8094 boot</td></tr></tbody></table>
 <p>The last blank cell was filled on 2026-10-31: <code>Qwen3-Next-80B UD-Q4_K_XL</code> now has a full row (0.9146 code, 0.7417 knowledge, 14/14, 58.1 t/s) and it is the weakest large model on disk — see §9.1 and §21. Every artefact in this table has been scored on both capability axes.</p>
 <p>Models measured on the core axes only (no HumanEval row, all-time): <code>qwen38-flash-next-abl</code> (31.5 t/s, retired 10-30), <code>coder390-abl</code> (16.3 t/s, retired 10-30), <code>nemotron-bolt-e4b</code> (never measured, retired 10-30), <code>kolibri</code> (78.1B, 60.5 t/s, 13/14 — an <code>reasoning_effort=none</code> arm on the same file also measured HE 0.8293 (136/164 @512) and MMLU-Pro 0.4000 (48/120 @512), and is excluded from the matrix only because it disables deliberation and its MMLU grader accepts refusal-shaped strings containing the letter), <code>qwen38</code> (27.3B Q6_K, 8.8 t/s), <code>qwen38fn</code> / <code>qwen38fn-upstream</code> (176.9B Q2_K, 29.6 / 42.9 t/s), <code>qwen38-27b-fable</code> (12.0 t/s), <code>muse-glimmer</code> (10.9 t/s), <code>mellum21-12b-thinking</code> (28.0 t/s).</p>
@@ -616,6 +616,8 @@ a { color:var(--acc); }
 <p><strong>qwen38fn-abl — the knowledge collapse.</strong> 176.9B at IQ3_S: 0.8476 code, <strong>0.0083 MMLU</strong> (1 of 120). Something is badly wrong with this quantisation — the model can write code but cannot answer a multiple-choice question. Best example in the archive of why preflight-plus-MMLU belongs next to HumanEval: a code score alone would have made this look like a 177B keeper.</p>
 <p><strong>graft-50b-a3b — perfect riddles, ordinary code.</strong> 14/14 when almost nothing else scores 14/14, but 0.7805 code and 0.6583 knowledge. A curiosity rather than a pick.</p>
 <p><strong>Clover-35B-A3B-Preview — diffusion pretraining, AR-mode prices.</strong> The box's first diffusion-language model: a Qwen3.6-35B-A3B finetune under arch <code>clover_moe</code>, 34.7B at Q4_K_M, served from its own upstream tree because no local tree registers the arch. Code lands at <strong>0.8598 (141/164) at cap 4096</strong> with zero items at the cap — one standard error above its base family's 0.8354 — and knowledge at <strong>0.4000 (48/120)</strong>, base-family level, while the driver reads 0.9512 / 0.8417 at 48.9 t/s against this file's 53.7. Its riddles print 14/14, but three of those returned exactly 4096 tokens on the zebra puzzles and matched their own restatement, so the committed rate is 11/14. The one thing that would have made it interesting — parallel, self-speculative diffusion decode — is an unmerged upstream PR, so what was measured is the AR fallback at AR prices. Deleted 2026-11-03.</p>
+<p><strong>Groot-65B-A6B — a 116.5B model that is honest about its size.</strong> The name says 65B; the header says 116,514,464,640 parameters — 48 blocks, 256 experts routed 10 per token, 12 full-attention layers and 36 Gated DeltaNet layers, under <code>qwen4exp</code> with a per-layer embedding bank. At Q4_K_M that is 79.07 GiB on disk plus a 4.89 GiB draft head, the largest file in this archive, and the first one that does <strong>not</strong> fit all-resident: pinned that way it held 71.0 GiB of GTT with about 1 GiB available, and a first attempt at four slots (32k context, vision projector loaded) was globally OOM-killed after seven minutes. With the fork's <code>--lazy-mode auto</code> it settles at 50.4 GiB and serves beside the driver and the boot model at no decode cost — 27.66 against 27.43 t/s over three greedy samples — which is why it is on disk at all.</p>
+<p>Code lands at <strong>0.9000 (54/60 at cap 2048)</strong> and knowledge at <strong>0.7500 (30/40)</strong>; both are subsets, ranked with their item counts shown, and comparable only to other subsample rows such as flint's 60-item figure. Decode is <strong>27.6 t/s</strong>, roughly 1.8x slower than the 116.8B gpt-oss file at similar active size, and instruction-following is the soft axis — IFEval 0.60 prompt-strict and 0.56 instruction-strict over 30 items, against 0.93 for Qwen3-Next-80B. Its bundled MTP head is the one clean speed win in the archive: <strong>27.66 → 35.66 t/s, +28.7%, 76.3% acceptance</strong>, the exact opposite of every grafted draft head tried here. Riddles read 9/14, but all five misses returned precisely the 2048 cap with no content at all; re-asked at 4096 the family-relations puzzle answers correctly after 1,953 thinking tokens, so that row measures deliberation length rather than capability. Kept, not adopted: the driver still wins on code, knowledge, instruction-following and speed.</p>
 <p><strong>qwen38fn32-prune2 — it loads; that was the least of its problems.</strong> The 48.31 GiB export this report called unloadable in v1.16 does load, on the publisher's own runtime patch, because its 177 "experts" are three banks (64+60+53, and 154/115 in other blocks) rather than a metadata lie — the v1.16 entry is corrected. What it then does is worse than not loading: <strong>20.0 t/s decode against 74.8 for the same-shape Qwen3.8-35B-A3B Distill</strong>, and on Vulkan it degenerates into repetition (<code>17 * 23 = 17 * 23 = …</code>, and a 1024-token wall of <code>/</code> at the 8k needle) with q8_0 KV <em>and</em> with f16 KV and flash-attn off. On the CPU arm it is fluent and terminates — small arithmetic and instruction-following both fine — but the knowledge is gone: France and Australia both answer "No", the largest planet is "Earth", 17*23 is "37". Pruning 3,659 expert slots plus a Q1_0 tier bank cost the facts, and the GPU path never produced correct output at all. Deleted 2026-11-03.</p>
 <p><strong>Retired after measurement (recipes in <code>~/llama-local/RETIRED-models.md</code>).</strong></p>
 <ul>
@@ -1106,11 +1108,11 @@ a { color:var(--acc); }
 </ol>
 <p>case declared <code>arch = wan</code>). Read the header before a 15 GiB download: <code>head -c 4M model.gguf</code> and parse the metadata.</p>
 <h3>18.3 What this method cost, and what it bought</h3>
-<p><strong>The one cost that is measured:</strong> 147 runs totalling <strong>54.6 hours of benchmark execution</strong>, recorded run by run in <code>catalogue.json</code>, over 2026-10-07 → 2026-11-03. Of the 70 model aliases with at least one measurement, 15 model files remain servable and 31 retirements are recorded in the ledger; the two largest deletion passes alone released 61.6 GiB and 245.1 GiB.</p>
+<p><strong>The one cost that is measured:</strong> 149 runs totalling <strong>55.9 hours of benchmark execution</strong>, recorded run by run in <code>catalogue.json</code>, over 2026-10-07 → 2026-11-05. Of the 71 model aliases with at least one measurement, 16 model files remain servable and 31 retirements are recorded in the ledger; the two largest deletion passes alone released 61.6 GiB and 245.1 GiB.</p>
 <p>A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive one at 20 minutes to 2 hours depending on the model. The benefit is that every decision is a line in the catalogue rather than an opinion, and a re-test — of a new quantisation, a new llama.cpp build, or a model released next week — is a command rather than a project.</p>
 <h3>18.4 Effort: what it took, and what it would take you</h3>
 <p>Every other number in this report traces to a run. This one does not, and is labelled accordingly: it is a <strong>reconstruction from artefacts</strong> — line counts, run wall times, document revisions — not a time log. Ranges, not a point estimate.</p>
-<table><thead><tr><th>phase</th><th>low (h)</th><th>high (h)</th><th>what drives it</th></tr></thead><tbody><tr><td>planning and design</td><td>15</td><td>25</td><td>seven axes, the cap policy, the memory and quantisation model (§5)</td></tr><tr><td>harness and tooling</td><td>70</td><td>100</td><td>~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline</td></tr><tr><td>running and supervising</td><td>45</td><td>60</td><td>54.6 h of measured execution, ~18 h of per-model setup, re-runs and failed loads</td></tr><tr><td>analysis and correlation</td><td>30</td><td>45</td><td>alias-collision audits, cap-floor re-measurements, four external sources compared</td></tr><tr><td>writing and revision</td><td>50</td><td>70</td><td>2,655 lines across six editions, the ledger, ten captioned figures</td></tr><tr><td>publishing</td><td>12</td><td>18</td><td>repository, sanitising gates, Pages, discovery metadata, the two probes</td></tr><tr><td><strong>total</strong></td><td><strong>222</strong></td><td><strong>318</strong></td><td>≈ 250-300 h</td></tr></tbody></table>
+<table><thead><tr><th>phase</th><th>low (h)</th><th>high (h)</th><th>what drives it</th></tr></thead><tbody><tr><td>planning and design</td><td>15</td><td>25</td><td>seven axes, the cap policy, the memory and quantisation model (§5)</td></tr><tr><td>harness and tooling</td><td>70</td><td>100</td><td>~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline</td></tr><tr><td>running and supervising</td><td>45</td><td>60</td><td>55.9 h of measured execution, ~18 h of per-model setup, re-runs and failed loads</td></tr><tr><td>analysis and correlation</td><td>30</td><td>45</td><td>alias-collision audits, cap-floor re-measurements, four external sources compared</td></tr><tr><td>writing and revision</td><td>50</td><td>70</td><td>2,655 lines across six editions, the ledger, ten captioned figures</td></tr><tr><td>publishing</td><td>12</td><td>18</td><td>repository, sanitising gates, Pages, discovery metadata, the two probes</td></tr><tr><td><strong>total</strong></td><td><strong>222</strong></td><td><strong>318</strong></td><td>≈ 250-300 h</td></tr></tbody></table>
 <p>Of that total, <strong>40–60 hours were attended by a human</strong> — the rest is machine execution and agent time: the decisions the measurements cannot make — what to delete, what to publish, whether 0.57 is a fact about the model or a bug in the harness. The remainder is machine execution and agent time, which is why the per-byte cost of this hardware is not the scarce input; the discipline around it is.</p>
 <p><strong>Reproducing it elsewhere is far cheaper than making it once.</strong> The harness, the pipeline and this document's structure are public (<code>tools/</code> in the repository), so reproducing the numbers on another board is roughly <strong>40-60 hours</strong>, mostly bench wall time and per-model setup. One caveat that matters: capability rows should reproduce within a couple of percentage points, but decode will not — a different kernel, Mesa version or llama.cpp build moves throughput 10-20 %, which is exactly why every row here carries a build column.</p>
 <hr>
@@ -1688,11 +1690,25 @@ z
     </g>
    </g>
    <g id="PathCollection_16">
+    <path d="M 240.694453 66.594798 
+C 241.95815 66.594798 243.17026 66.092726 244.063829 65.199157 
+C 244.957398 64.305588 245.45947 63.093479 245.45947 61.829781 
+C 245.45947 60.566084 244.957398 59.353975 244.063829 58.460406 
+C 243.17026 57.566837 241.95815 57.064765 240.694453 57.064765 
+C 239.430756 57.064765 238.218646 57.566837 237.325077 58.460406 
+C 236.431509 59.353975 235.929436 60.566084 235.929436 61.829781 
+C 235.929436 63.093479 236.431509 64.305588 237.325077 65.199157 
+C 238.218646 66.092726 239.430756 66.594798 240.694453 66.594798 
+L 240.694453 66.594798 
+z
+" clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+   </g>
+   <g id="PathCollection_17">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m0647039c0c" x="341.192007" y="73.411698" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_17">
+   <g id="PathCollection_18">
     <defs>
      <path id="m329840d118" d="M 0 3.032757 
 C 0.804296 3.032757 1.575759 2.713206 2.144483 2.144483 
@@ -1710,12 +1726,12 @@ z
      <use xlink:href="#m329840d118" x="374.253479" y="96.258612" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_18">
+   <g id="PathCollection_19">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m329840d118" x="318.599858" y="99.773522" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_19">
+   <g id="PathCollection_20">
     <defs>
      <path id="m3c52065c17" d="M 0 3.489329 
 C 0.925381 3.489329 1.812985 3.121672 2.467328 2.467328 
@@ -1733,12 +1749,12 @@ z
      <use xlink:href="#m3c52065c17" x="358.199117" y="94.501157" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_20">
+   <g id="PathCollection_21">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m3c52065c17" x="374.416468" y="94.501157" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_21">
+   <g id="PathCollection_22">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -1756,7 +1772,7 @@ z
      <use xlink:href="#mc028a00990" x="435.462672" y="75.169153" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_22">
+   <g id="PathCollection_23">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -1774,12 +1790,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="68.168143" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_23">
+   <g id="PathCollection_24">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="57.623414" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_24">
+   <g id="PathCollection_25">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -1797,7 +1813,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="45.321229" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_25">
+   <g id="PathCollection_26">
     <path d="M 234.22131 273.679075 
 C 235.284413 273.679075 236.304118 273.2567 237.055845 272.504972 
 C 237.807573 271.753245 238.229948 270.733541 238.229948 269.670437 
@@ -1811,7 +1827,7 @@ L 234.22131 273.679075
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_26">
+   <g id="PathCollection_27">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -1829,7 +1845,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="48.836139" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_27">
+   <g id="PathCollection_28">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -1847,7 +1863,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="47.078684" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_28">
+   <g id="PathCollection_29">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -1865,17 +1881,17 @@ z
      <use xlink:href="#m8fde69458a" x="192.097471" y="47.078684" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_29">
+   <g id="PathCollection_30">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="55.865959" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_30">
+   <g id="PathCollection_31">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="157.740725" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_31">
+   <g id="PathCollection_32">
     <path d="M 189.317516 59.7135 
 C 190.60532 59.7135 191.840553 59.20185 192.751168 58.291235 
 C 193.661783 57.38062 194.173433 56.145387 194.173433 54.857583 
@@ -1889,7 +1905,7 @@ L 189.317516 59.7135
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_32">
+   <g id="PathCollection_33">
     <path d="M 332.269501 83.590441 
 C 333.104605 83.590441 333.905618 83.258651 334.496126 82.668143 
 C 335.086634 82.077635 335.418424 81.276622 335.418424 80.441517 
@@ -1903,7 +1919,7 @@ L 332.269501 83.590441
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_33">
+   <g id="PathCollection_34">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -1921,7 +1937,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="69.896788" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_34">
+   <g id="PathCollection_35">
     <defs>
      <path id="m0b407346a4" d="M 0 5.669875 
 C 1.503668 5.669875 2.945953 5.072461 4.009207 4.009207 
@@ -1939,7 +1955,7 @@ z
      <use xlink:href="#m0b407346a4" x="320.350354" y="76.926608" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_35">
+   <g id="PathCollection_36">
     <path d="M 297.508633 57.418735 
 C 298.600456 57.418735 299.647707 56.984949 300.419743 56.212913 
 C 301.191778 55.440878 301.625564 54.393626 301.625564 53.301803 
@@ -4024,7 +4040,7 @@ z
    </g>
   </g>
   <g id="text_32">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 35 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 36 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>
@@ -4513,11 +4529,25 @@ z
     </g>
    </g>
    <g id="PathCollection_13">
+    <path d="M 240.694453 92.541417 
+C 241.95815 92.541417 243.17026 92.039345 244.063829 91.145776 
+C 244.957398 90.252207 245.45947 89.040097 245.45947 87.7764 
+C 245.45947 86.512703 244.957398 85.300593 244.063829 84.407025 
+C 243.17026 83.513456 241.95815 83.011383 240.694453 83.011383 
+C 239.430756 83.011383 238.218646 83.513456 237.325077 84.407025 
+C 236.431509 85.300593 235.929436 86.512703 235.929436 87.7764 
+C 235.929436 89.040097 236.431509 90.252207 237.325077 91.145776 
+C 238.218646 92.039345 239.430756 92.541417 240.694453 92.541417 
+L 240.694453 92.541417 
+z
+" clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+   </g>
+   <g id="PathCollection_14">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m0647039c0c" x="341.192007" y="269.670437" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_14">
+   <g id="PathCollection_15">
     <defs>
      <path id="m329840d118" d="M 0 3.032757 
 C 0.804296 3.032757 1.575759 2.713206 2.144483 2.144483 
@@ -4535,12 +4565,12 @@ z
      <use xlink:href="#m329840d118" x="374.253479" y="98.476049" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_15">
+   <g id="PathCollection_16">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m329840d118" x="318.599858" y="87.7764" style="fill: #f0e442; fill-opacity: 0.9; stroke: #f0e442; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_16">
+   <g id="PathCollection_17">
     <defs>
      <path id="m3c52065c17" d="M 0 3.489329 
 C 0.925381 3.489329 1.812985 3.121672 2.467328 2.467328 
@@ -4558,12 +4588,12 @@ z
      <use xlink:href="#m3c52065c17" x="358.199117" y="173.373594" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_17">
+   <g id="PathCollection_18">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m3c52065c17" x="374.416468" y="159.121661" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_18">
+   <g id="PathCollection_19">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -4581,7 +4611,7 @@ z
      <use xlink:href="#mc028a00990" x="435.462672" y="112.727982" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_19">
+   <g id="PathCollection_20">
     <defs>
      <path id="mf66fbd696a" d="M 0 4.941634 
 C 1.310537 4.941634 2.567574 4.420953 3.494263 3.494263 
@@ -4599,7 +4629,7 @@ z
      <use xlink:href="#mf66fbd696a" x="289.591646" y="80.629035" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_20">
+   <g id="PathCollection_21">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -4617,12 +4647,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="109.175699" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_21">
+   <g id="PathCollection_22">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="62.824818" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_22">
+   <g id="PathCollection_23">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -4640,7 +4670,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="77.076751" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_23">
+   <g id="PathCollection_24">
     <path d="M 234.22131 235.331532 
 C 235.284413 235.331532 236.304118 234.909157 237.055845 234.157429 
 C 237.807573 233.405702 238.229948 232.385998 238.229948 231.322895 
@@ -4654,7 +4684,7 @@ L 234.22131 235.331532
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_24">
+   <g id="PathCollection_25">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -4672,7 +4702,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="251.823423" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_25">
+   <g id="PathCollection_26">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -4690,7 +4720,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="80.629035" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_26">
+   <g id="PathCollection_27">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -4708,17 +4738,17 @@ z
      <use xlink:href="#m8fde69458a" x="192.097471" y="69.929385" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_27">
+   <g id="PathCollection_28">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="77.076751" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_28">
+   <g id="PathCollection_29">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="137.722363" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_29">
+   <g id="PathCollection_30">
     <path d="M 189.317516 181.781794 
 C 190.60532 181.781794 191.840553 181.270144 192.751168 180.359529 
 C 193.661783 179.448914 194.173433 178.213682 194.173433 176.925878 
@@ -4732,7 +4762,7 @@ L 189.317516 181.781794
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_30">
+   <g id="PathCollection_31">
     <path d="M 332.269501 219.321115 
 C 333.104605 219.321115 333.905618 218.989324 334.496126 218.398817 
 C 335.086634 217.808309 335.418424 217.007296 335.418424 216.172191 
@@ -4746,7 +4776,7 @@ L 332.269501 219.321115
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_31">
+   <g id="PathCollection_32">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -4764,7 +4794,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="134.127281" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_32">
+   <g id="PathCollection_33">
     <path d="M 297.508633 153.608908 
 C 298.600456 153.608908 299.647707 153.175123 300.419743 152.403087 
 C 301.191778 151.631052 301.625564 150.5838 301.625564 149.491977 
@@ -6849,7 +6879,7 @@ z
    </g>
   </g>
   <g id="text_29">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 32 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 33 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>
@@ -12542,7 +12572,7 @@ L 595.889097 54.084
       </g>
      </g>
      <g id="text_38">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="223.602219" transform="rotate(-0 395.995273 223.602219)">hy-memory-30b-a3b</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="223.601961" transform="rotate(-0 395.995273 223.601961)">Qwen3-Next-80B-A3B-Inst…</text>
      </g>
     </g>
     <g id="ytick_17">
@@ -12552,7 +12582,7 @@ L 595.889097 54.084
       </g>
      </g>
      <g id="text_39">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="212.52257" transform="rotate(-0 395.995273 212.52257)">Qwen3-Next-80B-A3B-Inst…</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="395.995273" y="212.522828" transform="rotate(-0 395.995273 212.522828)">groot65b-a6b</text>
      </g>
     </g>
     <g id="ytick_18">
@@ -12688,16 +12718,16 @@ L 595.889097 54.084
    </g>
    <g id="patch_23">
     <path d="M 402.995273 224.861727 
-L 542.843295 224.861727 
-L 542.843295 217.327742 
+L 546.064622 224.861727 
+L 546.064622 217.327742 
 L 402.995273 217.327742 
 z
-" clip-path="url(#p0189f1d636)" style="fill: #f0e442"/>
+" clip-path="url(#p0189f1d636)" style="fill: #7a828e"/>
    </g>
    <g id="patch_24">
     <path d="M 402.995273 213.782337 
-L 546.064622 213.782337 
-L 546.064622 206.248351 
+L 547.665641 213.782337 
+L 547.665641 206.248351 
 L 402.995273 206.248351 
 z
 " clip-path="url(#p0189f1d636)" style="fill: #7a828e"/>
@@ -15533,12 +15563,12 @@ z
     </g>
    </g>
    <g id="line2d_20">
-    <path d="M 113.697818 54.059237 
+    <path d="M 113.697818 59.305925 
 L 209.065091 38.939238 
 L 304.432364 86.002758 
 L 399.799636 38.939238 
-L 495.166909 140.618226 
-L 590.534182 90.703784 
+L 495.166909 79.414284 
+L 590.534182 51.071182 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="m6fcf787880" d="M 0 2 
@@ -15554,21 +15584,21 @@ z
 " style="stroke: #d55e00; stroke-opacity: 0.88"/>
     </defs>
     <g clip-path="url(#p2e7c47eca6)">
-     <use xlink:href="#m6fcf787880" x="113.697818" y="54.059237" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m6fcf787880" x="113.697818" y="59.305925" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
      <use xlink:href="#m6fcf787880" x="209.065091" y="38.939238" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
      <use xlink:href="#m6fcf787880" x="304.432364" y="86.002758" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
      <use xlink:href="#m6fcf787880" x="399.799636" y="38.939238" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
-     <use xlink:href="#m6fcf787880" x="495.166909" y="140.618226" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
-     <use xlink:href="#m6fcf787880" x="590.534182" y="90.703784" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m6fcf787880" x="495.166909" y="79.414284" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m6fcf787880" x="590.534182" y="51.071182" style="fill: #d55e00; fill-opacity: 0.88; stroke: #d55e00; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="line2d_21">
-    <path d="M 113.697818 54.059237 
-L 209.065091 60.145332 
+    <path d="M 113.697818 59.305925 
+L 209.065091 69.231063 
 L 304.432364 86.002758 
 L 399.799636 38.939238 
-L 495.166909 119.860721 
-L 590.534182 92.303167 
+L 495.166909 47.10742 
+L 590.534182 53.066948 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #009e73; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="m3c9a929b06" d="M 0 2 
@@ -15584,21 +15614,21 @@ z
 " style="stroke: #009e73; stroke-opacity: 0.88"/>
     </defs>
     <g clip-path="url(#p2e7c47eca6)">
-     <use xlink:href="#m3c9a929b06" x="113.697818" y="54.059237" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
-     <use xlink:href="#m3c9a929b06" x="209.065091" y="60.145332" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
+     <use xlink:href="#m3c9a929b06" x="113.697818" y="59.305925" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
+     <use xlink:href="#m3c9a929b06" x="209.065091" y="69.231063" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
      <use xlink:href="#m3c9a929b06" x="304.432364" y="86.002758" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
      <use xlink:href="#m3c9a929b06" x="399.799636" y="38.939238" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
-     <use xlink:href="#m3c9a929b06" x="495.166909" y="119.860721" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
-     <use xlink:href="#m3c9a929b06" x="590.534182" y="92.303167" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
+     <use xlink:href="#m3c9a929b06" x="495.166909" y="47.10742" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
+     <use xlink:href="#m3c9a929b06" x="590.534182" y="53.066948" style="fill: #009e73; fill-opacity: 0.88; stroke: #009e73; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="line2d_22">
-    <path d="M 113.697818 69.179237 
-L 209.065091 70.684888 
+    <path d="M 113.697818 79.672613 
+L 209.065091 84.286281 
 L 304.432364 86.002758 
 L 399.799636 38.939238 
-L 495.166909 114.612576 
-L 590.534182 80.981387 
+L 495.166909 38.939238 
+L 590.534182 38.939238 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="m7183e6c371" d="M 0 2 
@@ -15614,21 +15644,21 @@ z
 " style="stroke: #cc79a7; stroke-opacity: 0.88"/>
     </defs>
     <g clip-path="url(#p2e7c47eca6)">
-     <use xlink:href="#m7183e6c371" x="113.697818" y="69.179237" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
-     <use xlink:href="#m7183e6c371" x="209.065091" y="70.684888" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
+     <use xlink:href="#m7183e6c371" x="113.697818" y="79.672613" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
+     <use xlink:href="#m7183e6c371" x="209.065091" y="84.286281" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
      <use xlink:href="#m7183e6c371" x="304.432364" y="86.002758" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
      <use xlink:href="#m7183e6c371" x="399.799636" y="38.939238" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
-     <use xlink:href="#m7183e6c371" x="495.166909" y="114.612576" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
-     <use xlink:href="#m7183e6c371" x="590.534182" y="80.981387" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
+     <use xlink:href="#m7183e6c371" x="495.166909" y="38.939238" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
+     <use xlink:href="#m7183e6c371" x="590.534182" y="38.939238" style="fill: #cc79a7; fill-opacity: 0.88; stroke: #cc79a7; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="line2d_23">
-    <path d="M 113.697818 69.179237 
-L 209.065091 134.17619 
+    <path d="M 113.697818 79.672613 
+L 209.065091 174.980369 
 L 304.432364 156.562758 
-L 399.799636 180.059238 
-L 495.166909 224.395562 
-L 590.534182 211.100976 
+L 399.799636 123.611238 
+L 495.166909 209.804857 
+L 590.534182 201.306979 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #e69f00; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="m9d7405184e" d="M 0 2 
@@ -15644,21 +15674,21 @@ z
 " style="stroke: #e69f00; stroke-opacity: 0.88"/>
     </defs>
     <g clip-path="url(#p2e7c47eca6)">
-     <use xlink:href="#m9d7405184e" x="113.697818" y="69.179237" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
-     <use xlink:href="#m9d7405184e" x="209.065091" y="134.17619" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m9d7405184e" x="113.697818" y="79.672613" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m9d7405184e" x="209.065091" y="174.980369" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
      <use xlink:href="#m9d7405184e" x="304.432364" y="156.562758" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
-     <use xlink:href="#m9d7405184e" x="399.799636" y="180.059238" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
-     <use xlink:href="#m9d7405184e" x="495.166909" y="224.395562" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
-     <use xlink:href="#m9d7405184e" x="590.534182" y="211.100976" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m9d7405184e" x="399.799636" y="123.611238" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m9d7405184e" x="495.166909" y="209.804857" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
+     <use xlink:href="#m9d7405184e" x="590.534182" y="201.306979" style="fill: #e69f00; fill-opacity: 0.88; stroke: #e69f00; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="line2d_24">
-    <path d="M 113.697818 69.179237 
-L 209.065091 165.921841 
+    <path d="M 113.697818 79.672613 
+L 209.065091 220.327412 
 L 304.432364 250.619238 
-L 399.799636 250.619238 
-L 495.166909 209.766793 
-L 590.534182 238.849774 
+L 399.799636 165.947238 
+L 495.166909 187.036724 
+L 590.534182 235.932892 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #56b4e9; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="m177bb3cdb6" d="M 0 2 
@@ -15674,21 +15704,21 @@ z
 " style="stroke: #56b4e9; stroke-opacity: 0.88"/>
     </defs>
     <g clip-path="url(#p2e7c47eca6)">
-     <use xlink:href="#m177bb3cdb6" x="113.697818" y="69.179237" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
-     <use xlink:href="#m177bb3cdb6" x="209.065091" y="165.921841" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
+     <use xlink:href="#m177bb3cdb6" x="113.697818" y="79.672613" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
+     <use xlink:href="#m177bb3cdb6" x="209.065091" y="220.327412" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
      <use xlink:href="#m177bb3cdb6" x="304.432364" y="250.619238" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
-     <use xlink:href="#m177bb3cdb6" x="399.799636" y="250.619238" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
-     <use xlink:href="#m177bb3cdb6" x="495.166909" y="209.766793" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
-     <use xlink:href="#m177bb3cdb6" x="590.534182" y="238.849774" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
+     <use xlink:href="#m177bb3cdb6" x="399.799636" y="165.947238" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
+     <use xlink:href="#m177bb3cdb6" x="495.166909" y="187.036724" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
+     <use xlink:href="#m177bb3cdb6" x="590.534182" y="235.932892" style="fill: #56b4e9; fill-opacity: 0.88; stroke: #56b4e9; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="line2d_25">
-    <path d="M 113.697818 129.659238 
-L 209.065091 187.127936 
+    <path d="M 113.697818 161.139364 
+L 209.065091 250.619238 
 L 304.432364 132.995717 
-L 399.799636 180.059238 
-L 495.166909 133.281216 
-L 590.534182 156.055894 
+L 399.799636 123.611238 
+L 495.166909 67.995003 
+L 590.534182 132.619814 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #f0e442; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="m110d790b71" d="M 0 2 
@@ -15704,21 +15734,21 @@ z
 " style="stroke: #f0e442; stroke-opacity: 0.88"/>
     </defs>
     <g clip-path="url(#p2e7c47eca6)">
-     <use xlink:href="#m110d790b71" x="113.697818" y="129.659238" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
-     <use xlink:href="#m110d790b71" x="209.065091" y="187.127936" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
+     <use xlink:href="#m110d790b71" x="113.697818" y="161.139364" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
+     <use xlink:href="#m110d790b71" x="209.065091" y="250.619238" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
      <use xlink:href="#m110d790b71" x="304.432364" y="132.995717" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
-     <use xlink:href="#m110d790b71" x="399.799636" y="180.059238" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
-     <use xlink:href="#m110d790b71" x="495.166909" y="133.281216" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
-     <use xlink:href="#m110d790b71" x="590.534182" y="156.055894" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
+     <use xlink:href="#m110d790b71" x="399.799636" y="123.611238" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
+     <use xlink:href="#m110d790b71" x="495.166909" y="67.995003" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
+     <use xlink:href="#m110d790b71" x="590.534182" y="132.619814" style="fill: #f0e442; fill-opacity: 0.88; stroke: #f0e442; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="line2d_26">
     <path d="M 113.697818 250.619238 
 L 209.065091 250.619238 
-L 304.432364 156.562758 
+L 304.432364 250.619238 
 L 399.799636 250.619238 
-L 495.166909 38.939238 
-L 590.534182 38.939238 
+L 495.166909 161.73699 
+L 590.534182 193.062306 
 " clip-path="url(#p2e7c47eca6)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.88; stroke-width: 1.6; stroke-linecap: square"/>
     <defs>
      <path id="mc8bac5312b" d="M 0 2 
@@ -15736,10 +15766,10 @@ z
     <g clip-path="url(#p2e7c47eca6)">
      <use xlink:href="#mc8bac5312b" x="113.697818" y="250.619238" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
      <use xlink:href="#mc8bac5312b" x="209.065091" y="250.619238" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
-     <use xlink:href="#mc8bac5312b" x="304.432364" y="156.562758" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
+     <use xlink:href="#mc8bac5312b" x="304.432364" y="250.619238" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
      <use xlink:href="#mc8bac5312b" x="399.799636" y="250.619238" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
-     <use xlink:href="#mc8bac5312b" x="495.166909" y="38.939238" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
-     <use xlink:href="#mc8bac5312b" x="590.534182" y="38.939238" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
+     <use xlink:href="#mc8bac5312b" x="495.166909" y="161.73699" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
+     <use xlink:href="#mc8bac5312b" x="590.534182" y="193.062306" style="fill: #7a828e; fill-opacity: 0.88; stroke: #7a828e; stroke-opacity: 0.88"/>
     </g>
    </g>
    <g id="patch_3">
@@ -15863,12 +15893,12 @@ L 641.9638 116.749625
      </g>
     </g>
     <g id="text_23">
-     <text style="font-size: 6.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="647.4038" y="119.129625" transform="rotate(-0 647.4038 119.129625)">mellum</text>
+     <text style="font-size: 6.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="647.4038" y="119.129625" transform="rotate(-0 647.4038 119.129625)">groot65b-a6b</text>
     </g>
    </g>
   </g>
   <g id="text_24">
-   <text style="font-size: 6.3px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="304.446438" transform="rotate(-0 8.64 304.446438)">models with all six axes measured (n = 8 of 20) · each axis normalised within this set (speed axes square-root scaled), so a profile shows shape, not absolute score · source: catalogue</text>
+   <text style="font-size: 6.3px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="304.446438" transform="rotate(-0 8.64 304.446438)">models with all six axes measured (n = 8 of 21) · each axis normalised within this set (speed axes square-root scaled), so a profile shows shape, not absolute score · source: catalogue</text>
   </g>
  </g>
  <defs>
@@ -20179,7 +20209,8 @@ curl -s localhost:8099/props | jq -r .build_info          # -&gt; b3-1a33095
    8096 gptoss-abliterated 8097 qwen38fn-abl    8098 ornith35b (user unit)
    8099 gemma4-26b-a4b    (script only, unit disabled)
    8100 gemma4-26b-uncen  (ENABLED — the WhatsApp channel driver)
-   8181 lfm25-24b-a2b    8185 ornith-mtp-21g    8186 minicpm-v47-35b
+   8181 lfm25-24b-a2b    8182 groot65b-a6b (transient bench unit, on demand)
+   8185 ornith-mtp-21g    8186 minicpm-v47-35b
    8189 nemotron-super   8094 orient-ornith (SYSTEM unit, boot model)
    8090 the hardware monitor (hardware monitor, private network only)   8188 ComfyUI (image generation)
 
@@ -20213,7 +20244,11 @@ curl -s localhost:8099/props | jq -r .build_info          # -&gt; b3-1a33095
 <p>Every shard's hash, not just the first: <a href="data/provenance.json"><code>data/provenance.json</code></a>.</p>
 <h2 id="s21">Change log</h2>
 <p>The full version history lives on its own page: <strong><a href="changelog.html">change log</a></strong> — every correction, the numbers that forced it, and what the report said before. It is long by design; a correction that hides what was wrong is not a correction.</p>
-<p>The two most recent entries, in brief:</p>
+<p>The three most recent entries, in brief:</p>
+<ul>
+<li><strong>v1.19</strong> — Groot-65B-A6B measured and kept on demand: 116.5B under a 65B name, **0.9000 code (54/60 at</li>
+</ul>
+<p>cap 2048) / 0.7500 knowledge (30/40)<strong>, 27.6 t/s, and the archive's first real drafter win (bundled MTP head, </strong>27.66 → 35.66 t/s** at 76.3% acceptance). The finding that matters is the footprint: it does not fit all-resident — GTT 71.0 GiB and one OOM kill — and only serves beside the driver under the fork's <code>--lazy-mode auto</code>, at 50.4 GiB and no speed cost.</p>
 <ul>
 <li><strong>v1.18</strong> — Clover-35B-A3B-Preview measured and retired (0.8598 code / 0.4000 knowledge, AR mode only);</li>
 </ul>
@@ -20227,7 +20262,7 @@ curl -s localhost:8099/props | jq -r .build_info          # -&gt; b3-1a33095
 </ul>
 <p>router still has 177 rows); recorded as unloadable rather than unmeasured, and deleted. <strong>Superseded by v1.18.</strong></p>
 <h2 id="s22">Credits and tooling</h2>
-<p><strong>Measurement.</strong> Every figure here was produced by <code>~/bench/t20</code> and the per-axis scripts on the machine described in §2, run by the operator between 2026-10-07 and 2026-11-03. The numbers come from those runs and from the hardware monitor's SQLite history; none is estimated, and each is traceable to a run id in <code>~/runs/catalogue.json</code>.</p>
+<p><strong>Measurement.</strong> Every figure here was produced by <code>~/bench/t20</code> and the per-axis scripts on the machine described in §2, run by the operator between 2026-10-07 and 2026-11-05. The numbers come from those runs and from the hardware monitor's SQLite history; none is estimated, and each is traceable to a run id in <code>~/runs/catalogue.json</code>.</p>
 <p><strong>Assistance.</strong> The benchmark runs, the analysis and the drafting of this document were carried out with <strong>Hermes Agent (Nous Research) driven by DeepSeek's <code>deepseek-flash</code></strong> model, working alongside the operator: the agent scheduled and monitored the runs, read their outputs, built the tables and figures, and maintained the retirement record. The model did not produce any measurement — it read them.</p>
 <p><strong>Publication.</strong> The public site is generated from these same sources by <code>scripts/build.sh</code>, which refuses to publish if a sanitising check fails, and the retirement ledger is published beside this report. Corrections are welcome as issues on the repository.</p>
 <hr>
