@@ -8,7 +8,7 @@
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-05
-- **Roster:** 18 servable model files on disk, 806 GiB, checked 2026-11-05 · **Change log:** §21
+- **Roster:** 15 servable model families on disk, 629 GiB, checked 2026-11-05 · **Change log:** §21
 
 **About this document**
 
@@ -966,7 +966,7 @@ deleted rows are why the recommendations below have reasons.
 | gemma4-26b-a4b | 25.2B | Q8_0 | 0.9573 (164@2048) | 0.8667 (120@2048) | 14/14 | — | 49.4 | 2026-10-30 | fork b3-1a33095 | ✗ 10-30 |
 | gemma4-26b-qat-q4 | 25.2B | Q4_0 | 0.9512 (164@2048) | 0.8417 (120@2048) | 14/14 | 1900 | 59.5 | 2026-10-21 | fork pre-identity | ✓ |
 | ornith-122b | 124.6B | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 605 | 23.3 | 2026-10-20 | fork pre-identity | ✓ |
-| nemotron-super-120b | 123.6B | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 411 | 27.1 | 2026-10-18 | bolt pre-identity | ✓ |
+| nemotron-super-120b | 123.6B | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 411 | 27.1 | 2026-10-18 | bolt pre-identity | ✗ 11-05 |
 | Nemotron-Bolt-74B-A9B | 74.0B | IQ2_XXS | 0.9451 (164@2048) | 0.3667 (120@2048) | 13/14 | 577 | 72.8 | 2026-10-16 | bolt pre-identity | ✗ 10-30 |
 | qwen3next-q6 | 79.7B | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 1189 | 45.8 | 2026-10-10 | fork pre-identity | ✓ |
 | gptoss | 116.8B | MXFP4 | 0.9268 (164) | 0.5833 (120) | 12/14 | 1045 | 50.1 | 2026-10-12 | fork pre-identity | ✓ |
@@ -976,14 +976,14 @@ deleted rows are why the recommendations below have reasons.
 | flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | flint pre-identity | ✗ 10-30 |
 | Swift-1.5-FN-Heretic | 176.9B | IQ3_S | 0.9167 (60@2048) | 0.8000 (40@2048) | 11/14 | 512 | 25.6 | 2026-11-05 | fork b3-1a33095 | ✓ |
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
-| mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✓ |
-| Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✓ |
+| mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✗ 11-05 |
+| Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✗ 11-05 |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | Axion-1.0-35B | 34.7B | Q4_K_M | 0.8500 (60@2048) | 0.7750 (40@2048) | 10/14 | 1422 | 76.2 | 2026-11-05 | fork b3-1a33095 | ✓ |
-| Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
+| Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✗ 11-05 |
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | 0.8750 (40@2048) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
 | Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 1633 | 74.1 | 2026-11-01 | fork b3-1a33095 | ✓ |
@@ -1007,7 +1007,8 @@ Q8_0 row now carries its own file's numbers.
 
 
 **Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. Full inventory (25 model artefacts, 806 GiB, projectors and drafters included) is in §20.3.
+capability row. Full inventory (15 model families across 36 .gguf files — 7 projectors and 3 drafters
+included — 629 GiB) is in §20.3.
 
 | Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1025,6 +1026,10 @@ capability row. Full inventory (25 model artefacts, 806 GiB, projectors and draf
 | qwen38-35b | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8093 |
 | lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | fork pre-identity | :8181 |
 | Kimi-Linear-48B-A3B-abl | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8086 |
+
+*Retired since this snapshot (2026-11-05): `mellum21-fork`, `Groot-65B-A6B`, `nemotron-super-120b` and
+`Kimi-Linear-48B-A3B-abl`. The `:8189` and `:8086` endpoints above are no longer bound and the roster
+stands at 15 model families. The rows stay: a snapshot that silently shrinks is not a snapshot.*
 | qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | fork pre-identity | :8097 |
 | Ornith-1.5-35B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 74.1 | 2026-11-01 | fork b3-1a33095 | :8086 |
 | ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | fork b3-1a33095 | :8094 boot |
@@ -2257,8 +2262,8 @@ change results.
 
 **The one cost that is measured:** 152 runs totalling **58.0 hours of benchmark execution**, recorded
 run by run in `catalogue.json`, over 2026-10-07 → 2026-11-05. Of the 73 model aliases with at least one
-measurement, 18 model files remain
-servable and 31 retirements are recorded in the ledger; the two largest deletion passes alone released
+measurement, 15 model families remain
+servable and every deletion is recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
 
 A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive
@@ -2582,16 +2587,16 @@ script performs, re-run against the files as they sit on disk now.
 | minicpm-v47-35b | `MiniCPM-V-4_7-35B-A3B-Q6_K.gguf` | 26.56 GiB | **not recorded** | — | unverified |
 | gemma4-26b-qat-q4 | `gemma-4-26B_q4_0-it.gguf` | 13.45 GiB | [google/gemma-4-26B-A4B-it-qat-q4_0-gguf](https://huggingface.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf) | apache-2.0 (card) — Gemma Terms upstream | ✓ sha256 |
 | ornith-122b | 2 shards | 74.23 GiB | [unsloth/Ornith-1.5-122B-GGUF](https://huggingface.co/unsloth/Ornith-1.5-122B-GGUF) | — | ✓ sha256 |
-| nemotron-super-120b | 2 shards | 61.24 GiB | [unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF) | other (NVIDIA card) | ✓ sha256 |
+| nemotron-super-120b | 2 shards | 61.24 GiB | [unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF) | other (NVIDIA card) | ✓ sha256 · **retired 2026-11-05** |
 | qwen3next-q6 | 2 shards | 63.81 GiB | [unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF) | apache-2.0 | ✓ sha256 |
 | gptoss | `gpt-oss-120b-MXFP4.gguf` | 59.03 GiB | **not recorded** | apache-2.0 upstream | unverified |
 | gptoss-abliterated | `gpt-oss-120b-abliterated.i1-MXFP4_MOE.gguf` | 59.03 GiB | [mradermacher/gpt-oss-120b-abliterated-i1-GGUF](https://huggingface.co/mradermacher/gpt-oss-120b-abliterated-i1-GGUF) | apache-2.0 | ✓ sha256 |
 | ornith-mtp-21g | `Ornith-1.5-35B-A3B-Abliterated-MTPv2-21G-ICE.gguf` | 19.42 GiB | [gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF](https://huggingface.co/gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF) | mit | ✓ sha256 |
-| mellum21-fork | `Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf` | 7.52 GiB | [JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF) | apache-2.0 | ✓ sha256 |
+| mellum21-fork | `Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf` | 7.52 GiB | [JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF) | apache-2.0 | ✓ sha256 · **retired 2026-11-05** |
 | qwen3next-q4 | `Qwen3-Next-80B-A3B-Instruct-UD-Q4_K_XL.gguf` | 42.90 GiB | [unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF) | apache-2.0 | ✓ sha256 |
 | qwen38-35b | `Qwen3.8-35B-A3B-Distill-Q4_K_M.gguf` | 20.22 GiB | **not recorded** | apache-2.0 (empero-ai card; filename differs there) | unverified |
 | lfm25-24b-a2b | `LFM2.5-24B-A2B-QAD-Q4_0.gguf` | 12.65 GiB | [LiquidAI/LFM2.5-24B-A2B-GGUF](https://huggingface.co/LiquidAI/LFM2.5-24B-A2B-GGUF) | other (LFM Open License) | ✓ sha256 |
-| Kimi-Linear-48B-A3B-abl | `Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf` | 27.66 GiB | [mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF](https://huggingface.co/mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF) | mit | ✓ sha256 |
+| Kimi-Linear-48B-A3B-abl | `Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf` | 27.66 GiB | [mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF](https://huggingface.co/mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16-i1-GGUF) | mit | ✓ sha256 · **retired 2026-11-05** |
 | qwen38fn-abl | 2 shards | 78.10 GiB | **not recorded** | — | unverified |
 | Ornith-1.5-35B | `Ornith-1.5-35B-Q4_K_M.gguf` | 20.22 GiB | [ornith-ai/Ornith-1.5-35B-A3B-GGUF](https://huggingface.co/ornith-ai/Ornith-1.5-35B-A3B-GGUF) | mit | ✓ sha256 |
 | ornith35b (uncensored) | `Ornith-1.5-35B-Uncensored-YMQ-M.gguf` | 15.07 GiB | [zerodigest/Ornith-1.5-35B-Uncensored-YMQ-MTP-GGUF](https://huggingface.co/zerodigest/Ornith-1.5-35B-Uncensored-YMQ-MTP-GGUF) | apache-2.0 | ✓ sha256 |
@@ -2615,8 +2620,13 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The four most recent entries, in brief:
+The five most recent entries, in brief:
 
+- **v1.21** — roster pass: five files retired after measurement and a hash check against their repos' LFS
+  oids — **Mellum2.1-12B Q4_K_M** 7.52 GiB, the **LFM2.5 DSpark head** 0.62 GiB, **Groot-65B-A6B** 79.07 GiB,
+  **Nemotron-3.5-Super-VL-120B** 62.86 GiB and **Kimi-Linear-48B-A3B-abl** 27.66 GiB. 177.7 GiB freed; the
+  roster is 15 model families at 629.11 GiB. Every deletion kept its measured row in Table 4 and its
+  restore recipe in the ledger.
 - **v1.20** — two 2026-11-05 arrivals measured and kept: **Axion-1.0-35B** (0.8500 code / 0.7750 knowledge
   from 19.71 GiB at 76.2 t/s) and **Swift-1.5-Flash-Next-Heretic** (0.9167 / 0.8000, and 54.63 t/s once the
   MTP head it ships against is loaded). The instruction axis was re-measured properly: lm-eval pins IFEval at

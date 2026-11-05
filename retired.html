@@ -584,5 +584,139 @@ a { color:var(--acc); }
 <p>git clone --depth 1 https://github.com/ggml-org/llama.cpp ~/llama-local/clover-llama.cpp cd ~/llama-local/clover-llama.cpp &amp;&amp; cmake -B build -DCMAKE_BUILD_TYPE=Release \ -DGGML_VULKAN=ON -DGGML_NATIVE=ON -DGGML_OPENMP=ON -DGGML_CCACHE=ON \ -DVulkan_INCLUDE_DIR=$HOME/.local/include -DVulkan_LIBRARY=/usr/lib/libvulkan.so -DLLAMA_CURL=OFF cmake --build build --target llama-server llama-cli -j 28     # ~2 min, not 10</p>
 <p>Server flags: <code>-ngl 99 -c 131072 --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0 --spec-type none --reasoning off --jinja -np 1 -b 4096 -ub 2048 --metrics</code> on port 8091. Run rows kept: <code>~/runs/20261103-181904-clover35b-q4km.jsonl</code>, <code>~/bench/runs/humaneval-20261103-182953.jsonl</code>, <code>~/bench/runs/mmlupro-20261103-183404.jsonl</code>.</p>
 <hr>
+<h2>2026-11-05 pass — two orphans (8.14 GiB freed)</h2>
+<p>Tier A of the 2026-11-05 roster audit. Both files had no serving unit, no run script, no llama-switch case and no Hermes provider; each was re-hashed and matched against its repo's published LFS oid before removal, so both are restorable with confidence.</p>
+<h3>Mellum2.1-12B-A2.5B-Thinking Q4_K_M — 8,071,295,264 B (7.52 GiB)</h3>
+<ul>
+<li>File <code>models/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>, sha256</li>
+</ul>
+<p><code>ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755</code> — <strong>identical to the repo's LFS oid</strong> <code>JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF</code>, path <code>Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>.</p>
+<ul>
+<li>Arch <code>mellum</code>, 12.1B total / ~A2.5B active. The same repo also ships an MTP variant</li>
+</ul>
+<p>(<code>mtp/Mellum2.1-12B-A2.5B-Thinking-MTP-Q4_K_M.gguf</code>, 8.33 GB) — never fetched.</p>
+<ul>
+<li>Why it went: <strong>orphan.</strong> No <code>run-*.sh</code>, no <code>llama-*.service</code>, no switch case of its own, no</li>
+</ul>
+<p><code>providers.*</code>/<code>model.aliases.*</code> entry. The <code>mellum</code> switch case pointed at <code>llama-mellum.service</code>, a unit deleted with the Q6_K file on 2026-10-29; that case and its three usage strings are pruned in this pass.</p>
+<ul>
+<li>Measured and on record: **HE 0.9146 (164@8192), MMLU-Pro 0.8083 (120@8192), riddles 10/14, pp 2723 /</li>
+</ul>
+<p>tg 111.9 t/s** — run <code>~/runs/20261018-161122-mellum21-12b-fork-cap8192.jsonl</code>, build fork b3-1a33095. It was the best sub-15B model on this box by HE and the fastest after lfm25; re-fetch if that slot is wanted again.</p>
+<ul>
+<li>Restore: `hf download JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF</li>
+</ul>
+<p>Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf<code>, verify the sha256 above, then serve with </code>--jinja --spec-type none<code> (thinking model) at the fork's b3-1a33095 or later. The recorded run used </code>-c 8192<code>, </code>-ngl 99`, q8_0 KV.</p>
+<h3>LFM2.5 DSpark draft head (F16) — 663,691,296 B (0.62 GiB)</h3>
+<ul>
+<li>File <code>models/lfm25-dspark-F16.gguf</code>, sha256</li>
+</ul>
+<p><code>0cd847ca049aeabf53cb41d62091ae20eb50245cf89594c75af204784a1b1a0f</code> — <strong>identical to the LFS oid</strong> of <code>LiquidAI/LFM2.5-24B-A2B-DSpark-GGUF</code>, path <code>LFM2.5-24B-A2B-DSpark-F16.gguf</code> (local name shortened).</p>
+<ul>
+<li>Why it went: <code>--spec-type draft-dspark</code> head for LFM2.5-24B-A2B whose only consumer was</li>
+</ul>
+<p><code>dspark-ab.sh</code>, itself retired here. <strong>Never scored</strong> — the A/B script exists but no result was ever recorded, and no serving unit loaded it.</p>
+<ul>
+<li>Restore: re-download <code>LFM2.5-24B-A2B-DSpark-F16.gguf</code> from the repo above and re-run the A/B before</li>
+</ul>
+<p>trusting it. The box's record on draft heads is that provenance decides: baked MTP +17 to +29%, grafted heads −8 to −11%, this one untested.</p>
+<h3>Also retired in this pass</h3>
+<ul>
+<li><code>dspark-ab.sh</code> — the A/B driver for the head above; no other script referenced it.</li>
+<li><code>llama-switch</code> case <code>mellum</code> and its usage strings — it pointed at <code>llama-mellum.service</code>, which was</li>
+</ul>
+<p>removed on 2026-10-29. Case count and usage list rebuilt in the same pass.</p>
+<hr>
+<h2>2026-11-05 pass (second) — Tier B: Groot-65B-A6B, Nemotron-3.5-Super-VL-120B, Kimi-Linear-48B-A3B-abl</h2>
+<p>169.60 GiB across 11 files, all re-hashed in this pass and <strong>11/11 matched their repos' published LFS oids</strong> (169.60 GiB read back off disk before deletion). Two of the three were measured on the same build as everything else that day; the third's row is from 2026-10.</p>
+<h3>Groot-65B-A6B-261023 Q4_K_M — 79.07 GiB (6 files)</h3>
+<ul>
+<li>Files (all verified): <code>Q4_K_M-00001..00004-of-00004</code> 35,211,114,400 / 16,413,787,680 / 16,536,168,576 /</li>
+</ul>
+<p>10,585,663,488 B, <code>mtp-…-BF16</code> 5,251,556,576 B, <code>mmproj-…-BF16</code> 907,542,656 B. sha256 <code>3135f646…f62094</code>, <code>f7a33224…a75759</code>, <code>d83b7f7a…1f14</code>, <code>ba78ec97…630f4</code>, <code>2a116a0c…4ec91c</code>, <code>e90bd114…df6e9</code> — each identical to the LFS oid of <code>GrootTeam/Groot-65B-A6B-261023-GGUF</code>.</p>
+<ul>
+<li>Arch <code>qwen4exp</code>, 116,514,464,640 params (a "65B" name on 116.5B of weights), 48 blocks, 256 experts</li>
+</ul>
+<p>top-10, 12 QSA / 36 Gated DeltaNet layers, PLE bank, 262k ctx.</p>
+<ul>
+<li>Measured 2026-11-05: HE <strong>0.9000 (54/60 @2048)</strong>, MMLU-Pro <strong>0.7500 (30/40)</strong>, riddles 9/14 (all five</li>
+</ul>
+<p>misses cap-pinned; at 4096 the family-relations puzzle answers correctly after 1,953 tokens), pp 596.6 / <strong>tg 27.6</strong> / ttft 3083 ms, and the archive's cleanest drafter result: its bundled MTP head took decode <strong>27.66 → 35.66 t/s (+28.7%, 76.3% acceptance)</strong>. Runs <code>~/runs/20261105-014824-groot65b-q4km-think-cap2048.jsonl</code> and <code>~/runs/20261105-013414-groot65b-q4km-nomtp.jsonl</code>.</p>
+<ul>
+<li>Footprint (the reason it was a spare, not a unit): all-resident it pins GTT 71.0 GiB and leaves ~1 GiB</li>
+</ul>
+<p>MemAvailable — a first attempt with <code>-np 4 -c 32768</code> + mmproj was globally OOM-killed in 7 minutes. Only the fork's <code>--load-mode mmap --lazy-mode auto</code> serves it comfortably (50.4 GiB, 63 GiB free, no decode cost).</p>
+<ul>
+<li>Why it went: with Swift-1.5 (same shape class, same 79 GiB, measured the same day) kept, this was the</li>
+</ul>
+<p>second of two unhooked ~79 GiB reasoners next to the protected <code>qwen38fn-abl</code>. Portfolio duplicate.</p>
+<ul>
+<li>Restore: <code>~/llama-local/fetch-groot65b.sh</code> (sequential curl + resume + sha256 check) rebuilds all six</li>
+</ul>
+<p>files; serve with <code>~/llama-local/run-groot65b.sh mtp</code> after setting <code>GROOT_TREE</code> to the halo-box fork and <code>GROOT_LAZY=auto</code>. The old <code>run-groot65b.sh</code> is archived in <code>retired-scripts/</code>.</p>
+<h3>NVIDIA-Nemotron-3.5-Super-VL-120B-A12B UD-Q3_K_XL — 62.86 GiB (3 shards + projector)</h3>
+<ul>
+<li>Files (all verified): <code>UD-Q3_K_XL/…-00001-of-00003</code> 7,874,568 B, <code>-00002</code> 49,225,290,592 B, <code>-00003</code></li>
+</ul>
+<p>16,528,375,872 B, plus <code>mmproj-Nemotron-3.5-Super-VL-120B-A12B.gguf</code> 1,733,695,840 B (repo name <code>mmproj-BF16.gguf</code>). sha256 <code>b2a570b4…e02fa</code>, <code>94827cf2…c68674</code>, <code>c2245a2f…cef8ce</code>, <code>9c09381a…924d9</code> — identical to <code>unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF</code>.</p>
+<ul>
+<li>Measured: best HE <strong>0.9512 (164@4096)</strong> — run <code>~/runs/20261018-063326-nemotron-super-120b-cap4096.jsonl</code></li>
+</ul>
+<p>(MMLU 0.7583 on that run); best MMLU <strong>0.7667 (120@4096)</strong> — run <code>~/runs/20261019-213244-nemotron-super-vl.jsonl</code> (HE 0.9329 there). Table 4 quoted the best of each axis, as it does everywhere. pp 411 / tg 27.1 / ttft 4.5 s, riddles 11/14, preflight 3/3, needles 2k+8k PASS.</p>
+<ul>
+<li>Why it went: third 120B-class file beside the two favoured gpt-oss builds (59.03 GiB each) which run</li>
+</ul>
+<p>~50 t/s. +2.4 pp of HumanEval at 1.8x the time per token is not a reason to hold 62.86 GiB. It was also the only vision-capable 120B — noted as the one real loss.</p>
+<ul>
+<li>Registry removed: unit <code>llama-nemotron-super-120b.service</code> (disabled), switch case</li>
+</ul>
+<p><code>nemotron-super-120b</code>, run script <code>run-nemotron-super-120b.sh</code>.</p>
+<ul>
+<li>Restore: <code>unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF</code>, the <code>UD-Q3_K_XL/</code> triple plus</li>
+</ul>
+<p><code>mmproj-BF16.gguf</code>; verify the four sha256s above; serve on :8189 with the projector, <code>-c 131072</code>, q8_0 KV, <code>--jinja</code> (hybrid Mamba-2 MoE, needs a build registering <code>nemotron_h_moe</code>).</p>
+<h3>Kimi-Linear-48B-A3B-Instruct-abliterated i1-Q4_K_M — 27.66 GiB</h3>
+<ul>
+<li>File <code>Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf</code>, 29,702,759,968 B, sha256</li>
+</ul>
+<p><code>ad4eca4c37c688e9d03aaf4558ddb869bd7740bc02423451be6d33e9502cde80</code> — identical to the LFS oid of <code>mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16</code>.</p>
+<ul>
+<li>Measured: HE <strong>0.7866 (164@8192)</strong>, MMLU-Pro <strong>0.5833 (120@8192)</strong>, riddles 13/14, pp 1774 / <strong>tg 74.8</strong></li>
+</ul>
+<p>— run <code>~/runs/20261101-140102-kimi-linear-abl-cap8192.jsonl</code>. Earlier 2026-11-01 runs are the abortive probes (<code>-abl</code>, <code>-abl2</code>, <code>-probe</code>) that led to the 8192 cap.</p>
+<ul>
+<li>Why it went: no unit; loses both capability axes to kept files, and its distinct claim (long context) is</li>
+</ul>
+<p>covered by Qwen3-Next's 262k and the 176.9B pair at ~55 t/s.</p>
+<ul>
+<li>Registry removed: switch case <code>kimi</code> (which pointed at the long-deleted <code>llama-kimi.service</code>),</li>
+</ul>
+<p><code>run-kimi-linear-48b.sh</code>, <code>run-kimi-linear-48b-bench.sh</code>.</p>
+<ul>
+<li>Restore: re-download the single file, verify the sha256, serve with <code>--jinja -c 65536</code> (its 1M ctx is</li>
+</ul>
+<p>measured only to 65k here) on any free port.</p>
+<h3>Registry changes made in this pass</h3>
+<ul>
+<li><code>llama-nemotron-super-120b.service</code> disabled and its unit file removed; <code>daemon-reload</code> run.</li>
+<li><code>llama-nemotron-super-120b.service</code> stripped from every survivor's <code>Conflicts=</code> line (13 files) so no</li>
+</ul>
+<p>unit references a target this pass removed. Pre-existing stale peers in those same lines (<code>llama-mellum</code>, <code>llama-kimi</code>, <code>llama-b4-27b</code>, <code>llama-gemma4-31b</code>, <code>llama-hy-memory-*</code>, <code>llama-ingot-genesis-27b</code>, <code>llama-ling3-flash</code>, <code>llama-nemotron-bolt-*</code>, <code>llama-qwen38-27b</code>, <code>llama-granite-switch-*</code>) are left for a dedicated registry audit — they are inert, not dangerous.</p>
+<ul>
+<li><code>llama-switch</code>: cases <code>nemotron-super-120b</code> and <code>kimi</code> removed, all three usage strings rebuilt, syntax</li>
+</ul>
+<p>checked, 22 cases remain.</p>
+<ul>
+<li>Scripts archived to <code>retired-scripts/</code>: <code>run-groot65b.sh</code>, <code>run-nemotron-super-120b.sh</code>,</li>
+</ul>
+<p><code>run-kimi-linear-48b.sh</code>, <code>run-kimi-linear-48b-bench.sh</code>.</p>
+<h3>Verification</h3>
+<ul>
+<li>Hashes: 11/11 matched the repos' LFS oids before deletion (169.60 GiB read back).</li>
+<li>Models directory: 798.71 → 629.11 GiB (−169.60). Files: 47 → 36.</li>
+<li>Survivors after: :8094 (boot Ornith) and :8100 (gemma driver) both <code>/health</code> 200, bridge <code>connected</code>.</li>
+<li>No script, switch case, unit or Hermes config entry names a deleted basename.</li>
+</ul>
+<hr>
 <p><em>Source: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.</em></p>
 </main></body></html>

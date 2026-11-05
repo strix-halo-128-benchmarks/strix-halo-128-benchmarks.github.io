@@ -9,6 +9,47 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.21 (2026-11-05)
+
+**Roster pass: five files retired, 177.7 GiB freed, nothing lost that was not already on the record.**
+
+| retired | size | measured (kept in Table 4) | why |
+|---|---:|---|---|
+| Mellum2.1-12B-A2.5B-Thinking Q4_K_M | 7.52 GiB | HE 0.9146 (164@8192) · MMLU 0.8083 · tg 111.9 | orphan — no script, unit or switch case survived |
+| LFM2.5 DSpark draft head (F16) | 0.62 GiB | never scored | its only consumer was a one-off A/B script |
+| Groot-65B-A6B Q4_K_M + MTP + projector | 79.07 GiB | HE 0.9000 (54/60) · MMLU 0.7500 (30/40) · tg 27.6 (35.7 +MTP) | second unhooked ~79 GiB reasoner beside the protected `qwen38fn-abl` |
+| Nemotron-3.5-Super-VL-120B-A12B UD-Q3_K_XL + projector | 62.86 GiB | HE 0.9512 (164@4096) · MMLU 0.7667 (120@4096) · tg 27.1 | third 120B-class file; +2.4 pp of code at 1.8× the time per token |
+| Kimi-Linear-48B-A3B-abliterated i1-Q4_K_M | 27.66 GiB | HE 0.7866 (164@8192) · MMLU 0.5833 · tg 74.8 | no unit; loses both capability axes to kept files |
+
+Every file was re-hashed before deletion and **all 11 matched their repos' published LFS oids** (169.60 GiB
+of Tier B read back off disk, plus the Tier-A pair), so each one is restorable to the byte. Neither pass
+deleted anything on a hunch: the two Tier-A files were orphans (no run script, unit, switch case or Hermes
+provider), and the three Tier-B files each duplicated a role already held by a protected or favoured model.
+
+What replaced the space is a cleaner roster rather than a smaller one: 15 model families at **629.11 GiB**,
+of which 204 GiB is protected (the two Qwen3-Next files, the Flash-Next abl and the gemma QAT), 270 GiB is
+favoured (the Ornith set, the Distill, both gpt-oss builds), 16.75 GiB answers the channel on :8100, and the
+rest is one deliberate spare (Swift-1.5-Flash-Next-Heretic, 78.78 GiB) plus Axion-1.0-35B (19.71 GiB),
+MiniCPM-V-4.7 (27.60 GiB) and LFM2.5-24B (12.65 GiB).
+
+Registry work done with the deletions, because a weight file with a live reference is a trap: the
+`llama-nemotron-super-120b` unit was removed and stripped from all 13 survivor `Conflicts=` lists (with a
+`daemon-reload`), the `nemotron-super-120b` and `kimi` switch cases were dropped and all three usage strings
+rebuilt (22 cases remain, syntax checked), and four run scripts were archived under `retired-scripts/`.
+Older stale peers still named in those same `Conflicts=` lines — `llama-mellum`, `llama-kimi`,
+`llama-b4-27b` and the rest — are inert and left for a dedicated registry audit.
+
+Two things this page keeps on purpose. **Table 4 retains all five rows**, with `✗` and the retirement date,
+because the recommendations elsewhere in the report are argued from them. And the servable snapshot from
+2026-10-31 keeps its dead endpoints with a note under it: a snapshot that silently shrinks stops being
+evidence. The restore recipes — repo, file, exact byte count, sha256 — are in the retirement ledger, along
+with the run ids behind every score above.
+
+One acknowledged loss: the Nemotron Super was the only vision-capable 120B on the box. Its projector went
+with it, and re-fetching it is a 64 GB, 40-minute job with a script already written.
+
+---
+
 ### Version 1.20 (2026-11-05)
 
 **Two arrivals kept, one correction to an old row, and a harness finding that changes how every IFEval number
