@@ -8,7 +8,7 @@
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-05
-- **Roster:** 16 servable model files on disk, 708 GiB, checked 2026-11-05 · **Change log:** §21
+- **Roster:** 18 servable model files on disk, 806 GiB, checked 2026-11-05 · **Change log:** §21
 
 **About this document**
 
@@ -944,7 +944,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 33 of the 71 model aliases that have
+One row per model that completed the full suite and reached a verdict — 35 of the 73 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -974,6 +974,7 @@ deleted rows are why the recommendations below have reasons.
 | qwen35 | 122.1B | Q4_K_M | 0.9242 (66) | 0.5417 (48) | 12/14 | 622 | 22.9 | 2026-10-11 | fork pre-identity | ✗ |
 | ornith-mtp-21g | 35.5B | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 1610 | 65.2 | 2026-10-17 | fork pre-identity | ✓ |
 | flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | flint pre-identity | ✗ 10-30 |
+| Swift-1.5-FN-Heretic | 176.9B | IQ3_S | 0.9167 (60@2048) | 0.8000 (40@2048) | 11/14 | 512 | 25.6 | 2026-11-05 | fork b3-1a33095 | ✓ |
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
 | mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✓ |
 | Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✓ |
@@ -981,8 +982,9 @@ deleted rows are why the recommendations below have reasons.
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
+| Axion-1.0-35B | 34.7B | Q4_K_M | 0.8500 (60@2048) | 0.7750 (40@2048) | 10/14 | 1422 | 76.2 | 2026-11-05 | fork b3-1a33095 | ✓ |
 | Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
-| qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
+| qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | 0.8750 (40@2048) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
 | Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 1633 | 74.1 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | kimi | 49.1B | Q4_K_M | 0.7866 (164@2048) | 0.5500 (120@2048) | 13/14 | 1597 | 67.4 | 2026-10-14 | fork pre-identity | ✗ 10-29 |
@@ -1005,7 +1007,7 @@ Q8_0 row now carries its own file's numbers.
 
 
 **Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. Full inventory (23 model artefacts, 708 GiB, projectors and drafters included) is in §20.3.
+capability row. Full inventory (25 model artefacts, 806 GiB, projectors and drafters included) is in §20.3.
 
 | Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1198,6 +1200,32 @@ Riddles read 9/14, but all five misses returned precisely the 2048 cap with no c
 4096 the family-relations puzzle answers correctly after 1,953 thinking tokens, so that row measures
 deliberation length rather than capability. Kept, not adopted: the driver still wins on code, knowledge,
 instruction-following and speed.
+
+**Axion-1.0-35B — the fastest thing per gigabyte.** A brand-new Qwen3.6-shape MoE (`qwen35moe`,
+34.66B, roughly A3B) from Axion1-0, Apache-2.0, with a paper pitching open agent foundation models.
+At Q4_K_M it is 19.71 GiB and decodes at **76.2 t/s** with 1422 t/s prefill — nothing else in the
+20 GiB class pairs 0.8500 code (51/60) with 0.7750 knowledge (31/40) at that rate: qwen38-35b is
+74.8 t/s with 0.6417 knowledge, Ornith-1.5-35B 74.1 t/s with 0.4417. Instruction-following is where
+it *looks* broken and is not: IFEval reads 0.27 prompt-strict at the harness's pinned 1280-token
+generation limit and 0.73 when the constraint is allowed 4096. The mechanism is deliberation, not
+refusal — asked directly for "a sentence about a dog without using the letter e" it ran 3,010 tokens
+and then answered correctly. Riddles 10/14, every miss capped at 2048. Kept: for 20 GiB it is the
+best all-round number on the board.
+
+**Swift-1.5-Flash-Next-Heretic — the abl's twin, measured properly.** A Heretic V2 abliteration of
+Qwen3.8-Flash-Next at IQ3_S (176.9B, 78.78 GiB): the same architecture, the same footprint and the
+same slot as the resident `qwen38fn-abl`. Benched bare it reads 25.6 t/s, which looked like half the
+abl's rate and is not — with the MTP head both files already ship against, Swift runs at **54.63 t/s
+against the abl's 55.39** (88.1% acceptance, mean draft length 3.64). A dead heat on speed. At
+matched item counts Swift takes code (0.9167 against 0.8667) and instruction-following (0.87 against
+0.77 prompt-strict); the abl takes knowledge (0.8750 against 0.8000). Three items each way at n=60/40
+is inside one standard error, so this is a tie with opposite strengths rather than a replacement: the
+resident file keeps its slot and Swift sits on disk as an unhooked spare, ready for code-heavy work.
+
+**A correction to the abl's knowledge row.** `qwen38fn-abl` has carried "invalid (1/120)" for MMLU-Pro
+since 2026-10-13. Re-measured at 40 items, same build, same bare-letter method, it scores 0.8750
+(35/40) — the highest knowledge figure in this table. The old cell recorded a harness outcome, not
+what the model knows.
 
 **qwen38fn32-prune2 — it loads; that was the least of its problems.** The 48.31 GiB export this report
 called unloadable in v1.16 does load, on the publisher's own runtime patch, because its 177 "experts" are
@@ -2227,9 +2255,9 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 149 runs totalling **55.9 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-05. Of the 71 model aliases with at least one
-measurement, 16 model files remain
+**The one cost that is measured:** 152 runs totalling **58.0 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-05. Of the 73 model aliases with at least one
+measurement, 18 model files remain
 servable and 31 retirements are recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
 
@@ -2249,7 +2277,7 @@ time log. Ranges, not a point estimate.
 |---|---:|---:|---|
 | planning and design | 15 | 25 | seven axes, the cap policy, the memory and quantisation model (§5) |
 | harness and tooling | 70 | 100 | ~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline |
-| running and supervising | 45 | 60 | 55.9 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
+| running and supervising | 45 | 60 | 58.0 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
 | analysis and correlation | 30 | 45 | alias-collision audits, cap-floor re-measurements, four external sources compared |
 | writing and revision | 50 | 70 | 2,655 lines across six editions, the ledger, ten captioned figures |
 | publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
@@ -2488,6 +2516,7 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
    8099 gemma4-26b-a4b    (script only, unit disabled)
    8100 gemma4-26b-uncen  (ENABLED — the WhatsApp channel driver)
    8181 lfm25-24b-a2b    8182 groot65b-a6b (transient bench unit, on demand)
+   8183 swift15-fn-heretic (transient bench unit; on disk, no roster unit)
    8185 ornith-mtp-21g    8186 minicpm-v47-35b
    8189 nemotron-super   8094 orient-ornith (SYSTEM unit, boot model)
    8090 the hardware monitor (hardware monitor, private network only)   8188 ComfyUI (image generation)
@@ -2586,8 +2615,14 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The three most recent entries, in brief:
+The four most recent entries, in brief:
 
+- **v1.20** — two 2026-11-05 arrivals measured and kept: **Axion-1.0-35B** (0.8500 code / 0.7750 knowledge
+  from 19.71 GiB at 76.2 t/s) and **Swift-1.5-Flash-Next-Heretic** (0.9167 / 0.8000, and 54.63 t/s once the
+  MTP head it ships against is loaded). The instruction axis was re-measured properly: lm-eval pins IFEval at
+  1280 tokens, which understates every thinking model on the board — Axion reads 0.27/0.20 at that pin and
+  0.73/0.64 at 4096. `qwen38fn-abl`'s long-standing "invalid (1/120)" MMLU cell is replaced by 0.8750 after a
+  clean 40-item re-run on the same build.
 - **v1.19** — Groot-65B-A6B measured and kept on demand: 116.5B under a 65B name, **0.9000 code (54/60 at
   cap 2048) / 0.7500 knowledge (30/40)**, 27.6 t/s, and the archive's first real drafter win (bundled MTP
   head, **27.66 → 35.66 t/s** at 76.3% acceptance). The finding that matters is the footprint: it does not

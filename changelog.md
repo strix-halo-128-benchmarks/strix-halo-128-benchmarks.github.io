@@ -9,6 +9,57 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.20 (2026-11-05)
+
+**Two arrivals kept, one correction to an old row, and a harness finding that changes how every IFEval number
+on this page should be read.**
+
+| model | HE @2048 | MMLU @2048 | IFEval prompt/inst | decode | size | verdict |
+|---|---|---|---|---|---|---|
+| Axion-1.0-35B Q4_K_M | 0.8500 (51/60) | 0.7750 (31/40) | 0.2667 / 0.2000 at the 1280 pin, **0.7333 / 0.6444 at 4096** | 76.2 t/s | 19.71 GiB | kept — best capacity per gigabyte |
+| Swift-1.5-Flash-Next-Heretic IQ3_S | 0.9167 (55/60) | 0.8000 (32/40) | 0.8667 / 0.8222 | 25.6 bare, **54.63 with the MTP head** | 78.78 GiB | kept on disk, not hooked |
+
+**Axion-1.0-35B** is a `qwen35moe` MoE at 34.66B total, roughly A3B active, from Axion1-0 under Apache-2.0,
+with the release paper (arXiv 2611.03233) pitching open agent foundation models. At Q4_K_M it occupies
+19.71 GiB and produces 1422 t/s prefill and **76.2 t/s decode** — the fastest full-suite result in the archive
+after the two small instruction models, and no other 20 GiB file pairs 0.8500 code with 0.7750 knowledge at
+that rate (qwen38-35b: 74.8 t/s, 0.6417 knowledge; Ornith-1.5-35B: 74.1 t/s, 0.4417). Riddles 10/14 with all
+four misses pinned at the cap.
+
+**Swift-1.5-Flash-Next-Heretic** is a Heretic V2 abliteration of Qwen3.8-Flash-Next at IQ3_S: 176.9B params,
+78.78 GiB over eight shards, shipped as an AR-mode GGUF with no projector. Its first measurement read 25.6 t/s
+against the resident `qwen38fn-abl`'s 52.9 for the same shape, which looked like a property of the file. It is
+not — it was a property of the bench. The two files drive the *same* MTP head (`mtp-Qwen3.8-Flash-Next-Q8_0`),
+and with it Swift runs at **54.63 t/s against the abl's 55.39** at 88.1% acceptance and mean draft length 3.64.
+The rule this restates is the one from v1.19: a paired drafter is worth 2x on this family, so a decode number
+quoted without its spec-decode arm is not a measurement of the model.
+
+Matched at n=60/40/30 the two are a tie with opposite strengths — Swift takes code (0.9167 against 0.8667) and
+instruction-following (0.87 against 0.77 prompt-strict), the abl takes knowledge (0.8750 against 0.8000) — three
+items each way, inside one standard error. No retirement follows from it: the resident file keeps its unit and
+Swift sits on disk as a spare for code-heavy work rather than displacing anything.
+
+**The harness finding: IFEval has been measured at 1280 tokens, not at the cap quoted beside it.** `lm-eval`'s
+IFEval task defines its own `max_gen_toks`, which overrides the value passed in `--model_args`; § of this page
+already recorded that pin as the cause of one nonsensical historical row, and it generalises. On a thinking
+model it is not a rounding error: Axion scores 0.2667 prompt-strict / 0.2000 instruction-strict at the pin, and
+**0.7333 / 0.6444** with `--gen_kwargs max_gen_toks=4096`. Verified twice on the same server, same 30 items,
+same build — the only variable was the cap. Asked directly, "a sentence about a dog without using the letter e"
+cost the model 3,010 tokens and then answered correctly. Read every 4-decimal IFEval figure in this archive,
+including the driver's 0.93, as a 1280-token measurement; for models that terminate promptly that is enough, and
+for models that deliberate it is a floor.
+
+**Correction: `qwen38fn-abl` had no valid MMLU-Pro row.** The matrix carried "invalid (1/120)" for it since
+2026-10-13. Re-measured on the same build with the same chat 0-shot bare-letter method over 40 items it scores
+**0.8750 (35/40)** — the highest knowledge figure in the table. The old cell recorded a harness outcome, not the
+model's knowledge, and the row now shows the measurement.
+
+**Operational note.** The roster units carry mutual `Conflicts=`: starting `llama-qwen38fn-abl.service` silently
+stops the gemma driver on :8100. Any back-to-back comparison of two roster files has to restore the driver
+explicitly afterwards, and a benchmark that assumes the channel stayed up will be wrong.
+
+---
+
 ### Version 1.19 (2026-11-05)
 
 **One arrival, kept on demand — and a footprint rule that only appears at this size.**
