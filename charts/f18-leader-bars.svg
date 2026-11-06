@@ -979,7 +979,7 @@ L 279.73034 269.514
       </g>
      </g>
      <g id="text_65">
-      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="85.372364" y="439.032219" transform="rotate(-0 85.372364 439.032219)">mellum</text>
+      <text style="font-size: 6.6px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--dim)" x="85.372364" y="439.032219" transform="rotate(-0 85.372364 439.032219)">laguna-xs-2.1-q4km</text>
      </g>
     </g>
     <g id="ytick_32">
@@ -1125,11 +1125,11 @@ L 279.73034 269.514
    </g>
    <g id="patch_43">
     <path d="M 92.372364 440.291727 
-L 229.761968 440.291727 
-L 229.761968 432.757742 
+L 236.019724 440.291727 
+L 236.019724 432.757742 
 L 92.372364 432.757742 
 z
-" clip-path="url(#p3f72d9c115)" style="fill: #e69f00"/>
+" clip-path="url(#p3f72d9c115)" style="fill: #7a828e"/>
    </g>
    <g id="patch_44">
     <path d="M 92.372364 429.212337 
@@ -1264,7 +1264,7 @@ L 291.60359 269.514
 " style="fill: none; stroke: var(--line); stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_80">
-    <text style="font-size: 5.9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="231.822981" y="438.057352" transform="rotate(-0 231.822981 438.057352)">n=30</text>
+    <text style="font-size: 5.9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="238.080737" y="438.057352" transform="rotate(-0 238.080737 438.057352)">n=30</text>
    </g>
    <g id="text_81">
     <text style="font-size: 5.9px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="238.080737" y="426.977961" transform="rotate(-0 238.080737 426.977961)">n=30</text>

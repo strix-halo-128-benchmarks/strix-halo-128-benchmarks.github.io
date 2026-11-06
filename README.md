@@ -21,7 +21,7 @@ Two documents:
 | [retired-models.html](retired-models.html) | the retirement ledger — every deleted model with the reason, the measured scores that justified it, file sizes, sha256s, upstream repo and the flags that worked, so any deletion can be reversed or re-tested |
 
 Every number in the report comes from a run recorded in [`data/catalogue.json`](data/catalogue.json):
-152 rows across 73 model aliases, 2026-10-07 → 2026-11-05. Retired models keep their rows there too,
+154 rows across 75 model aliases, 2026-10-07 → 2026-11-06. Retired models keep their rows there too,
 marked with the retirement date.
 
 ## Why this exists
@@ -73,7 +73,7 @@ it compares close scores. Not affiliated with AMD, llama.cpp, or any model vendo
 
 ## Cost
 
-152 measured runs, **58.0 hours of benchmark execution** — that figure is exact, from the archive.
+154 measured runs, **58.6 hours of benchmark execution** — that figure is exact, from the archive.
 Building the report around them was an estimated 220–320 hours, of which 40–60 needed a person;
 reproducing the numbers elsewhere is roughly 40–60 hours now that the harness and tools are public
 (§18.4 of the report). Decode rates will not transfer between builds even when the quality rows do.

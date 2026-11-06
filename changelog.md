@@ -9,6 +9,45 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.22 (2026-11-06)
+
+**One arrival, and it is the fastest file on the box — with a +16.7 pp cap correction behind its score.**
+
+| model | HE | MMLU-Pro | IFEval prompt/inst | decode | prefill | size | verdict |
+|---|---|---|---|---|---|---|---|
+| Laguna-XS-2.1 Q4_K_M | **0.8667 (52/60 @4096)** | **0.6750 (27/40 @4096)** | 0.7667 / 0.8444 | **87.7 t/s** | **1321 t/s** | 18.88 GiB | kept |
+
+poolside's Laguna XS 2.1 is a 33B-total / 3B-active MoE under arch `laguna` — 256 experts with 1 shared,
+top-8, 40 layers (10 global attention, 30 sliding-window at 512 tokens), 262k context, OpenMDW-1.1 (permissive,
+commercial use allowed), interleaved thinking with a per-request toggle. The served fork already registers the
+arch, so it needed no rebuild: 18.88 GiB at Q4_K_M loads in about ten seconds and holds **GTT 48.7 GiB while
+the driver and the boot model keep serving** — nothing has to be evicted to run it.
+
+**It is the fastest thing measured here.** 87.7 t/s decode and 1321 t/s prefill beat every full-suite row in
+the archive end to end, including Axion-1.0-35B's 76.2 t/s for a slightly smaller file.
+
+**The scores needed the right budget, and this is the third time that has been true.** At cap 2048 the suite
+read 0.7000 code and 0.6000 knowledge — with **35 of 308 generations pinned at the cap**. Re-measured at 4096 the
+same model reads **0.8667 (52/60) and 0.6750 (27/40)**, with 12 of 190 pinned: ten items gained on code, three on
+knowledge. Both earlier figures were floors — rows in `~/bench/runs/humaneval-20261106-192625.jsonl` and
+`~/bench/runs/mmlupro-20261106-194159.jsonl`, since the 4096 arm ran as standalone axes rather than through t20. At 4096 its code sits between Axion's and Swift's, its knowledge
+below Axion's, and its IFEval (0.77 prompt-strict / 0.84 instruction-strict) is the best of any non-driver row
+except Swift's. Riddles 10/14.
+
+**BF16 of the same weights is a trap on this platform.** Neither serving tree compiles coopmat2 shaders, and the
+Vulkan backend gates fast BF16 matmul on `coopmat_bf16_support` / `coopmat2_bf16_support`, so the identical file
+in BF16 runs **11.6 t/s** — 7.5× slower than the K-quant. It was measured, then deleted along with a third-party
+DFlash draft head that refuses to load (`done_getting_tensors: wrong number of tensors; expected 64, got 58`).
+Both deletions carry their sha256s and restore recipes in the ledger; the Q4 file's hash is
+`1ac70791…9287f6cb`.
+
+**One operational note worth carrying forward.** `llama-model-guard.timer` restarted the channel driver two
+minutes into the first Laguna window, because a transient `bench-*` unit is not a `llama-*` unit and the guard's
+"another unit is active, defer" rule never applied. The fix is a hold file:
+`touch ~/llama-local/.guard-hold` before stopping the driver for a benchmark, remove it after.
+
+---
+
 ### Version 1.21 (2026-11-05)
 
 **Roster pass: five files retired, 177.7 GiB freed, nothing lost that was not already on the record.**

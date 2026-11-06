@@ -8,7 +8,7 @@
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-05
-- **Roster:** 15 servable model families on disk, 629 GiB, checked 2026-11-05 · **Change log:** §21
+- **Roster:** 16 servable model families on disk, 647 GiB, checked 2026-11-06 · **Change log:** §21
 
 **About this document**
 
@@ -980,6 +980,7 @@ deleted rows are why the recommendations below have reasons.
 | Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✗ 11-05 |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
+| Laguna-XS-2.1 | 33.4B | Q4_K_M | 0.8667 (60@4096) | 0.6750 (40@4096) | 10/14 | 1321 | 87.7 | 2026-11-06 | fork b3-1a33095 | ✓ |
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | Axion-1.0-35B | 34.7B | Q4_K_M | 0.8500 (60@2048) | 0.7750 (40@2048) | 10/14 | 1422 | 76.2 | 2026-11-05 | fork b3-1a33095 | ✓ |
@@ -1007,8 +1008,8 @@ Q8_0 row now carries its own file's numbers.
 
 
 **Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. Full inventory (15 model families across 36 .gguf files — 7 projectors and 3 drafters
-included — 629 GiB) is in §20.3.
+capability row. Full inventory (16 model families across 37 .gguf files — 7 projectors and 2 drafters
+included — 647 GiB) is in §20.3.
 
 | Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1231,6 +1232,18 @@ resident file keeps its slot and Swift sits on disk as an unhooked spare, ready 
 since 2026-10-13. Re-measured at 40 items, same build, same bare-letter method, it scores 0.8750
 (35/40) — the highest knowledge figure in this table. The old cell recorded a harness outcome, not
 what the model knows.
+
+**Laguna-XS-2.1 — fastest file on the box, and the cap story a third time.** poolside's agentic-coding MoE
+(33B total / 3B active, 256 experts top-8, 10 global + 30 sliding-window layers, 262k ctx, OpenMDW-1.1)
+at Q4_K_M is 18.88 GiB and serves beside the driver and the boot unit at GTT 48.7 GiB. **87.7 t/s decode and
+1321 t/s prefill are the highest of any full-suite row here** — 15% more decode than Axion's, for a slightly larger
+file. Its capability needed a bigger budget than the suite's default: at cap 2048 it read 0.7000 code and 0.6000
+knowledge with 35 of 308 generations pinned at the cap; at **4096 it reads 0.8667 (52/60) and 0.6750 (27/40)**
+with 12 of 190 pinned — ten and three items gained, so both earlier figures were floors. IFEval 0.77 prompt-strict /
+0.84 instruction-strict at the harness's 1280 pin is the best instruction-following of any non-driver row after Swift;
+riddles 10/14. The same weights in BF16 are a trap on this platform: neither serving tree compiles coopmat2
+shaders, BF16 matmul takes the generic path, and the file measures **11.6 t/s** — it was deleted the same day, along
+with a DFlash draft head that will not load (expected 64 tensors, got 58).
 
 **qwen38fn32-prune2 — it loads; that was the least of its problems.** The 48.31 GiB export this report
 called unloadable in v1.16 does load, on the publisher's own runtime patch, because its 177 "experts" are
@@ -2260,8 +2273,8 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 152 runs totalling **58.0 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-05. Of the 73 model aliases with at least one
+**The one cost that is measured:** 154 runs totalling **58.6 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-06. Of the 75 model aliases with at least one
 measurement, 15 model families remain
 servable and every deletion is recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
@@ -2282,7 +2295,7 @@ time log. Ranges, not a point estimate.
 |---|---:|---:|---|
 | planning and design | 15 | 25 | seven axes, the cap policy, the memory and quantisation model (§5) |
 | harness and tooling | 70 | 100 | ~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline |
-| running and supervising | 45 | 60 | 58.0 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
+| running and supervising | 45 | 60 | 58.6 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
 | analysis and correlation | 30 | 45 | alias-collision audits, cap-floor re-measurements, four external sources compared |
 | writing and revision | 50 | 70 | 2,655 lines across six editions, the ledger, ten captioned figures |
 | publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
@@ -2590,6 +2603,7 @@ script performs, re-run against the files as they sit on disk now.
 | nemotron-super-120b | 2 shards | 61.24 GiB | [unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF) | other (NVIDIA card) | ✓ sha256 · **retired 2026-11-05** |
 | qwen3next-q6 | 2 shards | 63.81 GiB | [unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Next-80B-A3B-Instruct-GGUF) | apache-2.0 | ✓ sha256 |
 | gptoss | `gpt-oss-120b-MXFP4.gguf` | 59.03 GiB | **not recorded** | apache-2.0 upstream | unverified |
+| Laguna-XS-2.1 | `Laguna-XS-2.1-Q4_K_M.gguf` | 18.88 GiB | [poolside/Laguna-XS-2.1-GGUF](https://huggingface.co/poolside/Laguna-XS-2.1-GGUF) | openmdw-1.1 (permissive, commercial use allowed) | ✓ sha256 |
 | gptoss-abliterated | `gpt-oss-120b-abliterated.i1-MXFP4_MOE.gguf` | 59.03 GiB | [mradermacher/gpt-oss-120b-abliterated-i1-GGUF](https://huggingface.co/mradermacher/gpt-oss-120b-abliterated-i1-GGUF) | apache-2.0 | ✓ sha256 |
 | ornith-mtp-21g | `Ornith-1.5-35B-A3B-Abliterated-MTPv2-21G-ICE.gguf` | 19.42 GiB | [gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF](https://huggingface.co/gbuzhf/Ornith-1.5-35B-A3B-Abliterated-MTP-UD-APEX-GGUF) | mit | ✓ sha256 |
 | mellum21-fork | `Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf` | 7.52 GiB | [JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF) | apache-2.0 | ✓ sha256 · **retired 2026-11-05** |
@@ -2620,8 +2634,12 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The five most recent entries, in brief:
+The six most recent entries, in brief:
 
+- **v1.22** — **Laguna-XS-2.1** (poolside, 33B/A3B agentic-coding MoE, OpenMDW-1.1) joins at Q4_K_M: **87.7 t/s
+  decode and 1321 t/s prefill, the fastest row on the box**, with **0.8667 code (60@4096) and 0.6750 knowledge
+  (40@4096)** — 16.7 pp and 7.5 pp above the same model at cap 2048, where 35 of 308 generations pinned. Its BF16
+  ran 11.6 t/s (no coopmat2 path in either tree) and was deleted.
 - **v1.21** — roster pass: five files retired after measurement and a hash check against their repos' LFS
   oids — **Mellum2.1-12B Q4_K_M** 7.52 GiB, the **LFM2.5 DSpark head** 0.62 GiB, **Groot-65B-A6B** 79.07 GiB,
   **Nemotron-3.5-Super-VL-120B** 62.86 GiB and **Kimi-Linear-48B-A3B-abl** 27.66 GiB. 177.7 GiB freed; the

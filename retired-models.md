@@ -1258,4 +1258,44 @@ as everything else that day; the third's row is from 2026-10.
 
 ---
 
+## 2026-11-06 pass — Laguna BF16 reference pair out, Q4_K_M stays
+
+Deleted after the Q4_K_M arm proved the model is deployable at 4x the speed. Both files re-hashed in this
+pass and both matched their repos' published LFS oids, so both are restorable to the byte.
+
+### Laguna-XS-2.1 BF16 — 66,930,226,304 B (62.33 GiB)
+
+- File `models/Laguna-XS-2.1/Laguna-XS-2.1-BF16.gguf`, sha256
+  `d1d99abe30c37749ec1b1ae2681cec74caa550ac6243d2ea70b61b1ff9d187ca` = the LFS oid of
+  `poolside/Laguna-XS-2.1-GGUF`.
+- Measured 2026-11-06: pp 230.6 / **tg 11.6 t/s** / ttft 7941 ms, preflight 3/3, needles 2k+8k PASS,
+  3x greedy code generations 11.68 t/s median. No riddles or heavy axes (40 min for the riddle block alone).
+- Why it went: **BF16 has no fast matmul path on this box.** Both local Vulkan trees compile zero coopmat2
+  shaders and the backend gates BF16 on `coopmat_bf16_support`/`coopmat2_bf16_support`; the same weights at
+  Q4_K_M run **87.7 t/s**. The BF16 file was a reference copy of something we now have at usable speed for
+  a third of the disk.
+- Restore: `poolside/Laguna-XS-2.1-GGUF`, file `Laguna-XS-2.1-BF16.gguf`; verify the sha256 above. Serve as
+  in `run-laguna-xs.sh` with `LAG_FILE=Laguna-XS-2.1-BF16.gguf` — expect ~11.6 t/s until a build with the
+  BF16 coopmat path exists.
+
+### Laguna-XS-2.1 DFlash draft head — 494,735,360 B (0.46 GiB)
+
+- File `models/Laguna-XS-2.1-dflash/Laguna-XS-2.1-DFlash-Q8_0.gguf`, sha256
+  `40eb6bf48f42ebc1990a0ba8c74d2070a256e7f1842a58d8aa9b195e907b04e8` = the LFS oid of
+  `meshllm/Laguna-XS-2.1-DFlash-GGUF`.
+- Why it went: **it never loaded.** `done_getting_tensors: wrong number of tensors; expected 64, got 58` ->
+  `failed to load draft model` -> the server exits, on build b3-1a33095. Nothing to measure, and no spec-decode
+  arm exists for this family here.
+- Restore: re-download the file and re-test after a build bump; the tensor count must match the laguna
+  loader in that tree, so a newer head or a newer build is required — not just a re-download.
+
+### Kept: Laguna-XS-2.1 Q4_K_M — 20,274,300,032 B (18.88 GiB)
+
+pp 1320.6 / **tg 87.7 t/s** / ttft 1386 ms; preflight 3/3; needles 2k+8k PASS; riddles 10/14;
+HE 0.7000 (42/60), MMLU-Pro 0.6000 (24/40), IFEval 0.7667/0.8444 — **with 35 of 308 generations pinned at
+the 2048 cap**, so the HE/MMLU figures are floors rather than ceilings. Sha256
+`1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb`.
+
+---
+
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*

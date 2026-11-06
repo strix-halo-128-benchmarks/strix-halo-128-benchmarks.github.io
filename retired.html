@@ -718,5 +718,40 @@ a { color:var(--acc); }
 <li>No script, switch case, unit or Hermes config entry names a deleted basename.</li>
 </ul>
 <hr>
+<h2>2026-11-06 pass — Laguna BF16 reference pair out, Q4_K_M stays</h2>
+<p>Deleted after the Q4_K_M arm proved the model is deployable at 4x the speed. Both files re-hashed in this pass and both matched their repos' published LFS oids, so both are restorable to the byte.</p>
+<h3>Laguna-XS-2.1 BF16 — 66,930,226,304 B (62.33 GiB)</h3>
+<ul>
+<li>File <code>models/Laguna-XS-2.1/Laguna-XS-2.1-BF16.gguf</code>, sha256</li>
+</ul>
+<p><code>d1d99abe30c37749ec1b1ae2681cec74caa550ac6243d2ea70b61b1ff9d187ca</code> = the LFS oid of <code>poolside/Laguna-XS-2.1-GGUF</code>.</p>
+<ul>
+<li>Measured 2026-11-06: pp 230.6 / <strong>tg 11.6 t/s</strong> / ttft 7941 ms, preflight 3/3, needles 2k+8k PASS,</li>
+</ul>
+<p>3x greedy code generations 11.68 t/s median. No riddles or heavy axes (40 min for the riddle block alone).</p>
+<ul>
+<li>Why it went: <strong>BF16 has no fast matmul path on this box.</strong> Both local Vulkan trees compile zero coopmat2</li>
+</ul>
+<p>shaders and the backend gates BF16 on <code>coopmat_bf16_support</code>/<code>coopmat2_bf16_support</code>; the same weights at Q4_K_M run <strong>87.7 t/s</strong>. The BF16 file was a reference copy of something we now have at usable speed for a third of the disk.</p>
+<ul>
+<li>Restore: <code>poolside/Laguna-XS-2.1-GGUF</code>, file <code>Laguna-XS-2.1-BF16.gguf</code>; verify the sha256 above. Serve as</li>
+</ul>
+<p>in <code>run-laguna-xs.sh</code> with <code>LAG_FILE=Laguna-XS-2.1-BF16.gguf</code> — expect ~11.6 t/s until a build with the BF16 coopmat path exists.</p>
+<h3>Laguna-XS-2.1 DFlash draft head — 494,735,360 B (0.46 GiB)</h3>
+<ul>
+<li>File <code>models/Laguna-XS-2.1-dflash/Laguna-XS-2.1-DFlash-Q8_0.gguf</code>, sha256</li>
+</ul>
+<p><code>40eb6bf48f42ebc1990a0ba8c74d2070a256e7f1842a58d8aa9b195e907b04e8</code> = the LFS oid of <code>meshllm/Laguna-XS-2.1-DFlash-GGUF</code>.</p>
+<ul>
+<li>Why it went: <strong>it never loaded.</strong> <code>done_getting_tensors: wrong number of tensors; expected 64, got 58</code> -&gt;</li>
+</ul>
+<p><code>failed to load draft model</code> -&gt; the server exits, on build b3-1a33095. Nothing to measure, and no spec-decode arm exists for this family here.</p>
+<ul>
+<li>Restore: re-download the file and re-test after a build bump; the tensor count must match the laguna</li>
+</ul>
+<p>loader in that tree, so a newer head or a newer build is required — not just a re-download.</p>
+<h3>Kept: Laguna-XS-2.1 Q4_K_M — 20,274,300,032 B (18.88 GiB)</h3>
+<p>pp 1320.6 / <strong>tg 87.7 t/s</strong> / ttft 1386 ms; preflight 3/3; needles 2k+8k PASS; riddles 10/14; HE 0.7000 (42/60), MMLU-Pro 0.6000 (24/40), IFEval 0.7667/0.8444 — <strong>with 35 of 308 generations pinned at the 2048 cap</strong>, so the HE/MMLU figures are floors rather than ceilings. Sha256 <code>1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb</code>.</p>
+<hr>
 <p><em>Source: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.</em></p>
 </main></body></html>
