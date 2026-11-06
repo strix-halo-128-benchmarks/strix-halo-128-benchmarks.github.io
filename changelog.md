@@ -15,7 +15,7 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 | model | HE | MMLU-Pro | IFEval prompt/inst | decode | prefill | size | verdict |
 |---|---|---|---|---|---|---|---|
-| Laguna-XS-2.1 Q4_K_M | **0.8667 (52/60 @4096)** | **0.6750 (27/40 @4096)** | 0.7667 / 0.8444 | **87.7 t/s** | **1321 t/s** | 18.88 GiB | kept |
+| Laguna-XS-2.1 Q4_K_M | **0.8667 (52/60 @4096)** | **0.7000 (28/40 @8192)** | 0.7667 / 0.8444 | **87.7 t/s** | **1321 t/s** | 18.88 GiB | kept |
 
 poolside's Laguna XS 2.1 is a 33B-total / 3B-active MoE under arch `laguna` — 256 experts with 1 shared,
 top-8, 40 layers (10 global attention, 30 sliding-window at 512 tokens), 262k context, OpenMDW-1.1 (permissive,
@@ -26,11 +26,13 @@ the driver and the boot model keep serving** — nothing has to be evicted to ru
 **It is the fastest thing measured here.** 87.7 t/s decode and 1321 t/s prefill beat every full-suite row in
 the archive end to end, including Axion-1.0-35B's 76.2 t/s for a slightly smaller file.
 
-**The scores needed the right budget, and this is the third time that has been true.** At cap 2048 the suite
-read 0.7000 code and 0.6000 knowledge — with **35 of 308 generations pinned at the cap**. Re-measured at 4096 the
-same model reads **0.8667 (52/60) and 0.6750 (27/40)**, with 12 of 190 pinned: ten items gained on code, three on
-knowledge. Both earlier figures were floors — rows in `~/bench/runs/humaneval-20261106-192625.jsonl` and
-`~/bench/runs/mmlupro-20261106-194159.jsonl`, since the 4096 arm ran as standalone axes rather than through t20. At 4096 its code sits between Axion's and Swift's, its knowledge
+**The scores needed the right budget, and this is the third time that has been true.** At cap 2048 the suite read
+0.7000 code and 0.6000 knowledge — with **35 of 308 generations pinned at the cap**. Code then went to **0.8667
+(52/60) at 4096** (ten items gained; six of the eight remaining misses were still cap-pinned, two actually wrong)
+and knowledge went **0.6000 → 0.6750 (4096) → 0.7000 (8192)**: +3 items then +1, with the 8192 misses splitting
+six pinned and six wrong, so the curve has flattened and ~0.70 is where this model's knowledge genuinely sits.
+Caps travel with every figure here; the arms are standalone axis runs rather than t20 and are named in full —
+`~/bench/runs/humaneval-20261106-192625.jsonl`, `mmlupro-20261106-194159.jsonl`, `mmlupro-20261106-200654.jsonl`. At 4096 its code sits between Axion's and Swift's, its knowledge
 below Axion's, and its IFEval (0.77 prompt-strict / 0.84 instruction-strict) is the best of any non-driver row
 except Swift's. Riddles 10/14.
 

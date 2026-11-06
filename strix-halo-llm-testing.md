@@ -980,7 +980,7 @@ deleted rows are why the recommendations below have reasons.
 | Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✗ 11-05 |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
-| Laguna-XS-2.1 | 33.4B | Q4_K_M | 0.8667 (60@4096) | 0.6750 (40@4096) | 10/14 | 1321 | 87.7 | 2026-11-06 | fork b3-1a33095 | ✓ |
+| Laguna-XS-2.1 | 33.4B | Q4_K_M | 0.8667 (60@4096) | 0.7000 (40@8192) | 10/14 | 1321 | 87.7 | 2026-11-06 | fork b3-1a33095 | ✓ |
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | Axion-1.0-35B | 34.7B | Q4_K_M | 0.8500 (60@2048) | 0.7750 (40@2048) | 10/14 | 1422 | 76.2 | 2026-11-05 | fork b3-1a33095 | ✓ |
@@ -1237,11 +1237,15 @@ what the model knows.
 (33B total / 3B active, 256 experts top-8, 10 global + 30 sliding-window layers, 262k ctx, OpenMDW-1.1)
 at Q4_K_M is 18.88 GiB and serves beside the driver and the boot unit at GTT 48.7 GiB. **87.7 t/s decode and
 1321 t/s prefill are the highest of any full-suite row here** — 15% more decode than Axion's, for a slightly larger
-file. Its capability needed a bigger budget than the suite's default: at cap 2048 it read 0.7000 code and 0.6000
-knowledge with 35 of 308 generations pinned at the cap; at **4096 it reads 0.8667 (52/60) and 0.6750 (27/40)**
-with 12 of 190 pinned — ten and three items gained, so both earlier figures were floors. IFEval 0.77 prompt-strict /
+file. Its capability needed a bigger budget than the suite's default. Code went 0.7000 at cap 2048 → **0.8667 at 4096**,
+ten items gained, and of the eight remaining misses **six were still cap-pinned** with only two wrong answers,
+so its code ceiling is close. Knowledge needed more again: **0.6000 (2048) → 0.6750 (4096) → 0.7000 (8192)**,
+and at 8192 the thirteen misses split six cap-pinned, six genuinely wrong — the curve is flattening, so ~0.70 is
+where this model's knowledge actually sits. Reading the 2048 row as a verdict would have understated its code by
+16.7 pp and its knowledge by 10 pp. IFEval 0.77 prompt-strict /
 0.84 instruction-strict at the harness's 1280 pin is the best instruction-following of any non-driver row after Swift;
-riddles 10/14. The same weights in BF16 are a trap on this platform: neither serving tree compiles coopmat2
+riddles 10/14. Every cap arm is recorded: `~/bench/runs/humaneval-20261106-192625.jsonl` (4096) and
+`mmlupro-20261106-194159.jsonl` / `mmlupro-20261106-200654.jsonl` (4096, 8192). The same weights in BF16 are a trap on this platform: neither serving tree compiles coopmat2
 shaders, BF16 matmul takes the generic path, and the file measures **11.6 t/s** — it was deleted the same day, along
 with a DFlash draft head that will not load (expected 64 tensors, got 58).
 
@@ -2637,9 +2641,10 @@ was wrong is not a correction.
 The six most recent entries, in brief:
 
 - **v1.22** — **Laguna-XS-2.1** (poolside, 33B/A3B agentic-coding MoE, OpenMDW-1.1) joins at Q4_K_M: **87.7 t/s
-  decode and 1321 t/s prefill, the fastest row on the box**, with **0.8667 code (60@4096) and 0.6750 knowledge
-  (40@4096)** — 16.7 pp and 7.5 pp above the same model at cap 2048, where 35 of 308 generations pinned. Its BF16
-  ran 11.6 t/s (no coopmat2 path in either tree) and was deleted.
+  decode and 1321 t/s prefill, the fastest row on the box**, with **0.8667 code (60@4096) and 0.7000 knowledge
+  (40@8192)** — 16.7 pp and 10 pp above the same model at cap 2048, where 35 of 308 generations pinned; its
+  knowledge curve 0.6000 → 0.6750 → 0.7000 across 2048/4096/8192 has flattened. Its BF16 ran 11.6 t/s (no
+  coopmat2 path in either tree) and was deleted.
 - **v1.21** — roster pass: five files retired after measurement and a hash check against their repos' LFS
   oids — **Mellum2.1-12B Q4_K_M** 7.52 GiB, the **LFM2.5 DSpark head** 0.62 GiB, **Groot-65B-A6B** 79.07 GiB,
   **Nemotron-3.5-Super-VL-120B** 62.86 GiB and **Kimi-Linear-48B-A3B-abl** 27.66 GiB. 177.7 GiB freed; the
