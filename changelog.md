@@ -60,11 +60,29 @@ that way, with stray `**` in the HTML wherever bold crossed a wrap (393 `<strong
 after). The renderer now absorbs indented continuation lines into the item they continue, and it is published
 in `tools/` so the pages can be rebuilt from the markdown this repository holds.
 
-**This edition was published in two commits.** `285c0a7` carried the new row, the recounted totals and the
-Table 4b repair; the second added §4.3 and the renderer fix above. Between them the page was live for about
-an hour with the row but without the rebuild register — the same class of half-published state this edition
-opens by correcting, caught the same day and in the same way: by reading the rebuilt page rather than the
-diff.
+**This edition was published in three commits.** `285c0a7` carried the new row, the recounted totals and the
+Table 4b repair; the second added §4.3 and the renderer fix above; the third rewrote §13. Between the first
+and the second the page was live for about an hour with the row but without the rebuild register — the same
+class of half-published state this edition opens by correcting, caught the same day and in the same way: by
+reading the rebuilt page rather than the diff.
+
+**§13 rewritten, and one figure in it corrected.** The comparison against Nvidia and Apple is now organised
+around the question that decides the purchase — *what caps the GPU's working set* — rather than around a
+feature matrix: VRAM (hardware, 24-32 GB), Apple's wired limit (a driver default at ~75% of RAM, 96 GB of
+128, raisable with `sysctl iogpu.wired_limit_mb`), and GTT here (a kernel parameter, 100 GiB, with an 8 GiB
+carve-out unused). It adds the disk-to-GPU path for each (a PCIe copy on Nvidia, none on either UMA machine),
+the bandwidth arithmetic per token, the software gap on its own terms (CUDA as a platform; Metal/MLX as a
+narrower one; Vulkan/llama.cpp and partial ROCm here), and a failure-modes subsection, because the three
+machines fail on different inputs.
+
+The correction: v1.22's §13.2 read *"this box reads 13.4 GiB per token for its driver at 59.5 t/s"*. 13.4 GiB
+is the file size. Read per token — 4B active at 4.5 bpw, so ~2.25 GB, rising to 2.5-3 GiB with attention and
+KV reads — the implied effective bandwidth is 134-190 GB/s, inside the 120-280 GB/s band §2.2 reports, not
+the 797 GB/s the old sentence implied. The decode comparison it supported (3-4× a 4090 on models that fit)
+survives, because it rests on the bandwidth ratio, not on that figure.
+
+Every number about the other two platforms is a vendor specification with the source linked, and none of them
+was benchmarked for this report — stated in the section rather than left for a reader to discover.
 
 **Build identity.** Every number here is fork `b3-1a33095`, kernel `7.3.1-1-cachyos`, Mesa 26.2.5 /
 vulkan-radeon 26.2.5, ggml-vulkan ABI 0.25.3. The four trees rebuilt on the evening of 2026-11-08 —

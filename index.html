@@ -84,7 +84,7 @@ a { color:var(--acc); }
   10   Extrapolation                    whether a family result transfers, and what cannot
   11   League tables                    per-axis rankings
   12   Which model for which job        job -&gt; axis -&gt; model, with anti-patterns
-  13   Strix Halo vs Nvidia vs Apple    capacity, bandwidth, ecosystem, who should buy what
+  13   Strix Halo vs Nvidia vs Apple    three memory models, bandwidth, ecosystem, who should buy what
   14   Hosted frontier models           the gap to the frontier: code, knowledge, cache, cost
   15   Power, heat and money            what a local run costs in watts and pence
   16   Uncensored and abliterated       what removing the refusal direction costs per axis
@@ -733,28 +733,53 @@ a { color:var(--acc); }
 </ol>
 <hr>
 <h2 id="s13">Strix Halo against Nvidia and Apple</h2>
-<p>The question that matters to a buyer is not which chip is fastest, but which constraint binds first: capacity, bandwidth, or software ecosystem.</p>
-<h3>13.1 The three architectures side by side</h3>
-<p>Figure 12 — Three platforms side by side.</p>
-<pre><code>                       STRIX HALO           NVIDIA (RTX 4090/5090)      APPLE (M-series Max/Ultra)
-   ─────────────────────────────────────────────────────────────────────────────────────────────
-   Memory               128 GB unified         24 / 32 GB VRAM            64-512 GB unified
-   GPU-addressable      ~100 GiB (GTT)         = VRAM, hard wall          ~75% of RAM by default
-   Bandwidth            ~256 GB/s              ~1008 / ~1792 GB/s         ~546 GB/s (Max)
-                                                                           ~819 GB/s (Ultra)
-   Compute              RDNA 3.5, 40 CU        CUDA cores + tensor        Apple GPU + Neural Engine
-                        no tensor cores        cores, best in class       no CUDA
-   Software             Vulkan + llama.cpp     CUDA: vLLM, TRT-LLM,       Metal + MLX: excellent
-                        ROCm partial           FA, bitsandbytes, ...      for llama.cpp/MLX
-   Power (whole box)    ~45-120 W              ~450-575 W GPU alone       ~40-140 W
-   Price for 100 GB+    ~one laptop           4x 3090 or A100/H100       M3 Ultra 512 GB: premium
-   ─────────────────────────────────────────────────────────────────────────────────────────────</code></pre>
-<h3>13.2 What the numbers mean in practice</h3>
-<p><strong>The capacity wall is the real dividing line.</strong> A 128 GB Strix Halo runs a 120B model at Q4 and a 74 GiB model comfortably. A 24 GB RTX 4090 cannot run either; it tops out around 30B at Q4, and a 70B model requires two cards with tensor-parallel plumbing. If your goal is "run the biggest open models locally", unified memory is the cheap path and discrete VRAM is the expensive one.</p>
-<p><strong>Bandwidth is the price you pay for that capacity.</strong> Decode speed is roughly bandwidth divided by bytes read per token. This box reads 13.4 GiB per token for its driver at 59.5 t/s; a 4090 with roughly 4x the bandwidth would decode the same model 3-4x faster <em>if the model fit</em>, which for anything above ~30B it does not. The comparison only becomes fair when you compare models that fit on both machines, and at that point the Nvidia card is 3-4x faster per token and the Strix box runs models the card cannot hold at all.</p>
-<p><strong>Prefill is where Strix Halo is genuinely weak.</strong> No tensor cores means prompt processing runs at 350-2900 t/s versus several thousand to tens of thousands on modern Nvidia parts. For chat with short prompts this is invisible. For an agent pushing 30k-token contexts it is the difference between a 2-second and a 60-second wait. If your workload is long-prompt-heavy, this is the wrong machine and no amount of model choice fixes it.</p>
-<p><strong>Apple sits between them.</strong> M-series Max/Ultra have unified memory <em>and</em> high bandwidth (546-819 GB/s), with Metal and MLX being genuinely good, mature paths for local inference. An M4 Max with 128 GB will decode the same model roughly 2x faster than this box. What it does not have is CUDA, so the Nvidia-specific ecosystem is equally unavailable, and it does not have upgradeable RAM or a user-serviceable OS. It is the better <em>appliance</em>; the Strix box is the better <em>laboratory</em>.</p>
-<h3>13.3 Choosing between them</h3>
+<p>The question a buyer has is not which chip is fastest, but <strong>which constraint binds first</strong>. On this workload there are three, and they rank in a fixed order: capacity decides whether a model runs at all, bandwidth decides how fast it decodes once it runs, and software decides which engines can run on it. The three platforms answer those questions in a different order, and each one's weakness is the price of its strength.</p>
+<p>The evidence here is deliberately asymmetric, and the asymmetry is stated rather than hidden: every number about this box is measured and traceable to <code>data/catalogue.json</code>; every number about the other two is a vendor specification, cited below, and <strong>not benchmarked for this report</strong>. No RTX card and no Mac was run here, and nothing below should be read as a head-to-head measurement.</p>
+<h3>13.1 Three definitions of "the GPU's memory"</h3>
+<p>The platforms differ less in their silicon than in what that phrase means, and in who owns the decision when the model does not fit.</p>
+<p>Figure 12 — Three platforms, three memory models.</p>
+<pre><code>                        STRIX HALO             NVIDIA (RTX 4090/5090)    APPLE (M-series Max/Ultra)
+   ──────────────────────────────────────────────────────────────────────────────────────────────
+   Memory                128 GB LPDDR5X         24 / 32 GB GDDR6X/GDDR7   64-512 GB LPDDR5X
+   GPU working set       100 GiB GTT            = VRAM, a hard wall       ~75% of RAM (96 of 128 GB)
+   Who sets the cap      kernel param (GTT)     the card you bought       driver default (sysctl)
+   Disk -&gt; GPU path      NVMe -&gt; page cache     NVMe -&gt; RAM -&gt; PCIe       NVMe -&gt; page cache
+                         -&gt; mapped, no copy     -&gt; VRAM, a copy           -&gt; mapped, no copy
+   Bandwidth             ~256 GB/s nominal     1008 / 1792 GB/s          546 / 819 GB/s
+   Compute               RDNA 3.5, 40 CU        CUDA + tensor cores       Apple GPU + Neural Engine
+   Software              Vulkan (+ partial      CUDA, cuBLAS, TensorRT,   Metal, MPS, MLX
+                         ROCm on gfx1151)       vLLM, bitsandbytes
+   Power (whole box)     ~45-120 W             450-575 W card alone      ~40-140 W
+   Upgrade memory?       no, soldered           another card, not VRAM    no, soldered
+   Cost for 100 GB+      ~one laptop            4 cards (no P2P) or an    512 GB Ultra: premium
+                                                A100/H100
+   ──────────────────────────────────────────────────────────────────────────────────────────────</code></pre>
+<p><strong>Nvidia — the copy is the design, and VRAM is the wall.</strong> Weights are staged into VRAM across PCIe: 64 GB/s bidirectional at Gen4 x16, 128 GB/s at Gen5, so 32 and 64 GB/s in the direction a model load travels. For a 13.4 GiB file that is well under a second of link time, which is why load latency is not the interesting number here — the wall is that the working set cannot exceed VRAM. Past it there are two options and both are expensive: a second card, where GeForce exposes no peer-to-peer DMA (<a href="https://www.tomshardware.com/news/nvidia-confirms-geforce-cards-lack-p2p-support">confirmed by NVIDIA</a>, so a 70B split across two cards stages through host memory); or CUDA's managed allocator, which does oversubscribe by migrating pages on fault — at page granularity over PCIe, a latency class away from VRAM bandwidth.</p>
+<p><strong>Apple — the cap is a default, not a wall.</strong> The GPU reads the same DRAM. Metal reports <code>recommendedMaxWorkingSetSize</code> at roughly 75% of RAM — 96 GB on a 128 GB machine — and llama.cpp and Ollama honour it as a ceiling. <code>sysctl iogpu.wired_limit_mb=114688</code> raises it to 112 GiB, which is the documented fix for the confusing failure where a 90 GiB model "refuses to load for no reason". What cannot be changed is capacity: the memory is soldered, and the top rung (512 GB on an M3 Ultra) is priced accordingly.</p>
+<p><strong>Strix Halo — the cap is GTT, and the copy never happens.</strong> The GPU maps system DRAM through the GTT aperture: 100 GiB here against 128 GB installed, with an 8 GiB VRAM carve-out left unused. That aperture is set by kernel parameters, not by a card. Weights arrive by <code>mmap</code>, so the mapped pages <em>are</em> the page cache: a 61 GiB load is a fault-in from NVMe in about ten seconds, not a 61 GiB transfer. Everything that follows in this report follows from that one property — since nothing has to be copied, file size raises a capacity question and nothing else.</p>
+<p>Compressed to three sentences: <strong>Nvidia asks whether the model fits in VRAM, Apple asks whether it fits under the wired limit, and this box asks whether it fits in GTT.</strong> Three names for the same question, and only two of the three answers can be changed after purchase.</p>
+<p><em>Specifications cited above: <a href="https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/">RTX 4090</a>, <a href="https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/">RTX 5090</a>, <a href="https://support.apple.com/en-ca/122211">Mac Studio — M4 Max and M3 Ultra</a>, <a href="https://support.apple.com/en-us/121553">MacBook Pro M4 Max</a>; PCIe figures are the PCI-SIG values for x16 links (64 GB/s at Gen4, 128 GB/s at Gen5, bidirectional).</em></p>
+<h3>13.2 What the capacity costs: bandwidth per token</h3>
+<p>Decode is bandwidth divided by bytes read per token, and that formula is indifferent to whose silicon is underneath. Only the numerator changes.</p>
+<ul>
+<li><strong>This box.</strong> The 13.4 GiB QAT file at 59.5 t/s implies <strong>134 GB/s</strong> of effective read bandwidth if the active set is ~2.25 GB per token (4B active at 4.5 bpw), and 160-190 GB/s if attention and KV reads push it to 2.5-3 GiB — both inside the 120-280 GB/s band §2.2 measures, and both well below the 256 GB/s nominal. A prior source measured ~215 GB/s on the same silicon (§23).</li>
+<li><strong>The same file elsewhere, if it fit.</strong> Bandwidth ratios against this box's nominal: 1008 GB/s is 3.9×, 1792 is 7.0×, 546 is 2.1×, 819 is 3.2×. Those are ceilings, not predictions: they assume identical bytes per token, which holds only for the same file at the same quantisation.</li>
+<li><strong>Where the ratio is the whole story, and where it is not.</strong> At 24 GB a 4090 holds the 13.4 GiB file with room for KV, so on the models both machines can hold, the card wins decode by roughly the bandwidth ratio and wins prefill by an order of magnitude. Above ~30B the comparison ends rather than reverses: a 70 GiB file does not fit, and the honest Nvidia answer is four cards, host-memory staging and 1.8-2.3 kW.</li>
+<li><strong>Prefill is not bandwidth-bound, and the gap there is the widest.</strong> With no tensor cores, prompt processing runs 350-2900 t/s here against several thousand to tens of thousands on parts with matrix acceleration — a 10-50× gap, not 2-7×. At 605 t/s, a 30k-token agent prompt costs ~50 s before the first token; short chat prompts hide the problem entirely, long agent prompts cannot.</li>
+<li><strong>Capacity, concretely.</strong> 24 GB is about a 30B dense model at Q4, or a 30B-A3B MoE with KV room; 32 GB is 35-40B; 100 GiB of GTT is 120B at Q4 (70 GiB) or 229B at 2 bpw (61 GiB, §9.1); Apple's 64-512 GB spans the same range with 2-3× this box's bandwidth at the top. A 128 GB Strix box holds what a four-card GeForce rig holds, at a quarter of the bandwidth, a fraction of the power and none of the plumbing.</li>
+</ul>
+<h3>13.3 The software gap is wider than the silicon gap</h3>
+<ul>
+<li><strong>CUDA is a platform, not an API.</strong> cuBLAS, cuDNN, TensorRT-LLM, vLLM, flash-attention and bitsandbytes all land there first, and so does every new architecture's kernel work. On this workload that buys prefill, continuous batching and multi-user serving — the three things this box is worst at.</li>
+<li><strong>Metal and MLX are a good platform with a narrower ecosystem.</strong> Vendor-maintained and cohesive; llama.cpp and MLX both work well on Apple silicon. They have no CUDA and no TensorRT, and the ports follow the CUDA originals rather than leading them.</li>
+<li><strong>Vulkan plus llama.cpp is the mature path here, and ROCm is partial on gfx1151</strong> (§3.2). The concrete consequences: no vLLM, no TensorRT-LLM, no bitsandbytes, and a new architecture arrives when a ggml PR merges rather than when a vendor kernel ships. That is why the harness (§7) speaks HTTP to <code>llama-server</code> and nothing else.</li>
+<li><strong>The quantisation habit inverts.</strong> On CUDA, Q4 is what you do to fit; here it is also what you do to go faster, because decode is bandwidth-bound (§5.1). Measured on one family: Q8_0 at 26.1 GiB decodes 49.4 t/s, the QAT Q4_0 at 14.4 GiB decodes 59.5 t/s, and the two are three items apart on MMLU-Pro at n=120 — the smaller file is faster, cheaper in memory, and level on knowledge.</li>
+</ul>
+<h3>13.4 Where each one breaks</h3>
+<p><strong>Nvidia.</strong> Above VRAM the model does not run slowly, it fails: <code>CUDA out of memory</code>, or a managed-memory oversubscription that faults pages over PCIe on every step. Multi-GPU does not rescue it cheaply, because GeForce has no peer-to-peer DMA, and the power draw is 450-575 W per card before the host.</p>
+<p><strong>Apple.</strong> Above the wired limit the load fails, often with no error a user can interpret; the fix is a <code>sysctl</code>, and above installed RAM there is no fix. There is no CUDA, so CUDA-only tooling is simply unavailable, memory cannot be added later, and in a laptop chassis sustained load is limited by thermals rather than by the chip.</p>
+<p><strong>Strix Halo.</strong> Above 100 GiB of GTT nothing runs, and the edge cases are the interesting ones. The 79 GiB Groot file, before it was retired, held GTT 71 GiB and still needed <code>--lazy-mode auto</code> beside the driver (§9.1); a 229B model fits only at 2 bpw; CPU load steals decode bandwidth because the pool is shared; and long prompts are the worst case at 350-2900 t/s. ROCm-only tooling is unavailable or partial.</p>
+<h3>13.5 Choosing between them</h3>
 <p>Figure 13 — Choosing a platform.</p>
 <pre><code>   ┌────────────────────────────────────────────────────────────────────────────┐
    │ Pick NVIDIA if ...                                                         │
@@ -775,8 +800,7 @@ a { color:var(--acc); }
    │   • your loads are chat, extraction, code, vision — not long-prompt agent  │
    │   • you want a 24/7 box that idles at a few watts and serves several jobs  │
    └────────────────────────────────────────────────────────────────────────────┘</code></pre>
-<p>The honest summary: <strong>Strix Halo buys capacity, Apple buys capacity with bandwidth, Nvidia buys throughput.</strong> This box is the cheapest way to hold 100 GiB of model in GPU address space, and it is the wrong choice if your bottleneck is prompt processing or concurrent throughput rather than model size.</p>
-<hr>
+<p>The honest summary, with the mechanism attached: <strong>Strix Halo buys capacity, Apple buys capacity with bandwidth, Nvidia buys throughput.</strong> This box is the cheapest way to hold 100 GiB of model in GPU address space, and it is the wrong choice when the bottleneck is prompt processing, concurrent users, or software that only exists on CUDA. It is not a slow 4090; it is a different machine that fails on different inputs, and the failure mode — not the benchmark table — is what should drive the purchase.</p>
 <hr>
 <h2 id="s14">Hosted frontier models as a reference point</h2>
 <p>Everything up to here answers "which model should this machine run". This section answers a different question, and it is the one a buyer asks first: <strong>how far behind is a local model on this box, and what does closing the gap cost?</strong></p>
@@ -20337,7 +20361,7 @@ curl -s localhost:8099/props | jq -r .build_info          # -&gt; b3-1a33095
 <p>The full version history lives on its own page: <strong><a href="changelog.html">change log</a></strong> — every correction, the numbers that forced it, and what the report said before. It is long by design; a correction that hides what was wrong is not a correction.</p>
 <p>The seven most recent entries, in brief:</p>
 <ul>
-<li><strong>v1.23</strong> — <strong>Lite-Beam M2.7 229B-A10B</strong> (MiniMax-M2.7 shape, A10B) measured at IQ2_XXS — 2.0625 bpw, 61.36 GiB over two shards, served lazily: <strong>0.8000 code (48/60@4096), 0.6750 knowledge (27/40@4096)</strong>, 10/14 riddles, preflight 3/3, both needles, 34.1 t/s decode / 261 t/s prefill; IFEval 0.20/0.16 is the weakest instruction score on the board. Largest file measured, and it displaces nothing — <code>qwen38fn-abl</code> beats it on both axes at IQ3_S for 17 GiB more. <strong>Also a process correction:</strong> the run was catalogued on 2026-11-08 but never written into this report, so the previous edition published a data row and three regenerated charts with no prose, leaderboard entry or change-log record behind them; §9 and §18.3 counts are now recounted from the catalogue (37 matrix rows, 155 runs, 60.6 h, 75 aliases, 16 servable families), Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside their table, and the four trees rebuilt on the evening of 2026-11-08 are tabulated in <strong>§4.3 — registered, not measured</strong>: <code>upstream-llama</code>, <code>flint</code> and <code>sensenova</code> at <code>7d7f028</code> (0.9.0-dev, ggml ABI 0.29.0), <code>prism</code> at <code>6447906bf</code> (0.7.0-dev, ABI 0.27.0), against the served fork <code>1a3309516</code> at ABI 0.25.3.</li>
+<li><strong>v1.23</strong> — <strong>Lite-Beam M2.7 229B-A10B</strong> (MiniMax-M2.7 shape, A10B) measured at IQ2_XXS — 2.0625 bpw, 61.36 GiB over two shards, served lazily: <strong>0.8000 code (48/60@4096), 0.6750 knowledge (27/40@4096)</strong>, 10/14 riddles, preflight 3/3, both needles, 34.1 t/s decode / 261 t/s prefill; IFEval 0.20/0.16 is the weakest instruction score on the board. Largest file measured, and it displaces nothing — <code>qwen38fn-abl</code> beats it on both axes at IQ3_S for 17 GiB more. <strong>Also a process correction:</strong> the run was catalogued on 2026-11-08 but never written into this report, so the previous edition published a data row and three regenerated charts with no prose, leaderboard entry or change-log record behind them; §9 and §18.3 counts are now recounted from the catalogue (37 matrix rows, 155 runs, 60.6 h, 75 aliases, 16 servable families), Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside their table, and the four trees rebuilt on the evening of 2026-11-08 are tabulated in <strong>§4.3 — registered, not measured</strong>: <code>upstream-llama</code>, <code>flint</code> and <code>sensenova</code> at <code>7d7f028</code> (0.9.0-dev, ggml ABI 0.29.0), <code>prism</code> at <code>6447906bf</code> (0.7.0-dev, ABI 0.27.0), against the served fork <code>1a3309516</code> at ABI 0.25.3. <strong>§13 is rewritten</strong> around what caps the GPU's working set — VRAM, Apple's wired limit, GTT — with the disk-to-GPU path, per-token bandwidth arithmetic, software gap and failure modes for each; and it corrects v1.22's "13.4 GiB per token", which was the file size, not the per-token read (§13.2 now states 134-190 GB/s).</li>
 </ul>
 <ul>
 <li><strong>v1.22</strong> — <strong>Laguna-XS-2.1</strong> (poolside, 33B/A3B agentic-coding MoE, OpenMDW-1.1) joins at Q4_K_M: <strong>87.7 t/s decode and 1321 t/s prefill, the fastest row on the box</strong>, with <strong>0.8667 code (60@4096) and 0.7000 knowledge (40@8192)</strong> — 16.7 pp and 10 pp above the same model at cap 2048, where 35 of 308 generations pinned; its knowledge curve 0.6000 → 0.6750 → 0.7000 across 2048/4096/8192 has flattened. Its BF16 ran 11.6 t/s (no coopmat2 path in either tree) and was deleted.</li>

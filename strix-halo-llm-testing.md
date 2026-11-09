@@ -35,7 +35,7 @@ exactly how far that can be pushed.
   10   Extrapolation                    whether a family result transfers, and what cannot
   11   League tables                    per-axis rankings
   12   Which model for which job        job -> axis -> model, with anti-patterns
-  13   Strix Halo vs Nvidia vs Apple    capacity, bandwidth, ecosystem, who should buy what
+  13   Strix Halo vs Nvidia vs Apple    three memory models, bandwidth, ecosystem, who should buy what
   14   Hosted frontier models           the gap to the frontier: code, knowledge, cache, cost
   15   Power, heat and money            what a local run costs in watts and pence
   16   Uncensored and abliterated       what removing the refusal direction costs per axis
@@ -1604,55 +1604,132 @@ Three anti-patterns this matrix is designed to prevent:
 
 ## 13. Strix Halo against Nvidia and Apple
 
-The question that matters to a buyer is not which chip is fastest, but which constraint binds first:
-capacity, bandwidth, or software ecosystem.
+The question a buyer has is not which chip is fastest, but **which constraint binds first**. On this workload
+there are three, and they rank in a fixed order: capacity decides whether a model runs at all, bandwidth
+decides how fast it decodes once it runs, and software decides which engines can run on it. The three
+platforms answer those questions in a different order, and each one's weakness is the price of its strength.
 
-### 13.1 The three architectures side by side
+The evidence here is deliberately asymmetric, and the asymmetry is stated rather than hidden: every number
+about this box is measured and traceable to `data/catalogue.json`; every number about the other two is a
+vendor specification, cited below, and **not benchmarked for this report**. No RTX card and no Mac was run
+here, and nothing below should be read as a head-to-head measurement.
 
-Figure 12 — Three platforms side by side.
+### 13.1 Three definitions of "the GPU's memory"
+
+The platforms differ less in their silicon than in what that phrase means, and in who owns the decision when
+the model does not fit.
+
+Figure 12 — Three platforms, three memory models.
 
 ```
-                       STRIX HALO           NVIDIA (RTX 4090/5090)      APPLE (M-series Max/Ultra)
-   ─────────────────────────────────────────────────────────────────────────────────────────────
-   Memory               128 GB unified         24 / 32 GB VRAM            64-512 GB unified
-   GPU-addressable      ~100 GiB (GTT)         = VRAM, hard wall          ~75% of RAM by default
-   Bandwidth            ~256 GB/s              ~1008 / ~1792 GB/s         ~546 GB/s (Max)
-                                                                           ~819 GB/s (Ultra)
-   Compute              RDNA 3.5, 40 CU        CUDA cores + tensor        Apple GPU + Neural Engine
-                        no tensor cores        cores, best in class       no CUDA
-   Software             Vulkan + llama.cpp     CUDA: vLLM, TRT-LLM,       Metal + MLX: excellent
-                        ROCm partial           FA, bitsandbytes, ...      for llama.cpp/MLX
-   Power (whole box)    ~45-120 W              ~450-575 W GPU alone       ~40-140 W
-   Price for 100 GB+    ~one laptop           4x 3090 or A100/H100       M3 Ultra 512 GB: premium
-   ─────────────────────────────────────────────────────────────────────────────────────────────
+                        STRIX HALO             NVIDIA (RTX 4090/5090)    APPLE (M-series Max/Ultra)
+   ──────────────────────────────────────────────────────────────────────────────────────────────
+   Memory                128 GB LPDDR5X         24 / 32 GB GDDR6X/GDDR7   64-512 GB LPDDR5X
+   GPU working set       100 GiB GTT            = VRAM, a hard wall       ~75% of RAM (96 of 128 GB)
+   Who sets the cap      kernel param (GTT)     the card you bought       driver default (sysctl)
+   Disk -> GPU path      NVMe -> page cache     NVMe -> RAM -> PCIe       NVMe -> page cache
+                         -> mapped, no copy     -> VRAM, a copy           -> mapped, no copy
+   Bandwidth             ~256 GB/s nominal     1008 / 1792 GB/s          546 / 819 GB/s
+   Compute               RDNA 3.5, 40 CU        CUDA + tensor cores       Apple GPU + Neural Engine
+   Software              Vulkan (+ partial      CUDA, cuBLAS, TensorRT,   Metal, MPS, MLX
+                         ROCm on gfx1151)       vLLM, bitsandbytes
+   Power (whole box)     ~45-120 W             450-575 W card alone      ~40-140 W
+   Upgrade memory?       no, soldered           another card, not VRAM    no, soldered
+   Cost for 100 GB+      ~one laptop            4 cards (no P2P) or an    512 GB Ultra: premium
+                                                A100/H100
+   ──────────────────────────────────────────────────────────────────────────────────────────────
 ```
-### 13.2 What the numbers mean in practice
 
-**The capacity wall is the real dividing line.** A 128 GB Strix Halo runs a 120B model at Q4 and a
-74 GiB model comfortably. A 24 GB RTX 4090 cannot run either; it tops out around 30B at Q4, and a
-70B model requires two cards with tensor-parallel plumbing. If your goal is "run the biggest open
-models locally", unified memory is the cheap path and discrete VRAM is the expensive one.
+**Nvidia — the copy is the design, and VRAM is the wall.** Weights are staged into VRAM across PCIe: 64 GB/s
+bidirectional at Gen4 x16, 128 GB/s at Gen5, so 32 and 64 GB/s in the direction a model load travels. For a
+13.4 GiB file that is well under a second of link time, which is why load latency is not the interesting
+number here — the wall is that the working set cannot exceed VRAM. Past it there are two options and both are
+expensive: a second card, where GeForce exposes no peer-to-peer DMA ([confirmed by
+NVIDIA](https://www.tomshardware.com/news/nvidia-confirms-geforce-cards-lack-p2p-support), so a 70B split
+across two cards stages through host memory); or CUDA's managed allocator, which does oversubscribe by
+migrating pages on fault — at page granularity over PCIe, a latency class away from VRAM bandwidth.
 
-**Bandwidth is the price you pay for that capacity.** Decode speed is roughly bandwidth divided by
-bytes read per token. This box reads 13.4 GiB per token for its driver at 59.5 t/s; a 4090 with
-roughly 4x the bandwidth would decode the same model 3-4x faster *if the model fit*, which for
-anything above ~30B it does not. The comparison only becomes fair when you compare models that fit
-on both machines, and at that point the Nvidia card is 3-4x faster per token and the Strix box runs
-models the card cannot hold at all.
+**Apple — the cap is a default, not a wall.** The GPU reads the same DRAM. Metal reports
+`recommendedMaxWorkingSetSize` at roughly 75% of RAM — 96 GB on a 128 GB machine — and llama.cpp and Ollama
+honour it as a ceiling. `sysctl iogpu.wired_limit_mb=114688` raises it to 112 GiB, which is the documented
+fix for the confusing failure where a 90 GiB model "refuses to load for no reason". What cannot be changed is
+capacity: the memory is soldered, and the top rung (512 GB on an M3 Ultra) is priced accordingly.
 
-**Prefill is where Strix Halo is genuinely weak.** No tensor cores means prompt processing runs at
-350-2900 t/s versus several thousand to tens of thousands on modern Nvidia parts. For chat with
-short prompts this is invisible. For an agent pushing 30k-token contexts it is the difference
-between a 2-second and a 60-second wait. If your workload is long-prompt-heavy, this is the wrong
-machine and no amount of model choice fixes it.
+**Strix Halo — the cap is GTT, and the copy never happens.** The GPU maps system DRAM through the GTT
+aperture: 100 GiB here against 128 GB installed, with an 8 GiB VRAM carve-out left unused. That aperture is
+set by kernel parameters, not by a card. Weights arrive by `mmap`, so the mapped pages *are* the page cache:
+a 61 GiB load is a fault-in from NVMe in about ten seconds, not a 61 GiB transfer. Everything that follows in
+this report follows from that one property — since nothing has to be copied, file size raises a capacity
+question and nothing else.
 
-**Apple sits between them.** M-series Max/Ultra have unified memory *and* high bandwidth (546-819
-GB/s), with Metal and MLX being genuinely good, mature paths for local inference. An M4 Max with 128
-GB will decode the same model roughly 2x faster than this box. What it does not have is CUDA, so the
-Nvidia-specific ecosystem is equally unavailable, and it does not have upgradeable RAM or a
-user-serviceable OS. It is the better *appliance*; the Strix box is the better *laboratory*.
+Compressed to three sentences: **Nvidia asks whether the model fits in VRAM, Apple asks whether it fits under
+the wired limit, and this box asks whether it fits in GTT.** Three names for the same question, and only two
+of the three answers can be changed after purchase.
 
-### 13.3 Choosing between them
+*Specifications cited above: [RTX 4090](https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/),
+[RTX 5090](https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/), [Mac Studio — M4 Max and
+M3 Ultra](https://support.apple.com/en-ca/122211), [MacBook Pro M4 Max](https://support.apple.com/en-us/121553);
+PCIe figures are the PCI-SIG values for x16 links (64 GB/s at Gen4, 128 GB/s at Gen5, bidirectional).*
+
+### 13.2 What the capacity costs: bandwidth per token
+
+Decode is bandwidth divided by bytes read per token, and that formula is indifferent to whose silicon is
+underneath. Only the numerator changes.
+
+- **This box.** The 13.4 GiB QAT file at 59.5 t/s implies **134 GB/s** of effective read bandwidth if the
+  active set is ~2.25 GB per token (4B active at 4.5 bpw), and 160-190 GB/s if attention and KV reads push it
+  to 2.5-3 GiB — both inside the 120-280 GB/s band §2.2 measures, and both well below the 256 GB/s nominal. A
+  prior source measured ~215 GB/s on the same silicon (§23).
+- **The same file elsewhere, if it fit.** Bandwidth ratios against this box's nominal: 1008 GB/s is 3.9×,
+  1792 is 7.0×, 546 is 2.1×, 819 is 3.2×. Those are ceilings, not predictions: they assume identical bytes
+  per token, which holds only for the same file at the same quantisation.
+- **Where the ratio is the whole story, and where it is not.** At 24 GB a 4090 holds the 13.4 GiB file with
+  room for KV, so on the models both machines can hold, the card wins decode by roughly the bandwidth ratio
+  and wins prefill by an order of magnitude. Above ~30B the comparison ends rather than reverses: a 70 GiB
+  file does not fit, and the honest Nvidia answer is four cards, host-memory staging and 1.8-2.3 kW.
+- **Prefill is not bandwidth-bound, and the gap there is the widest.** With no tensor cores, prompt
+  processing runs 350-2900 t/s here against several thousand to tens of thousands on parts with matrix
+  acceleration — a 10-50× gap, not 2-7×. At 605 t/s, a 30k-token agent prompt costs ~50 s before the first
+  token; short chat prompts hide the problem entirely, long agent prompts cannot.
+- **Capacity, concretely.** 24 GB is about a 30B dense model at Q4, or a 30B-A3B MoE with KV room; 32 GB is
+  35-40B; 100 GiB of GTT is 120B at Q4 (70 GiB) or 229B at 2 bpw (61 GiB, §9.1); Apple's 64-512 GB spans the
+  same range with 2-3× this box's bandwidth at the top. A 128 GB Strix box holds what a four-card GeForce rig
+  holds, at a quarter of the bandwidth, a fraction of the power and none of the plumbing.
+
+### 13.3 The software gap is wider than the silicon gap
+
+- **CUDA is a platform, not an API.** cuBLAS, cuDNN, TensorRT-LLM, vLLM, flash-attention and bitsandbytes all
+  land there first, and so does every new architecture's kernel work. On this workload that buys prefill,
+  continuous batching and multi-user serving — the three things this box is worst at.
+- **Metal and MLX are a good platform with a narrower ecosystem.** Vendor-maintained and cohesive; llama.cpp
+  and MLX both work well on Apple silicon. They have no CUDA and no TensorRT, and the ports follow the CUDA
+  originals rather than leading them.
+- **Vulkan plus llama.cpp is the mature path here, and ROCm is partial on gfx1151** (§3.2). The concrete
+  consequences: no vLLM, no TensorRT-LLM, no bitsandbytes, and a new architecture arrives when a ggml PR
+  merges rather than when a vendor kernel ships. That is why the harness (§7) speaks HTTP to `llama-server`
+  and nothing else.
+- **The quantisation habit inverts.** On CUDA, Q4 is what you do to fit; here it is also what you do to go
+  faster, because decode is bandwidth-bound (§5.1). Measured on one family: Q8_0 at 26.1 GiB decodes 49.4 t/s,
+  the QAT Q4_0 at 14.4 GiB decodes 59.5 t/s, and the two are three items apart on MMLU-Pro at n=120 — the
+  smaller file is faster, cheaper in memory, and level on knowledge.
+
+### 13.4 Where each one breaks
+
+**Nvidia.** Above VRAM the model does not run slowly, it fails: `CUDA out of memory`, or a managed-memory
+oversubscription that faults pages over PCIe on every step. Multi-GPU does not rescue it cheaply, because
+GeForce has no peer-to-peer DMA, and the power draw is 450-575 W per card before the host.
+
+**Apple.** Above the wired limit the load fails, often with no error a user can interpret; the fix is a
+`sysctl`, and above installed RAM there is no fix. There is no CUDA, so CUDA-only tooling is simply
+unavailable, memory cannot be added later, and in a laptop chassis sustained load is limited by thermals
+rather than by the chip.
+
+**Strix Halo.** Above 100 GiB of GTT nothing runs, and the edge cases are the interesting ones. The 79 GiB
+Groot file, before it was retired, held GTT 71 GiB and still needed `--lazy-mode auto` beside the driver
+(§9.1); a 229B model fits only at 2 bpw; CPU load steals decode bandwidth because the pool is shared; and
+long prompts are the worst case at 350-2900 t/s. ROCm-only tooling is unavailable or partial.
+
+### 13.5 Choosing between them
 
 Figure 13 — Choosing a platform.
 
@@ -1677,12 +1754,12 @@ Figure 13 — Choosing a platform.
    │   • you want a 24/7 box that idles at a few watts and serves several jobs  │
    └────────────────────────────────────────────────────────────────────────────┘
 ```
-The honest summary: **Strix Halo buys capacity, Apple buys capacity with bandwidth, Nvidia buys
-throughput.** This box is the cheapest way to hold 100 GiB of model in GPU address space, and it is
-the wrong choice if your bottleneck is prompt processing or concurrent throughput rather than model
-size.
 
----
+The honest summary, with the mechanism attached: **Strix Halo buys capacity, Apple buys capacity with
+bandwidth, Nvidia buys throughput.** This box is the cheapest way to hold 100 GiB of model in GPU address
+space, and it is the wrong choice when the bottleneck is prompt processing, concurrent users, or software
+that only exists on CUDA. It is not a slow 4090; it is a different machine that fails on different inputs,
+and the failure mode — not the benchmark table — is what should drive the purchase.
 
 ---
 
@@ -2702,7 +2779,10 @@ The seven most recent entries, in brief:
   Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside
   their table, and the four trees rebuilt on the evening of 2026-11-08 are tabulated in **§4.3 — registered,
   not measured**: `upstream-llama`, `flint` and `sensenova` at `7d7f028` (0.9.0-dev, ggml ABI 0.29.0),
-  `prism` at `6447906bf` (0.7.0-dev, ABI 0.27.0), against the served fork `1a3309516` at ABI 0.25.3.
+  `prism` at `6447906bf` (0.7.0-dev, ABI 0.27.0), against the served fork `1a3309516` at ABI 0.25.3. **§13 is
+  rewritten** around what caps the GPU's working set — VRAM, Apple's wired limit, GTT — with the disk-to-GPU
+  path, per-token bandwidth arithmetic, software gap and failure modes for each; and it corrects v1.22's
+  "13.4 GiB per token", which was the file size, not the per-token read (§13.2 now states 134-190 GB/s).
 
 - **v1.22** — **Laguna-XS-2.1** (poolside, 33B/A3B agentic-coding MoE, OpenMDW-1.1) joins at Q4_K_M: **87.7 t/s
   decode and 1321 t/s prefill, the fastest row on the box**, with **0.8667 code (60@4096) and 0.7000 knowledge
