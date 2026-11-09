@@ -9,6 +9,57 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.23 (2026-11-09)
+
+**One arrival at the far end of the quantisation curve — and a publication gap in the edition before it.**
+
+| model | HE | MMLU-Pro | IFEval prompt/inst | decode | prefill | size | verdict |
+|---|---|---|---|---|---|---|---|
+| Lite-Beam M2.7 229B-A10B IQ2_XXS | **0.8000 (48/60 @4096)** | **0.6750 (27/40 @4096)** | 0.2000 / 0.1556 | 34.1 t/s | 261 t/s | 61.36 GiB, two shards | kept |
+
+MiniMax-M2.7 shape, **228.69B total with ~A10B active**, exported as a mixed **IQ2_XXS at 2.0625 bpw** across
+two shards totalling 61.36 GiB, 204,800-token training context served at 16,384. It is the largest model by
+parameter count this box has measured — Groot-65B's 79.07 GiB remains the largest *file* — and it does not
+fit all-resident beside the driver: it runs `--load-mode mmap
+--lazy-mode auto` on port 8182 (`run-litebeam-m27.sh`, no systemd unit), KV cache q8_0, inside the same
+100 GiB GTT pool the driver and the boot unit share.
+
+**The speed is what two bits buy.** 261 t/s prefill and **34.1 t/s decode**, TTFT 7.0 s on a 1,826-token
+prompt. Capability was taken at a 4096 cap on both axes: **0.8000 code (48/60) and 0.6750 knowledge (27/40)**,
+riddles 10/14, preflight 3/3, and both needles — 2k and 8k — retrieved first time, no retry. IFEval is the
+weak axis and it is not close: **0.2000 prompt-strict / 0.1556 instruction-strict** over 30 items, the lowest
+instruction-following score of any row that passes preflight. That is a property of the export, not the
+harness: the same prompts at 4096 on the Q4 files of the same family score 0.7-0.9.
+
+**It wins nothing except parameter count, and the table should say so.** The 176.9B `qwen38fn-abl` at IQ3_S
+takes both axes (0.8476 code, 0.8750 knowledge) at 52.9 t/s in 78.78 GiB: 52B fewer parameters, 17 GiB more
+disk, and better on code, knowledge and speed. Lite-Beam is kept for what it uniquely is — a 228B model
+inside 62 GiB, with a 200k training context and both needles — not because it beats the resident abl.
+Wall clock for the whole suite was 6,985 s (1.94 h), HumanEval 3,196 s of it and MMLU-Pro 2,047 s.
+
+**The process failure this edition exists to correct.** The run was measured and catalogued on 2026-11-08
+(last axis written 02:51) and the publish pipeline ran at 04:15 the same morning. Because the report body is
+hand-written and the pipeline only regenerates what the documents already say, that commit (`ef2b137`)
+published the catalogue row and three charts redrawn from it — `f15-quality-speed`, `f16-knowledge-speed`,
+`f21-profiles` — with **no prose, no leaderboard row and no change-log entry** behind it. The site showed a
+point on two figures that no sentence introduced. The row is written here, the leaderboards follow from the
+matrix, and the counts in §9, §18.3 and §20 that had drifted by one run were recounted from the catalogue:
+**37 matrix rows, 155 runs, 60.6 hours, 75 aliases, 16 servable model families**. The rule this points at is
+the one already in §4.1: the pipeline cannot publish prose it was not given, so a measured row is not a
+published row until the sentence exists.
+
+**One rendering defect fixed in passing.** In Table 4b the closing note sat between the sixth and seventh
+rows, so the last three rows (`qwen38fn-abl`, `Ornith-1.5-35B`, `ornith35b`) had been rendering as literal
+pipe text outside the table since v1.20 — visible on every page view, unnoticed in every diff. The note now
+follows the table.
+
+**Build identity.** Every number here is fork `b3-1a33095`, kernel `7.3.1-1-cachyos`, Mesa 26.2.5 /
+vulkan-radeon 26.2.5. The four trees rebuilt on the evening of 2026-11-08 — `upstream-llama`, `sensenova` and
+`flint` at upstream `7d7f028`, `prism` at `6447906bf` — serve nothing in this report and appear in no row;
+the build register remains a single-fork register until a benchmark is run on one of them.
+
+---
+
 ### Version 1.22 (2026-11-06)
 
 **One arrival, and it is the fastest file on the box — with a +16.7 pp cap correction behind its score.**

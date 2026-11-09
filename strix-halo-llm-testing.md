@@ -7,8 +7,8 @@
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-05
-- **Roster:** 16 servable model families on disk, 647 GiB, checked 2026-11-06 · **Change log:** §21
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-08
+- **Roster:** 16 servable model families on disk, 709 GiB, checked 2026-11-08 · **Change log:** §21
 
 **About this document**
 
@@ -409,7 +409,7 @@ the serving build into every run.
    ───────────────────────────────────────────────────────────────────────────────────────────
    halo-box-strix (fork)       4b2561e48   pre-identity: version not recorded  0.25.3  10-07 → 10-14
    halo-box-strix (fork)       065cd14f8   window: binary rebuilt 10-16 09:33  0.25.3  10-15 → 10-16
-   halo-box-strix (fork)       1a3309516   0.5.0-dev (b3, commit 1a33095)      0.25.3  10-16 → 10-27
+   halo-box-strix (fork)       1a3309516   0.5.0-dev (b3, commit 1a33095)      0.25.3  10-16 → 11-08
    upstream-llama.cpp          69f201a     0.6.0-dev (b1, commit 69f201a)      0.26.0  10-12
    upstream-master-bolt        a30fb49     0.7.0-dev (b1, commit a30fb49)      0.27.0  10-16 → 10-19
    kolibri-halo                bfce064     0.5.0-dev (b3, commit bfce064)      0.25.3  10-14
@@ -944,7 +944,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 35 of the 73 model aliases that have
+One row per model that completed the full suite and reached a verdict — 37 of the 75 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -984,6 +984,7 @@ deleted rows are why the recommendations below have reasons.
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | Axion-1.0-35B | 34.7B | Q4_K_M | 0.8500 (60@2048) | 0.7750 (40@2048) | 10/14 | 1422 | 76.2 | 2026-11-05 | fork b3-1a33095 | ✓ |
+| Lite-Beam-M2.7-229B | 228.7B | IQ2_XXS | 0.8000 (60@4096) | 0.6750 (40@4096) | 10/14 | 261 | 34.1 | 2026-11-08 | fork b3-1a33095 | ✓ |
 | Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✗ 11-05 |
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | 0.8750 (40@2048) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
@@ -1027,13 +1028,15 @@ included — 647 GiB) is in §20.3.
 | qwen38-35b | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8093 |
 | lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | fork pre-identity | :8181 |
 | Kimi-Linear-48B-A3B-abl | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8086 |
-
-*Retired since this snapshot (2026-11-05): `mellum21-fork`, `Groot-65B-A6B`, `nemotron-super-120b` and
-`Kimi-Linear-48B-A3B-abl`. The `:8189` and `:8086` endpoints above are no longer bound and the roster
-stands at 15 model families. The rows stay: a snapshot that silently shrinks is not a snapshot.*
 | qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | fork pre-identity | :8097 |
 | Ornith-1.5-35B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 74.1 | 2026-11-01 | fork b3-1a33095 | :8086 |
 | ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | fork b3-1a33095 | :8094 boot |
+
+*Retired since this snapshot (2026-11-05): `mellum21-fork`, `Groot-65B-A6B`, `nemotron-super-120b` and
+`Kimi-Linear-48B-A3B-abl`; added since it: `Lite-Beam-M2.7-229B` (2026-11-08, :8182 lazily, no unit). The
+`:8189` and `:8086` endpoints above are no longer bound and the roster stands at 16 model families. The rows
+stay: a snapshot that silently shrinks is not a snapshot.*
+
 The last blank cell was filled on 2026-10-31: `Qwen3-Next-80B UD-Q4_K_XL` now has a full row
 (0.9146 code, 0.7417 knowledge, 14/14, 58.1 t/s) and it is the weakest large model on disk — see §9.1
 and §21. Every artefact in this table has been scored on both capability axes.
@@ -1248,6 +1251,18 @@ riddles 10/14. Every cap arm is recorded: `~/bench/runs/humaneval-20261106-19262
 `mmlupro-20261106-194159.jsonl` / `mmlupro-20261106-200654.jsonl` (4096, 8192). The same weights in BF16 are a trap on this platform: neither serving tree compiles coopmat2
 shaders, BF16 matmul takes the generic path, and the file measures **11.6 t/s** — it was deleted the same day, along
 with a DFlash draft head that will not load (expected 64 tensors, got 58).
+
+**Lite-Beam M2.7 229B-A10B — the most parameters measured here, at two bits per weight.** MiniMax-M2.7 shape
+(228.69B total, A10B active) exported as a mixed **IQ2_XXS at 2.0625 bpw**, split across two shards:
+61.36 GiB, 204,800-token training context, served at 16,384. It does not fit all-resident beside the driver,
+so it runs lazily (`--load-mode mmap --lazy-mode auto`) on its own port: **34.1 t/s decode, 261 t/s prefill**,
+TTFT 7.0 s on a 1,826-token prompt, KV cache at q8_0. At a 4096 cap on both capability axes it reads
+**0.8000 code (48/60), 0.6750 knowledge (27/40)**, riddles 10/14, preflight 3/3, and retrieves both needles
+(2k and 8k); IFEval is 0.20 prompt-strict / 0.16 instruction-strict over 30 items, the weakest
+instruction-following of any row that passes preflight. The two-bit export is what costs it: the 176.9B
+`qwen38fn-abl` at IQ3_S scores 0.8476 code and 0.8750 knowledge at 52.9 t/s in 78.78 GiB, so Lite-Beam buys
+52B more parameters and 17 GiB less disk for a lower score on both axes and a third less speed. It stays on
+disk as the only 200B-class row holding both needles; it takes no slot from anything and nothing takes its.
 
 **qwen38fn32-prune2 — it loads; that was the least of its problems.** The 48.31 GiB export this report
 called unloadable in v1.16 does load, on the publisher's own runtime patch, because its 177 "experts" are
@@ -2277,9 +2292,9 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 154 runs totalling **58.6 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-06. Of the 75 model aliases with at least one
-measurement, 15 model families remain
+**The one cost that is measured:** 155 runs totalling **60.6 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-08. Of the 75 model aliases with at least one
+measurement, 16 model families remain
 servable and every deletion is recorded in the ledger; the two largest deletion passes alone released
 61.6 GiB and 245.1 GiB.
 
@@ -2299,9 +2314,9 @@ time log. Ranges, not a point estimate.
 |---|---:|---:|---|
 | planning and design | 15 | 25 | seven axes, the cap policy, the memory and quantisation model (§5) |
 | harness and tooling | 70 | 100 | ~4,500 lines: bench harness, chart renderer, 19 run scripts, publish pipeline |
-| running and supervising | 45 | 60 | 58.6 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
+| running and supervising | 45 | 60 | 60.6 h of measured execution, ~18 h of per-model setup, re-runs and failed loads |
 | analysis and correlation | 30 | 45 | alias-collision audits, cap-floor re-measurements, four external sources compared |
-| writing and revision | 50 | 70 | 2,655 lines across six editions, the ledger, ten captioned figures |
+| writing and revision | 50 | 70 | 2,816 lines across seven editions, the ledger, ten captioned figures |
 | publishing | 12 | 18 | repository, sanitising gates, Pages, discovery metadata, the two probes |
 | **total** | **222** | **318** | ≈ 250-300 h |
 
@@ -2638,7 +2653,18 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The six most recent entries, in brief:
+The seven most recent entries, in brief:
+
+- **v1.23** — **Lite-Beam M2.7 229B-A10B** (MiniMax-M2.7 shape, A10B) measured at IQ2_XXS — 2.0625 bpw,
+  61.36 GiB over two shards, served lazily: **0.8000 code (48/60@4096), 0.6750 knowledge (27/40@4096)**,
+  10/14 riddles, preflight 3/3, both needles, 34.1 t/s decode / 261 t/s prefill; IFEval 0.20/0.16 is the
+  weakest instruction score on the board. Largest file measured, and it displaces nothing — `qwen38fn-abl`
+  beats it on both axes at IQ3_S for 17 GiB more. **Also a process correction:** the run was catalogued on
+  2026-11-08 but never written into this report, so the previous edition published a data row and three
+  regenerated charts with no prose, leaderboard entry or change-log record behind them; §9 and §18.3 counts
+  are now recounted from the catalogue (37 matrix rows, 155 runs, 60.6 h, 75 aliases, 16 servable families),
+  and Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside
+  their table.
 
 - **v1.22** — **Laguna-XS-2.1** (poolside, 33B/A3B agentic-coding MoE, OpenMDW-1.1) joins at Q4_K_M: **87.7 t/s
   decode and 1321 t/s prefill, the fastest row on the box**, with **0.8667 code (60@4096) and 0.7000 knowledge
