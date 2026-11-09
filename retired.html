@@ -99,19 +99,14 @@ a { color:var(--acc); }
 </ul>
 <ul>
 <li>unit <code>llama-muse-glimmer.service</code>, port <strong>:8098</strong>, alias <code>muse-glimmer</code>, script <code>run-muse-glimmer.sh</code></li>
-<li>flags: `-m &lt;KQuant&gt; --mmproj &lt;mmproj&gt; -ngl 99 -c 131072 --flash-attn on --cache-type-k/v q8_0</li>
+<li>flags: <code>-m &lt;KQuant&gt; --mmproj &lt;mmproj&gt; -ngl 99 -c 131072 --flash-attn on --cache-type-k/v q8_0 --reasoning auto -np 1 --metrics</code>; the script carries a <code>VISION</code> (default on) and a <code>DFLASH=0|1</code> switch</li>
+<li>arch <code>muse_glimmer</code> works on the halo-box fork (<code>src/models/muse-glimmer.cpp</code>) and mtmd has a <code>muse_glimmer</code> clip graph; served weights were 18.3 GiB with only ~14.7 GiB of GTT in use</li>
 </ul>
-<p>--reasoning auto -np 1 --metrics<code>; the script carries a </code>VISION<code> (default on) and a </code>DFLASH=0|1` switch</p>
-<ul>
-<li>arch <code>muse_glimmer</code> works on the halo-box fork (<code>src/models/muse-glimmer.cpp</code>) and mtmd has a</li>
-</ul>
-<p><code>muse_glimmer</code> clip graph; served weights were 18.3 GiB with only ~14.7 GiB of GTT in use</p>
 <p><strong>Why retired — measured, not assumed:</strong></p>
 <table><thead><tr><th>axis</th><th>result</th></tr></thead><tbody><tr><td>speed, 3x512 greedy probe (median)</td><td><strong>10.77 t/s</strong> — perf axis 10.9, pp 374, ttft 4.93 s</td></tr><tr><td>DFlash (<code>--spec-type draft-dflash</code>)</td><td><strong>0 draft tokens</strong> — <code>spec_decode_num_draft_tokens_total 0</code> after a 256-token generation; tg identical to 0.00%. Invocation verified correct via <code>bash -x</code>, sidecar verified real. The card's 1.5x-3.1x is untestable here</td></tr><tr><td>riddles (core, default cap)</td><td>8/14, weakest in the fleet; <code>-rea off</code> did not change it</td></tr><tr><td>long-form answers</td><td>"count to 40 in words" returns EMPTY <code>content</code> after burning 256 tokens on a prompt echo — with and without <code>-rea off</code></td></tr><tr><td>needles</td><td>PASS / PASS</td></tr></tbody></table>
 <ul>
-<li><code>-rea off</code> A/B (server-side <code>--reasoning off</code>, same weights): riddles <strong>8/14, identical</strong>, perf pp 366.8 /</li>
+<li><code>-rea off</code> A/B (server-side <code>--reasoning off</code>, same weights): riddles <strong>8/14, identical</strong>, perf pp 366.8 / tg 10.9, and the long-form prompt still returns EMPTY content. So the weak core score is the model as served, NOT a reasoning-budget artifact — my interim hypothesis was wrong and this is the check that refuted it. (<code>--no-reasoning-preserve</code> remains untested; <code>-rea off</code> is the flag that made no difference.)</li>
 </ul>
-<p>tg 10.9, and the long-form prompt still returns EMPTY content. So the weak core score is the model as served, NOT a reasoning-budget artifact — my interim hypothesis was wrong and this is the check that refuted it. (<code>--no-reasoning-preserve</code> remains untested; <code>-rea off</code> is the flag that made no difference.)</p>
 <p>Reason it went: <strong>no niche.</strong> Dense 30B at Q4 on a bandwidth-bound box is inherently ~11 t/s here, its one distinctive feature produced nothing, and big + uncensored + vision + MTP is already covered by the Flash-Next GSQ-RCO abliterated (:8097) at roughly 3-5x the throughput and less GTT.</p>
 <h2>2026-10-17 batch — six superseded models (disk-audit queue, <code>~/llama-local/DELETE-QUEUE.md</code>)</h2>
 <p>Retired on the user's explicit instruction after the four eligibility rules were applied: not a former daily driver (&gt;12 h), not favoured, no kept model depends on the files, results recorded first. Every local artifact was hashed before deletion and <strong>11 of the 12 matched the repo's published LFS oid exactly</strong> — the one exception is the Fable weights, whose source repo was never recorded (noted below).</p>
@@ -155,116 +150,55 @@ a { color:var(--acc); }
 <li>perf: pp 1433 t/s (1914 on the second run), tg 60.4 t/s, ttft 1248 ms @1789-token prompt</li>
 <li>preflight 3/3, needle 2k PASS, needle 8k PASS, riddles 10/14 (4 misses = EMPTY content, cap-limited)</li>
 <li>humaneval pass@1 = 0.9167 (55/60), wall 1061 s</li>
-<li>raw: <code>~/runs/20261025-063840-flint-q4-official.jsonl</code>, <code>~/runs/20261025-070907-flint-q4-he60.jsonl</code>,</li>
+<li>raw: <code>~/runs/20261025-063840-flint-q4-official.jsonl</code>, <code>~/runs/20261025-070907-flint-q4-he60.jsonl</code>, logs <code>~/llama-local/t20-flint-q4-official.log</code>, <code>~/llama-local/t20-flint-he60.log</code></li>
 </ul>
-<p>logs <code>~/llama-local/t20-flint-q4-official.log</code>, <code>~/llama-local/t20-flint-he60.log</code></p>
 <p><strong>Restore recipe</strong></p>
 <ul>
-<li>weights: <code>flint-preview-UD-Q4_K_XL.gguf</code>, 25,054,688,704 B, sha256</li>
-</ul>
-<p><code>63c2ecc461ca545134b670c660e76fa20f47240f8d39b6510bfd21c4dd6e072f</code> = <code>unsloth/flint-GGUF</code> → <code>flint-UD-Q4_K_XL.gguf</code> (repo LFS oid 63c2ecc461ca). Note the local filename says "preview" but the sha IS the official UD-Q4_K_XL; do not re-fetch a "release". Other levels in that repo: IQ1_M 10.57, IQ2_XXS 11.04, Q2_K_XL 12.63, IQ3_XXS 13.54, Q3_K_XL 17.22, Q5_K_XL 27.86, Q6_K_XL 33.83, Q8_0 39.40, BF16 74.12 GiB.</p>
-<ul>
-<li>unit <code>llama-flint-preview.service</code>, port <strong>8183</strong> (now free), alias <code>flint</code>, script <code>run-flint.sh</code>:</li>
-</ul>
-<p><code>-ngl 99 -c 131072 --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0 --jinja -np 1 -b 4096 -ub 2048</code></p>
-<ul>
-<li>arch <code>flint</code> (49 blocks, 2 dense + 47 MoE, 256 experts / 6 used / 2 shared, hidden 2048,</li>
-</ul>
-<p>ctx_train 262144, sliding window 513 on 35 layers, 32 q / 4 kv heads).</p>
-<ul>
-<li><strong>bespoke build required:</strong> arch <code>flint</code> is NOT in the halo-box fork. Built tree was</li>
-</ul>
-<p><code>flint-pr-llama.cpp</code> (PR #30928, commit 1b44e30); it was deleted with this retirement because the only other script pointing at it (<code>run-mammoth.sh</code>) had no weights left either (also removed). Rebuild: clone llama.cpp, apply/merge PR #30928, Vulkan configure (see the fork's configure line), targets <code>llama-server</code>.</p>
-<ul>
+<li>weights: <code>flint-preview-UD-Q4_K_XL.gguf</code>, 25,054,688,704 B, sha256 <code>63c2ecc461ca545134b670c660e76fa20f47240f8d39b6510bfd21c4dd6e072f</code> = <code>unsloth/flint-GGUF</code> → <code>flint-UD-Q4_K_XL.gguf</code> (repo LFS oid 63c2ecc461ca). Note the local filename says "preview" but the sha IS the official UD-Q4_K_XL; do not re-fetch a "release". Other levels in that repo: IQ1_M 10.57, IQ2_XXS 11.04, Q2_K_XL 12.63, IQ3_XXS 13.54, Q3_K_XL 17.22, Q5_K_XL 27.86, Q6_K_XL 33.83, Q8_0 39.40, BF16 74.12 GiB.</li>
+<li>unit <code>llama-flint-preview.service</code>, port <strong>8183</strong> (now free), alias <code>flint</code>, script <code>run-flint.sh</code>: <code>-ngl 99 -c 131072 --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0 --jinja -np 1 -b 4096 -ub 2048</code></li>
+<li>arch <code>flint</code> (49 blocks, 2 dense + 47 MoE, 256 experts / 6 used / 2 shared, hidden 2048, ctx_train 262144, sliding window 513 on 35 layers, 32 q / 4 kv heads).</li>
+<li><strong>bespoke build required:</strong> arch <code>flint</code> is NOT in the halo-box fork. Built tree was <code>flint-pr-llama.cpp</code> (PR #30928, commit 1b44e30); it was deleted with this retirement because the only other script pointing at it (<code>run-mammoth.sh</code>) had no weights left either (also removed). Rebuild: clone llama.cpp, apply/merge PR #30928, Vulkan configure (see the fork's configure line), targets <code>llama-server</code>.</li>
 <li>Also removed with it: <code>run-mammoth.sh</code> (orphan — <code>models/mammoth-1.*</code> were already gone).</li>
 </ul>
 <h2>sage-a1.5 and groot-19b-a3b — retired 2026-10-25 (measured, neither was placed)</h2>
 <p>Both fetched, wired (units 25/26, ports 8183/8189) and fully measured the same day, then retired: neither takes the daily-driver slot, and only sage had a defensible niche (fast vision + 262k ctx). User decision: delete both.</p>
 <h3>Measured before deletion (all on the halo-box fork, ctx 131072, q8_0 KV, Q4_K_M)</h3>
 <ul>
-<li><strong>Sage-A1.5, thinking OFF</strong> (<code>--chat-template-kwargs '{"enable_thinking":false}'</code>): pp 1690 / tg 74.6 /</li>
-</ul>
-<p>ttft 1064 ms @1799 tok; preflight 3/3; needle 2k PASS, 8k PASS; <strong>riddles 14/14</strong>; <strong>HumanEval 0.8659 (142/164)</strong> in 270 s (1.6 s/item); <strong>MMLU-Pro 0.6250 (75/120)</strong> in 992 s. A <code>--limit 60</code> subset read 0.9167 (55/60) — ~5pp optimistic, do not compare to 164-item cells.</p>
-<ul>
-<li><strong>Sage-A1.5, thinking ON (template default, UNUSABLE):</strong> 20/20 HumanEval FAILs at ~53 s/item, every</li>
-</ul>
-<p>item burning the full 4096 cap and ending <code>NameError</code>; riddles 7/14. One flag = 1.6 s vs 53 s per item.</p>
-<ul>
-<li><strong>Groot-19B-A3B (default arm):</strong> pp 1876 / tg 78.2 / ttft 958 ms; preflight 3/3; needle 2k+8k PASS;</li>
-</ul>
-<p>riddles 8/14; HumanEval 0.9333 (56/60) at 15.6 s/item — <strong>subset only, the full 164-item axis was never run (record as UNRANKED on the full axis)</strong>; MMLU-Pro never run.</p>
-<ul>
+<li><strong>Sage-A1.5, thinking OFF</strong> (<code>--chat-template-kwargs '{"enable_thinking":false}'</code>): pp 1690 / tg 74.6 / ttft 1064 ms @1799 tok; preflight 3/3; needle 2k PASS, 8k PASS; <strong>riddles 14/14</strong>; <strong>HumanEval 0.8659 (142/164)</strong> in 270 s (1.6 s/item); <strong>MMLU-Pro 0.6250 (75/120)</strong> in 992 s. A <code>--limit 60</code> subset read 0.9167 (55/60) — ~5pp optimistic, do not compare to 164-item cells.</li>
+<li><strong>Sage-A1.5, thinking ON (template default, UNUSABLE):</strong> 20/20 HumanEval FAILs at ~53 s/item, every item burning the full 4096 cap and ending <code>NameError</code>; riddles 7/14. One flag = 1.6 s vs 53 s per item.</li>
+<li><strong>Groot-19B-A3B (default arm):</strong> pp 1876 / tg 78.2 / ttft 958 ms; preflight 3/3; needle 2k+8k PASS; riddles 8/14; HumanEval 0.9333 (56/60) at 15.6 s/item — <strong>subset only, the full 164-item axis was never run (record as UNRANKED on the full axis)</strong>; MMLU-Pro never run.</li>
 <li>vs the incumbent: gemma4-26b QAT is HE 0.9390 (164) / MMLU 0.8417 (120) / riddles 14/14 at 66.7 t/s.</li>
 </ul>
 <h3>Restore recipe</h3>
 <ul>
-<li><code>sage-a1.5-Q4_K_M.gguf</code> — 21,713,463,520 B (20.22 GiB), sha256 <code>a64fe0bbf936db3eb54f66f142c2b2eee569ade83673649f549a21daef8ca395</code></li>
+<li><code>sage-a1.5-Q4_K_M.gguf</code> — 21,713,463,520 B (20.22 GiB), sha256 <code>a64fe0bbf936db3eb54f66f142c2b2eee569ade83673649f549a21daef8ca395</code> from <code>InternScience/Sage-A1.5-Q4_K_M-GGUF :: Sage-A1.5-Q4_K_M.gguf</code></li>
+<li><code>mmproj-Sage-A1.5.gguf</code> — 899,282,880 B (0.84 GiB), sha256 <code>51cd4410057e8dc4152ca771a726fbfb34856f047e7049018c757d42ddd481f2</code> from <code>InternScience/Sage-A1.5-Q4_K_M-GGUF :: Sage-A1.5-mmproj.gguf</code></li>
+<li><code>groot-19b-a3b-Q4_K_M.gguf</code> — 11,657,618,560 B (10.86 GiB), sha256 <code>0716cae1f19a39a786a463f7b8c068d50b3d7a74532fce73e5ea23ed98130796</code> from <code>GrootTeam/Groot-19B-A3B-261023-GGUF :: Groot-19B-A3B-261023-Q4_K_M.gguf</code></li>
+<li><code>mmproj-Groot-19B-A3B-BF16.gguf</code> — 902,822,016 B (0.84 GiB), sha256 <code>05a5c8a279b2589306824864d76d663063ba69ff1f399e6a283fae988fdff360</code> from <code>GrootTeam/Groot-19B-A3B-261023-GGUF :: mmproj-Groot-19B-A3B-261023-BF16.gguf</code></li>
+<li>units <code>llama-sage-a15.service</code> (port <strong>8183</strong>, alias <code>sage-a1.5</code>) and <code>llama-groot-19b-a3b.service</code> (port <strong>8189</strong>, alias <code>groot-19b-a3b</code>); scripts <code>run-sage-a15.sh</code>, <code>run-groot-19b-a3b.sh</code>.</li>
+<li>arch <code>qwen35moe</code> for both (41 blocks; sage 256 experts top-8, groot 128 top-8; ctx_train 262144) — loads on the halo-box fork with no build. Vision needs the mmproj above (<code>--mmproj</code>), which loads as "loaded multimodal model" although this fork's <code>/props</code> exposes no <code>vision</code> key.</li>
+<li>flags: <code>-ngl 99 -c 131072 --flash-attn on --cache-type-k/v q8_0 --spec-type none -np 1 --jinja --metrics</code>; sage additionally <code>--chat-template-kwargs '{"enable_thinking":false}'</code> (see above — without it the model is unusable).</li>
+<li>artifacts: <code>~/llama-local/t20-sage-nothink-core.log</code>, <code>t20-sage-a1.5-core.log</code>, <code>t20-groot-19b-a3b-core.log</code>, <code>he-sage-full.log</code>, <code>he-sage-nothink.log</code>, <code>he-groot-19b-a3b.log</code>, <code>mmlu-sage-full.log</code>; <code>~/runs/</code> holds the t20 rows.</li>
 </ul>
-<p>from <code>InternScience/Sage-A1.5-Q4_K_M-GGUF :: Sage-A1.5-Q4_K_M.gguf</code></p>
-<ul>
-<li><code>mmproj-Sage-A1.5.gguf</code> — 899,282,880 B (0.84 GiB), sha256 <code>51cd4410057e8dc4152ca771a726fbfb34856f047e7049018c757d42ddd481f2</code></li>
-</ul>
-<p>from <code>InternScience/Sage-A1.5-Q4_K_M-GGUF :: Sage-A1.5-mmproj.gguf</code></p>
-<ul>
-<li><code>groot-19b-a3b-Q4_K_M.gguf</code> — 11,657,618,560 B (10.86 GiB), sha256 <code>0716cae1f19a39a786a463f7b8c068d50b3d7a74532fce73e5ea23ed98130796</code></li>
-</ul>
-<p>from <code>GrootTeam/Groot-19B-A3B-261023-GGUF :: Groot-19B-A3B-261023-Q4_K_M.gguf</code></p>
-<ul>
-<li><code>mmproj-Groot-19B-A3B-BF16.gguf</code> — 902,822,016 B (0.84 GiB), sha256 <code>05a5c8a279b2589306824864d76d663063ba69ff1f399e6a283fae988fdff360</code></li>
-</ul>
-<p>from <code>GrootTeam/Groot-19B-A3B-261023-GGUF :: mmproj-Groot-19B-A3B-261023-BF16.gguf</code></p>
-<ul>
-<li>units <code>llama-sage-a15.service</code> (port <strong>8183</strong>, alias <code>sage-a1.5</code>) and <code>llama-groot-19b-a3b.service</code></li>
-</ul>
-<p>(port <strong>8189</strong>, alias <code>groot-19b-a3b</code>); scripts <code>run-sage-a15.sh</code>, <code>run-groot-19b-a3b.sh</code>.</p>
-<ul>
-<li>arch <code>qwen35moe</code> for both (41 blocks; sage 256 experts top-8, groot 128 top-8; ctx_train 262144) —</li>
-</ul>
-<p>loads on the halo-box fork with no build. Vision needs the mmproj above (<code>--mmproj</code>), which loads as "loaded multimodal model" although this fork's <code>/props</code> exposes no <code>vision</code> key.</p>
-<ul>
-<li>flags: <code>-ngl 99 -c 131072 --flash-attn on --cache-type-k/v q8_0 --spec-type none -np 1 --jinja --metrics</code>;</li>
-</ul>
-<p>sage additionally <code>--chat-template-kwargs '{"enable_thinking":false}'</code> (see above — without it the model is unusable).</p>
-<ul>
-<li>artifacts: <code>~/llama-local/t20-sage-nothink-core.log</code>, <code>t20-sage-a1.5-core.log</code>, <code>t20-groot-19b-a3b-core.log</code>,</li>
-</ul>
-<p><code>he-sage-full.log</code>, <code>he-sage-nothink.log</code>, <code>he-groot-19b-a3b.log</code>, <code>mmlu-sage-full.log</code>; <code>~/runs/</code> holds the t20 rows.</p>
 <h2>ornith-122b-reap50 (REAP50 + UD-IQ2_XXS of Ornith-1.5-122B) — retired 2026-10-25, failed preflight</h2>
 <p>Fetched and tested on the user's instruction as the one candidate on the board that could improve the roster (a quarter-size version of the box's #2 model). Rejected: it loops, and preflight catches it.</p>
 <h3>Header (local peek, not the card)</h3>
 <ul>
-<li>arch <code>qwen35moe</code>, <strong>expert_count 128 vs the base 122B's 256</strong>, 48 blocks vs 49, ctx_train 262144,</li>
+<li>arch <code>qwen35moe</code>, <strong>expert_count 128 vs the base 122B's 256</strong>, 48 blocks vs 49, ctx_train 262144, 32 q / 2 kv heads. Genuinely pruned, not a rename.</li>
 </ul>
-<p>32 q / 2 kv heads. Genuinely pruned, not a rename.</p>
 <h3>Measured on the halo-box fork, ctx 32768, q8_0 KV, flags mirrored from run-ornith-122b.sh</h3>
 <ul>
-<li>perf: <strong>pp 604 t/s · tg 37.2 t/s · ttft 2976 ms</strong> @1797-token prompt — 1.6x the base 122B's 23.3 t/s</li>
-</ul>
-<p>at ~15 GiB resident instead of ~74 GiB.</p>
-<ul>
-<li>preflight <strong>1/3</strong>: content_nonempty PASS; <code>json_schema</code> FAIL (emitted the identical JSON blob four</li>
-</ul>
-<p>times back to back); <code>instruction_one_word</code> FAIL (argued with itself about whether a trailing period counts as part of the word).</p>
-<ul>
+<li>perf: <strong>pp 604 t/s · tg 37.2 t/s · ttft 2976 ms</strong> @1797-token prompt — 1.6x the base 122B's 23.3 t/s at ~15 GiB resident instead of ~74 GiB.</li>
+<li>preflight <strong>1/3</strong>: content_nonempty PASS; <code>json_schema</code> FAIL (emitted the identical JSON blob four times back to back); <code>instruction_one_word</code> FAIL (argued with itself about whether a trailing period counts as part of the word).</li>
 <li>needle 2k PASS and 8k PASS, but both replies echo the needle repeatedly with stray <code>&lt;/think&gt;</code> fragments.</li>
 <li>riddles: <strong>aborted with 0 items scored</strong> — the first item did not finish inside five minutes.</li>
-<li><strong>HumanEval and MMLU-Pro were never obtained</strong> (the run was stopped after preflight failed). Their</li>
+<li><strong>HumanEval and MMLU-Pro were never obtained</strong> (the run was stopped after preflight failed). Their absence is deliberate, not a gap: do not read this model as having a code score.</li>
+<li>The repo's own <code>eval/summary.json</code> claims HE 0.9390 (154/164) and MBPP 0.8042 vs base 0.9451 / 0.8095, measured <strong>reasoning on, cap 32768, temp 0.6, parallel 8</strong> — a protocol that flatters a looping model and is not comparable to the t20 cells here (cap 4096, temp 0).</li>
 </ul>
-<p>absence is deliberate, not a gap: do not read this model as having a code score.</p>
-<ul>
-<li>The repo's own <code>eval/summary.json</code> claims HE 0.9390 (154/164) and MBPP 0.8042 vs base 0.9451 / 0.8095,</li>
-</ul>
-<p>measured <strong>reasoning on, cap 32768, temp 0.6, parallel 8</strong> — a protocol that flatters a looping model and is not comparable to the t20 cells here (cap 4096, temp 0).</p>
 <h3>Restore recipe</h3>
 <ul>
-<li><code>ornith-122b-reap50-IQ2_XXS.gguf</code> — 21,415,883,744 B (19.95 GiB), sha256 <code>6c0e926ef3f8f963555927aea5937a72fb1d737d33de58e4d6ed46fcaf2da739</code></li>
-</ul>
-<p>from <code>anik-jha/Ornith-1.5-122B-24GB-GGUF :: Ornith-1.5-122B-24GB-REAP50-UD-IQ2_XXS.gguf</code></p>
-<ul>
-<li>unit <code>llama-ornith-122b-reap50.service</code>, port <strong>8183</strong> (free again), alias <code>ornith-122b-reap50</code>,</li>
-</ul>
-<p>script <code>run-ornith-122b-reap50.sh</code>: <code>-ngl 99 -c 32768 --flash-attn on --cache-type-k/v q8_0 -np 1 --jinja --metrics</code></p>
-<ul>
+<li><code>ornith-122b-reap50-IQ2_XXS.gguf</code> — 21,415,883,744 B (19.95 GiB), sha256 <code>6c0e926ef3f8f963555927aea5937a72fb1d737d33de58e4d6ed46fcaf2da739</code> from <code>anik-jha/Ornith-1.5-122B-24GB-GGUF :: Ornith-1.5-122B-24GB-REAP50-UD-IQ2_XXS.gguf</code></li>
+<li>unit <code>llama-ornith-122b-reap50.service</code>, port <strong>8183</strong> (free again), alias <code>ornith-122b-reap50</code>, script <code>run-ornith-122b-reap50.sh</code>: <code>-ngl 99 -c 32768 --flash-attn on --cache-type-k/v q8_0 -np 1 --jinja --metrics</code></li>
 <li><strong>TEXT ONLY</strong> — the repo ships no mmproj, unlike the base 122B.</li>
 <li>artifacts: <code>~/llama-local/t20-reap50-core.log</code>, <code>test-reap50.out</code>, <code>ornith-122b-reap50.log</code>.</li>
 </ul>
@@ -272,45 +206,23 @@ a { color:var(--acc); }
 <p>Fetched and fully measured on the user's instruction ("get and test 1,2 and 3"). Rejected on quality: it lands on mellum21-fork's HumanEval but loses on knowledge and riddles, and is slower than the deployed driver on every axis.</p>
 <h3>What it is</h3>
 <ul>
-<li>128 routed experts, 25 blocks, hidden 2560, 18 linear-attention + 7 full-attention layers,</li>
-</ul>
-<p>ctx 262144, arch <code>raon1_mini</code> / <code>Raon1MiniForCausalLM</code>.</p>
-<ul>
-<li><strong>Requires KRAFTON's fork</strong>: <code>LLM_ARCH_RAON1</code> exists in github.com/krafton-ai/llama.cpp and</li>
-</ul>
-<p>nowhere else — not in our fork, not in prism, not in ggml-org master, no open PR. Upstream support "pending" per their own model card. Read this as a standing maintenance cost: any other work on our fork does not carry this arch.</p>
-<ul>
+<li>128 routed experts, 25 blocks, hidden 2560, 18 linear-attention + 7 full-attention layers, ctx 262144, arch <code>raon1_mini</code> / <code>Raon1MiniForCausalLM</code>.</li>
+<li><strong>Requires KRAFTON's fork</strong>: <code>LLM_ARCH_RAON1</code> exists in github.com/krafton-ai/llama.cpp and nowhere else — not in our fork, not in prism, not in ggml-org master, no open PR. Upstream support "pending" per their own model card. Read this as a standing maintenance cost: any other work on our fork does not carry this arch.</li>
 <li>Their repo ships one extra file, <code>dflash-raon-1-mini-preview-Q8_0.gguf</code> (0.68 GiB), unused here.</li>
 </ul>
 <h3>Measured (KRAFTON fork, ctx 32768, q8_0 KV, -ngl 99, flash-attn on)</h3>
 <ul>
-<li>perf: pp 515 t/s · <strong>tg 46.9 t/s alone</strong> (19.5 t/s measured concurrently with another bench —</li>
-</ul>
-<p>always re-measure alone) · ttft 2108 ms @1086-token prompt.</p>
-<ul>
+<li>perf: pp 515 t/s · <strong>tg 46.9 t/s alone</strong> (19.5 t/s measured concurrently with another bench — always re-measure alone) · ttft 2108 ms @1086-token prompt.</li>
 <li>preflight <strong>3/3 PASS</strong>; needle 2k PASS, 8k PASS.</li>
 <li>HumanEval <strong>0.9146 (150/164)</strong>, 17.6 s/item, wall 2878 s.</li>
-<li>MMLU-Pro <strong>0.7750 (93/120)</strong>, 24.7 s/item, <strong>17 cap-burns</strong> (4% of items returned empty after</li>
+<li>MMLU-Pro <strong>0.7750 (93/120)</strong>, 24.7 s/item, <strong>17 cap-burns</strong> (4% of items returned empty after burning the full 4096).</li>
+<li>riddles <strong>8/14</strong> — three failures were empty/cap-burn, two genuinely wrong (including a reverse-alphabet item where it wrote out the substitution correctly and still mis-decoded it).</li>
+<li>Verdict vs driver (gemma4-26b-a4b QAT): HE -2.4 pp, MMLU -6.7 pp, riddles 8 vs 14, and 46.9 vs 59.5-66.7 t/s. No seat.</li>
+<li>Thinking stays in <code>reasoning_content</code> and is short (~25 tokens), which is why it is efficient per item despite being weaker — a template that other thinking models on this box should copy.</li>
 </ul>
-<p>burning the full 4096).</p>
-<ul>
-<li>riddles <strong>8/14</strong> — three failures were empty/cap-burn, two genuinely wrong (including a</li>
-</ul>
-<p>reverse-alphabet item where it wrote out the substitution correctly and still mis-decoded it).</p>
-<ul>
-<li>Verdict vs driver (gemma4-26b-a4b QAT): HE -2.4 pp, MMLU -6.7 pp, riddles 8 vs 14, and 46.9 vs</li>
-</ul>
-<p>59.5-66.7 t/s. No seat.</p>
-<ul>
-<li>Thinking stays in <code>reasoning_content</code> and is short (~25 tokens), which is why it is efficient per</li>
-</ul>
-<p>item despite being weaker — a template that other thinking models on this box should copy.</p>
 <h3>Restore recipe</h3>
 <ul>
-<li><code>raon-1-mini-preview-IQ4_XS.gguf</code> — 16,071,801,344 B (14.97 GiB),</li>
-</ul>
-<p>sha256 <code>85570a704f9adc0df8b5b64c4e74ce956a5519e4868636d5daa00a84eb30696f</code> from <code>KRAFTON/Raon-1-mini-preview-gguf</code> (also Q4_K_M 18.33, Q5_K_M 20.66, Q6_K 24.06, Q8_0 28.59)</p>
-<ul>
+<li><code>raon-1-mini-preview-IQ4_XS.gguf</code> — 16,071,801,344 B (14.97 GiB), sha256 <code>85570a704f9adc0df8b5b64c4e74ce956a5519e4868636d5daa00a84eb30696f</code> from <code>KRAFTON/Raon-1-mini-preview-gguf</code> (also Q4_K_M 18.33, Q5_K_M 20.66, Q6_K 24.06, Q8_0 28.59)</li>
 <li>build: <code>~/llama-local/krafton-llama.cpp</code> (cloned, Vulkan-built, 15,976-byte llama-server)</li>
 <li>serve: <code>~/llama-local/run-raon-1-mini.sh</code> (port 8181, alias <code>raon-1-mini</code>)</li>
 <li>bench: <code>~/llama-local/bench-raon.sh</code>; logs <code>t20-raon-core.log</code>, <code>he-raon.log</code>, <code>mmlu-raon.log</code></li>
@@ -319,39 +231,22 @@ a { color:var(--acc); }
 <p>Fetched because a 4B with a 1,048,576-token context was the only cheap way to fill a fast long-context lane. The context is real; the model is not good enough to serve.</p>
 <h3>What it is</h3>
 <ul>
-<li>4B dense, 36 blocks, hidden 2560, 16 heads / 4 kv (<code>spark2_5.block_count</code>), declared</li>
+<li>4B dense, 36 blocks, hidden 2560, 16 heads / 4 kv (<code>spark2_5.block_count</code>), declared <code>context_length</code> 1048576. Loader: <strong><code>LLM_ARCH_SPARK2_5</code> already present in our fork and in upstream master</strong> — no rebuild needed, which made it the cheapest of the three to test.</li>
 </ul>
-<p><code>context_length</code> 1048576. Loader: <strong><code>LLM_ARCH_SPARK2_5</code> already present in our fork and in upstream master</strong> — no rebuild needed, which made it the cheapest of the three to test.</p>
 <h3>Measured (fork, q8_0 KV, -np 1)</h3>
 <ul>
 <li>perf: <strong>pp 2263 t/s @1857-token prompt · tg 60.7 t/s · ttft 820 ms</strong>.</li>
-<li>At long context prefill collapses: <strong>455 t/s at 234,720 prompt tokens</strong> (a full 1M prompt would</li>
-</ul>
-<p>take ~37 minutes).</p>
-<ul>
+<li>At long context prefill collapses: <strong>455 t/s at 234,720 prompt tokens</strong> (a full 1M prompt would take ~37 minutes).</li>
 <li>preflight <strong>3/3 PASS</strong>; needle 2k PASS, 8k PASS.</li>
-<li>HumanEval <strong>0.6833 (41/60)</strong> on a 60-item subset, 36.0 s/item — **17 of 60 items burned the full</li>
-</ul>
-<p>4096 cap and returned empty**. The score understates capability, but it is what an agent gets at a realistic cap; the subset carries ~3.5 pp standard error.</p>
-<ul>
-<li>MMLU-Pro <strong>abandoned</strong>: 9 items in 20 minutes, 3 pass, near-every item cap-burning. Do not read</li>
-</ul>
-<p>this as a measurement gap — run it only if someone first fixes the cap-burn behaviour.</p>
-<ul>
-<li>IFEval <strong>not run</strong>: there is no standalone <code>~/bench/ifeval.py</code>; IFEval on this box is an lm-eval</li>
-</ul>
-<p>task, and the archive's column comes from that path.</p>
-<ul>
+<li>HumanEval <strong>0.6833 (41/60)</strong> on a 60-item subset, 36.0 s/item — <strong>17 of 60 items burned the full 4096 cap and returned empty</strong>. The score understates capability, but it is what an agent gets at a realistic cap; the subset carries ~3.5 pp standard error.</li>
+<li>MMLU-Pro <strong>abandoned</strong>: 9 items in 20 minutes, 3 pass, near-every item cap-burning. Do not read this as a measurement gap — run it only if someone first fixes the cap-burn behaviour.</li>
+<li>IFEval <strong>not run</strong>: there is no standalone <code>~/bench/ifeval.py</code>; IFEval on this box is an lm-eval task, and the archive's column comes from that path.</li>
 <li>riddles <strong>10/14</strong> (three of the four failures were empty/cap-burn).</li>
-<li>context: loads at a true n_ctx 1048576 with ~20 GiB of KV (GTT 35.5 -&gt; 55.5 GiB), and retrieved a</li>
+<li>context: loads at a true n_ctx 1048576 with ~20 GiB of KV (GTT 35.5 -&gt; 55.5 GiB), and retrieved a planted passphrase at 234,720 tokens in 515 s. Live but not useful at that cost, with Kimi-Linear already holding the long-context lane.</li>
 </ul>
-<p>planted passphrase at 234,720 tokens in 515 s. Live but not useful at that cost, with Kimi-Linear already holding the long-context lane.</p>
 <h3>Restore recipe</h3>
 <ul>
-<li><code>spark-x26-4b-Q4_K_M.gguf</code> — 3,543,441,312 B (3.30 GiB),</li>
-</ul>
-<p>sha256 <code>91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9</code> from <code>XHToken/Spark-X2.6-4B-GGUF</code> (also Q8_0 4.07 GiB, BF16 7.66 GiB)</p>
-<ul>
+<li><code>spark-x26-4b-Q4_K_M.gguf</code> — 3,543,441,312 B (3.30 GiB), sha256 <code>91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9</code> from <code>XHToken/Spark-X2.6-4B-GGUF</code> (also Q8_0 4.07 GiB, BF16 7.66 GiB)</li>
 <li>serve: <code>~/llama-local/run-spark-x26-4b.sh</code> (port 8180, -c 65536) or <code>run-spark-1m.sh</code> (-c 1048576)</li>
 <li>bench: <code>bench-spark.sh</code> / <code>bench-spark2.sh</code>; long-context: <code>needle-long.py &lt;port&gt; &lt;tokens&gt;</code></li>
 <li>logs: <code>t20-spark-core.log</code>, <code>he-spark60.log</code>, <code>mmlu-spark60.log</code>, <code>needle-200k.log</code></li>
@@ -359,25 +254,12 @@ a { color:var(--acc); }
 <h2>sensenova-u15-8b-mot (SenseNova U1.5 8B MoT) — NOT RUNNABLE, deleted 2026-10-26</h2>
 <p>Never ran, and no amount of local work changes that without upstream effort.</p>
 <ul>
-<li>Every public GGUF for this model (<code>realrebelai/SenseNova-U1.5-8B_GGUFs</code>,</li>
+<li>Every public GGUF for this model (<code>realrebelai/SenseNova-U1.5-8B_GGUFs</code>, <code>smthem/SenseNova-U1-8B-MoT-Merger-gguf</code>) declares <strong><code>general.architecture = wan</code></strong> with only 4 metadata keys and tensors named <code>fm_modules.vision_model_mot_gen.*</code>, <code>fm_modules.noise_scale_embedder.*</code>, <code>patch_embedding.*</code>. That is <strong>Wan video-diffusion packaging</strong>, not an autoregressive LLM. The loader rejects it before anything else with <code>tensor name 1 is too long: 65 &gt;= 64</code>, which is a red herring: even reading the names shows it is the wrong architecture.</li>
+<li>ggml-org master registers <code>LLM_ARCH_SENSENOVA_U1</code> (merged 2026-10-21, PR #28919) and has a <code>llama_model_sensenova_u1</code> class, but <strong><code>convert_hf_to_gguf.py</code> has no sensenova or wan converter</strong> — so the official 32.7 GiB safetensors cannot be turned into a loadable GGUF here. Testing it means writing a converter first.</li>
+<li>Deleted: <code>sensenova-u15-8b-mot-Q5_K_M.gguf</code> — 15,107,169,664 B (14.07 GiB), sha256 <code>1c496256eb114a5ff8fef278a63b39a75bd0c36e76f4280e89a06bb6ecb76ade</code>.</li>
+<li>Kept: <code>~/llama-local/sensenova-llama.cpp</code> (upstream master, Vulkan-built) for when a converter appears.</li>
+<li><strong>General lesson: check <code>general.architecture</code> in a GGUF header before downloading anything big.</strong> A repo named "*-GGUF" under a model's name can still be diffusion weights for ComfyUI. One <code>head -c 4M</code> + header read costs seconds; the Q5 file here cost 14 GiB and an hour.</li>
 </ul>
-<p><code>smthem/SenseNova-U1-8B-MoT-Merger-gguf</code>) declares <strong><code>general.architecture = wan</code></strong> with only 4 metadata keys and tensors named <code>fm_modules.vision_model_mot_gen.*</code>, <code>fm_modules.noise_scale_embedder.*</code>, <code>patch_embedding.*</code>. That is <strong>Wan video-diffusion packaging</strong>, not an autoregressive LLM. The loader rejects it before anything else with <code>tensor name 1 is too long: 65 &gt;= 64</code>, which is a red herring: even reading the names shows it is the wrong architecture.</p>
-<ul>
-<li>ggml-org master registers <code>LLM_ARCH_SENSENOVA_U1</code> (merged 2026-10-21, PR #28919) and has a</li>
-</ul>
-<p><code>llama_model_sensenova_u1</code> class, but <strong><code>convert_hf_to_gguf.py</code> has no sensenova or wan converter</strong> — so the official 32.7 GiB safetensors cannot be turned into a loadable GGUF here. Testing it means writing a converter first.</p>
-<ul>
-<li>Deleted: <code>sensenova-u15-8b-mot-Q5_K_M.gguf</code> — 15,107,169,664 B (14.07 GiB),</li>
-</ul>
-<p>sha256 <code>1c496256eb114a5ff8fef278a63b39a75bd0c36e76f4280e89a06bb6ecb76ade</code>.</p>
-<ul>
-<li>Kept: <code>~/llama-local/sensenova-llama.cpp</code> (upstream master, Vulkan-built) for when a converter</li>
-</ul>
-<p>appears.</p>
-<ul>
-<li><strong>General lesson: check <code>general.architecture</code> in a GGUF header before downloading anything big.</strong></li>
-</ul>
-<p>A repo named "*-GGUF" under a model's name can still be diffusion weights for ComfyUI. One <code>head -c 4M</code> + header read costs seconds; the Q5 file here cost 14 GiB and an hour.</p>
 <h2>nanbeige-33b (Nanbeige4.3-33B Q4_K_M) — measured, dominated, deleted 2026-10-26</h2>
 <p>Fetched at the user's request, measured on all axes, then retired on "retire and delete". Not a broken model — clean preflight 3/3, both needles PASS, zero MMLU cap burns — it simply loses to models already on disk.</p>
 <p>Measured (bartowski imatrix Q4_K_M, 19.36 GiB, fork Vulkan, :8183, <code>-c 32768</code>, q8_0 KV, cap 4096):</p>
@@ -389,13 +271,9 @@ a { color:var(--acc); }
 <p>cd ~/llama-local/models &amp;&amp; wget -c \ https://huggingface.co/bartowski/Nanbeige_Nanbeige4.3-33B-GGUF/resolve/main/Nanbeige_Nanbeige4.3-33B-Q4_K_M.gguf # expected 20,788,825,216 B, # sha256 2cef79855ca47ee6571e166db32a07089e34f3cf78e0397b262d124ddb814c37</p>
 <p># then recreate the unit; the flags that matter are the plain ones — arch is <code>llama</code>, so the # stock fork loads it with no special build: #   --port 8183 -ngl 99 -c 32768 --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0 #   --jinja --reasoning off -np 1 -b 4096 -ub 2048 --metrics # (no MTP/drafter ships for this base; there is no spec-decode arm)</p>
 <ul>
-<li>Note for a future uncensored run: <code>dealignai/Nanbeige4.3-33B-UNCENSORED-GGUF</code> (Q4_K_M 18.7 GiB)</li>
+<li>Note for a future uncensored run: <code>dealignai/Nanbeige4.3-33B-UNCENSORED-GGUF</code> (Q4_K_M 18.7 GiB) exists and was NOT tested. It inherits this model's speed class (~10 t/s dense), so judge it only as a §16 abliteration datapoint, not as a daily driver.</li>
+<li>Measurement hygiene found while ranking: three catalogue rows <code>20261010-17*</code> carry HumanEval 1.000 and MMLU 1.000 for qwen3next-q6 at <strong>n=2</strong> — assertion smoke tests, not measurements. Filter on <code>humaneval_n &gt;= 50</code> before ranking, or they sit at the top of every table.</li>
 </ul>
-<p>exists and was NOT tested. It inherits this model's speed class (~10 t/s dense), so judge it only as a §16 abliteration datapoint, not as a daily driver.</p>
-<ul>
-<li>Measurement hygiene found while ranking: three catalogue rows <code>20261010-17*</code> carry HumanEval 1.000</li>
-</ul>
-<p>and MMLU 1.000 for qwen3next-q6 at <strong>n=2</strong> — assertion smoke tests, not measurements. Filter on <code>humaneval_n &gt;= 50</code> before ranking, or they sit at the top of every table.</p>
 <h1>————— Pruning pass 2026-10-30 (retire and delete, record kept) —————</h1>
 <p>Eight artefacts retired, 245.1 GiB. Two further candidates were HELD mid-pass (NVIDIA-Nemotron-3.5-Super-VL-120B, LFM2.5-24B-A2B): the numbers I proposed them on were cap-demoted, and at cap 4096 both read far better than quoted. See the last section.</p>
 <h2>Swift-Qwen3.8-Flash-Next-GSQ-RCO IQ2_XS (abliterated v2, huihui-ai) — retired 2026-10-30  [T1, 63.5 GiB]</h2>
@@ -550,13 +428,9 @@ a { color:var(--acc); }
 <p>What it then does is worse than not loading:</p>
 <ul>
 <li>tg 20.0 t/s / pp 396.8 / ttft 4534 ms at 32k (the same-shape Qwen3.8-35B-A3B Distill runs 74.8 / 1550).</li>
-<li>Vulkan: repetition loops on anything non-trivial — "17 <em> 23 = 17 </em> 23 = ...", a wall of "/" on factual</li>
+<li>Vulkan: repetition loops on anything non-trivial — "17 <em> 23 = 17 </em> 23 = ...", a wall of "/" on factual questions, sometimes empty content. Reproduced with f16 KV and flash-attn off, so it is the tier graph on the GPU backend, not the KV quant.</li>
+<li>CPU (<code>-ngl 0</code>): fluent and terminating, instruction-following intact (2+2=4, 5*6=30, "TEST"), but knowledge destroyed — capital of Australia "No", capital of France "No", largest planet "Earth", 17*23 "37". The pruning (3,659 layer/expert slots) plus a 1-bit tier bank cost the facts.</li>
 </ul>
-<p>questions, sometimes empty content. Reproduced with f16 KV and flash-attn off, so it is the tier graph on the GPU backend, not the KV quant.</p>
-<ul>
-<li>CPU (<code>-ngl 0</code>): fluent and terminating, instruction-following intact (2+2=4, 5*6=30, "TEST"), but</li>
-</ul>
-<p>knowledge destroyed — capital of Australia "No", capital of France "No", largest planet "Earth", 17*23 "37". The pruning (3,659 layer/expert slots) plus a 1-bit tier bank cost the facts.</p>
 <p>Disposition: deleted 2026-11-03. Do not re-fetch until a re-export drops the Q1_0 tier (or the publisher fixes the Vulkan path) — the shape (32B total / ~6B active in 48 GiB) is still the one gap this roster has never covered, so a clean export of this shape would be worth another look.</p>
 <p>Run rows kept: <code>~/runs/20261103-190055-qwen38fn32-prune2.jsonl</code> (identity, perf, preflight, 2x needle, plus the backend-split probe note), <code>~/llama-local/t20-qwen38fn32-core.log</code>.</p>
 <h2>NVIDIA-Nemotron-3.5-Lightning-30B-A3B (ggml-org Q4_0) — measured 2026-11-01, deleted: parity quality, dominated on speed and termination</h2>
@@ -588,128 +462,58 @@ a { color:var(--acc); }
 <p>Tier A of the 2026-11-05 roster audit. Both files had no serving unit, no run script, no llama-switch case and no Hermes provider; each was re-hashed and matched against its repo's published LFS oid before removal, so both are restorable with confidence.</p>
 <h3>Mellum2.1-12B-A2.5B-Thinking Q4_K_M — 8,071,295,264 B (7.52 GiB)</h3>
 <ul>
-<li>File <code>models/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>, sha256</li>
+<li>File <code>models/Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>, sha256 <code>ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755</code> — <strong>identical to the repo's LFS oid</strong> <code>JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF</code>, path <code>Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>.</li>
+<li>Arch <code>mellum</code>, 12.1B total / ~A2.5B active. The same repo also ships an MTP variant (<code>mtp/Mellum2.1-12B-A2.5B-Thinking-MTP-Q4_K_M.gguf</code>, 8.33 GB) — never fetched.</li>
+<li>Why it went: <strong>orphan.</strong> No <code>run-*.sh</code>, no <code>llama-*.service</code>, no switch case of its own, no <code>providers.*</code>/<code>model.aliases.*</code> entry. The <code>mellum</code> switch case pointed at <code>llama-mellum.service</code>, a unit deleted with the Q6_K file on 2026-10-29; that case and its three usage strings are pruned in this pass.</li>
+<li>Measured and on record: <strong>HE 0.9146 (164@8192), MMLU-Pro 0.8083 (120@8192), riddles 10/14, pp 2723 / tg 111.9 t/s</strong> — run <code>~/runs/20261018-161122-mellum21-12b-fork-cap8192.jsonl</code>, build fork b3-1a33095. It was the best sub-15B model on this box by HE and the fastest after lfm25; re-fetch if that slot is wanted again.</li>
+<li>Restore: <code>hf download JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>, verify the sha256 above, then serve with <code>--jinja --spec-type none</code> (thinking model) at the fork's b3-1a33095 or later. The recorded run used <code>-c 8192</code>, <code>-ngl 99</code>, q8_0 KV.</li>
 </ul>
-<p><code>ecc4d5b8107fc219e23c494b2d107552137637b6c6002ee713e0ba8af7fa2755</code> — <strong>identical to the repo's LFS oid</strong> <code>JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF</code>, path <code>Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf</code>.</p>
-<ul>
-<li>Arch <code>mellum</code>, 12.1B total / ~A2.5B active. The same repo also ships an MTP variant</li>
-</ul>
-<p>(<code>mtp/Mellum2.1-12B-A2.5B-Thinking-MTP-Q4_K_M.gguf</code>, 8.33 GB) — never fetched.</p>
-<ul>
-<li>Why it went: <strong>orphan.</strong> No <code>run-*.sh</code>, no <code>llama-*.service</code>, no switch case of its own, no</li>
-</ul>
-<p><code>providers.*</code>/<code>model.aliases.*</code> entry. The <code>mellum</code> switch case pointed at <code>llama-mellum.service</code>, a unit deleted with the Q6_K file on 2026-10-29; that case and its three usage strings are pruned in this pass.</p>
-<ul>
-<li>Measured and on record: **HE 0.9146 (164@8192), MMLU-Pro 0.8083 (120@8192), riddles 10/14, pp 2723 /</li>
-</ul>
-<p>tg 111.9 t/s** — run <code>~/runs/20261018-161122-mellum21-12b-fork-cap8192.jsonl</code>, build fork b3-1a33095. It was the best sub-15B model on this box by HE and the fastest after lfm25; re-fetch if that slot is wanted again.</p>
-<ul>
-<li>Restore: `hf download JetBrains/Mellum2.1-12B-A2.5B-Thinking-GGUF</li>
-</ul>
-<p>Mellum2.1-12B-A2.5B-Thinking-Q4_K_M.gguf<code>, verify the sha256 above, then serve with </code>--jinja --spec-type none<code> (thinking model) at the fork's b3-1a33095 or later. The recorded run used </code>-c 8192<code>, </code>-ngl 99`, q8_0 KV.</p>
 <h3>LFM2.5 DSpark draft head (F16) — 663,691,296 B (0.62 GiB)</h3>
 <ul>
-<li>File <code>models/lfm25-dspark-F16.gguf</code>, sha256</li>
+<li>File <code>models/lfm25-dspark-F16.gguf</code>, sha256 <code>0cd847ca049aeabf53cb41d62091ae20eb50245cf89594c75af204784a1b1a0f</code> — <strong>identical to the LFS oid</strong> of <code>LiquidAI/LFM2.5-24B-A2B-DSpark-GGUF</code>, path <code>LFM2.5-24B-A2B-DSpark-F16.gguf</code> (local name shortened).</li>
+<li>Why it went: <code>--spec-type draft-dspark</code> head for LFM2.5-24B-A2B whose only consumer was <code>dspark-ab.sh</code>, itself retired here. <strong>Never scored</strong> — the A/B script exists but no result was ever recorded, and no serving unit loaded it.</li>
+<li>Restore: re-download <code>LFM2.5-24B-A2B-DSpark-F16.gguf</code> from the repo above and re-run the A/B before trusting it. The box's record on draft heads is that provenance decides: baked MTP +17 to +29%, grafted heads −8 to −11%, this one untested.</li>
 </ul>
-<p><code>0cd847ca049aeabf53cb41d62091ae20eb50245cf89594c75af204784a1b1a0f</code> — <strong>identical to the LFS oid</strong> of <code>LiquidAI/LFM2.5-24B-A2B-DSpark-GGUF</code>, path <code>LFM2.5-24B-A2B-DSpark-F16.gguf</code> (local name shortened).</p>
-<ul>
-<li>Why it went: <code>--spec-type draft-dspark</code> head for LFM2.5-24B-A2B whose only consumer was</li>
-</ul>
-<p><code>dspark-ab.sh</code>, itself retired here. <strong>Never scored</strong> — the A/B script exists but no result was ever recorded, and no serving unit loaded it.</p>
-<ul>
-<li>Restore: re-download <code>LFM2.5-24B-A2B-DSpark-F16.gguf</code> from the repo above and re-run the A/B before</li>
-</ul>
-<p>trusting it. The box's record on draft heads is that provenance decides: baked MTP +17 to +29%, grafted heads −8 to −11%, this one untested.</p>
 <h3>Also retired in this pass</h3>
 <ul>
 <li><code>dspark-ab.sh</code> — the A/B driver for the head above; no other script referenced it.</li>
-<li><code>llama-switch</code> case <code>mellum</code> and its usage strings — it pointed at <code>llama-mellum.service</code>, which was</li>
+<li><code>llama-switch</code> case <code>mellum</code> and its usage strings — it pointed at <code>llama-mellum.service</code>, which was removed on 2026-10-29. Case count and usage list rebuilt in the same pass.</li>
 </ul>
-<p>removed on 2026-10-29. Case count and usage list rebuilt in the same pass.</p>
 <hr>
 <h2>2026-11-05 pass (second) — Tier B: Groot-65B-A6B, Nemotron-3.5-Super-VL-120B, Kimi-Linear-48B-A3B-abl</h2>
 <p>169.60 GiB across 11 files, all re-hashed in this pass and <strong>11/11 matched their repos' published LFS oids</strong> (169.60 GiB read back off disk before deletion). Two of the three were measured on the same build as everything else that day; the third's row is from 2026-10.</p>
 <h3>Groot-65B-A6B-261023 Q4_K_M — 79.07 GiB (6 files)</h3>
 <ul>
-<li>Files (all verified): <code>Q4_K_M-00001..00004-of-00004</code> 35,211,114,400 / 16,413,787,680 / 16,536,168,576 /</li>
+<li>Files (all verified): <code>Q4_K_M-00001..00004-of-00004</code> 35,211,114,400 / 16,413,787,680 / 16,536,168,576 / 10,585,663,488 B, <code>mtp-…-BF16</code> 5,251,556,576 B, <code>mmproj-…-BF16</code> 907,542,656 B. sha256 <code>3135f646…f62094</code>, <code>f7a33224…a75759</code>, <code>d83b7f7a…1f14</code>, <code>ba78ec97…630f4</code>, <code>2a116a0c…4ec91c</code>, <code>e90bd114…df6e9</code> — each identical to the LFS oid of <code>GrootTeam/Groot-65B-A6B-261023-GGUF</code>.</li>
+<li>Arch <code>qwen4exp</code>, 116,514,464,640 params (a "65B" name on 116.5B of weights), 48 blocks, 256 experts top-10, 12 QSA / 36 Gated DeltaNet layers, PLE bank, 262k ctx.</li>
+<li>Measured 2026-11-05: HE <strong>0.9000 (54/60 @2048)</strong>, MMLU-Pro <strong>0.7500 (30/40)</strong>, riddles 9/14 (all five misses cap-pinned; at 4096 the family-relations puzzle answers correctly after 1,953 tokens), pp 596.6 / <strong>tg 27.6</strong> / ttft 3083 ms, and the archive's cleanest drafter result: its bundled MTP head took decode <strong>27.66 → 35.66 t/s (+28.7%, 76.3% acceptance)</strong>. Runs <code>~/runs/20261105-014824-groot65b-q4km-think-cap2048.jsonl</code> and <code>~/runs/20261105-013414-groot65b-q4km-nomtp.jsonl</code>.</li>
+<li>Footprint (the reason it was a spare, not a unit): all-resident it pins GTT 71.0 GiB and leaves ~1 GiB MemAvailable — a first attempt with <code>-np 4 -c 32768</code> + mmproj was globally OOM-killed in 7 minutes. Only the fork's <code>--load-mode mmap --lazy-mode auto</code> serves it comfortably (50.4 GiB, 63 GiB free, no decode cost).</li>
+<li>Why it went: with Swift-1.5 (same shape class, same 79 GiB, measured the same day) kept, this was the second of two unhooked ~79 GiB reasoners next to the protected <code>qwen38fn-abl</code>. Portfolio duplicate.</li>
+<li>Restore: <code>~/llama-local/fetch-groot65b.sh</code> (sequential curl + resume + sha256 check) rebuilds all six files; serve with <code>~/llama-local/run-groot65b.sh mtp</code> after setting <code>GROOT_TREE</code> to the halo-box fork and <code>GROOT_LAZY=auto</code>. The old <code>run-groot65b.sh</code> is archived in <code>retired-scripts/</code>.</li>
 </ul>
-<p>10,585,663,488 B, <code>mtp-…-BF16</code> 5,251,556,576 B, <code>mmproj-…-BF16</code> 907,542,656 B. sha256 <code>3135f646…f62094</code>, <code>f7a33224…a75759</code>, <code>d83b7f7a…1f14</code>, <code>ba78ec97…630f4</code>, <code>2a116a0c…4ec91c</code>, <code>e90bd114…df6e9</code> — each identical to the LFS oid of <code>GrootTeam/Groot-65B-A6B-261023-GGUF</code>.</p>
-<ul>
-<li>Arch <code>qwen4exp</code>, 116,514,464,640 params (a "65B" name on 116.5B of weights), 48 blocks, 256 experts</li>
-</ul>
-<p>top-10, 12 QSA / 36 Gated DeltaNet layers, PLE bank, 262k ctx.</p>
-<ul>
-<li>Measured 2026-11-05: HE <strong>0.9000 (54/60 @2048)</strong>, MMLU-Pro <strong>0.7500 (30/40)</strong>, riddles 9/14 (all five</li>
-</ul>
-<p>misses cap-pinned; at 4096 the family-relations puzzle answers correctly after 1,953 tokens), pp 596.6 / <strong>tg 27.6</strong> / ttft 3083 ms, and the archive's cleanest drafter result: its bundled MTP head took decode <strong>27.66 → 35.66 t/s (+28.7%, 76.3% acceptance)</strong>. Runs <code>~/runs/20261105-014824-groot65b-q4km-think-cap2048.jsonl</code> and <code>~/runs/20261105-013414-groot65b-q4km-nomtp.jsonl</code>.</p>
-<ul>
-<li>Footprint (the reason it was a spare, not a unit): all-resident it pins GTT 71.0 GiB and leaves ~1 GiB</li>
-</ul>
-<p>MemAvailable — a first attempt with <code>-np 4 -c 32768</code> + mmproj was globally OOM-killed in 7 minutes. Only the fork's <code>--load-mode mmap --lazy-mode auto</code> serves it comfortably (50.4 GiB, 63 GiB free, no decode cost).</p>
-<ul>
-<li>Why it went: with Swift-1.5 (same shape class, same 79 GiB, measured the same day) kept, this was the</li>
-</ul>
-<p>second of two unhooked ~79 GiB reasoners next to the protected <code>qwen38fn-abl</code>. Portfolio duplicate.</p>
-<ul>
-<li>Restore: <code>~/llama-local/fetch-groot65b.sh</code> (sequential curl + resume + sha256 check) rebuilds all six</li>
-</ul>
-<p>files; serve with <code>~/llama-local/run-groot65b.sh mtp</code> after setting <code>GROOT_TREE</code> to the halo-box fork and <code>GROOT_LAZY=auto</code>. The old <code>run-groot65b.sh</code> is archived in <code>retired-scripts/</code>.</p>
 <h3>NVIDIA-Nemotron-3.5-Super-VL-120B-A12B UD-Q3_K_XL — 62.86 GiB (3 shards + projector)</h3>
 <ul>
-<li>Files (all verified): <code>UD-Q3_K_XL/…-00001-of-00003</code> 7,874,568 B, <code>-00002</code> 49,225,290,592 B, <code>-00003</code></li>
+<li>Files (all verified): <code>UD-Q3_K_XL/…-00001-of-00003</code> 7,874,568 B, <code>-00002</code> 49,225,290,592 B, <code>-00003</code> 16,528,375,872 B, plus <code>mmproj-Nemotron-3.5-Super-VL-120B-A12B.gguf</code> 1,733,695,840 B (repo name <code>mmproj-BF16.gguf</code>). sha256 <code>b2a570b4…e02fa</code>, <code>94827cf2…c68674</code>, <code>c2245a2f…cef8ce</code>, <code>9c09381a…924d9</code> — identical to <code>unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF</code>.</li>
+<li>Measured: best HE <strong>0.9512 (164@4096)</strong> — run <code>~/runs/20261018-063326-nemotron-super-120b-cap4096.jsonl</code> (MMLU 0.7583 on that run); best MMLU <strong>0.7667 (120@4096)</strong> — run <code>~/runs/20261019-213244-nemotron-super-vl.jsonl</code> (HE 0.9329 there). Table 4 quoted the best of each axis, as it does everywhere. pp 411 / tg 27.1 / ttft 4.5 s, riddles 11/14, preflight 3/3, needles 2k+8k PASS.</li>
+<li>Why it went: third 120B-class file beside the two favoured gpt-oss builds (59.03 GiB each) which run ~50 t/s. +2.4 pp of HumanEval at 1.8x the time per token is not a reason to hold 62.86 GiB. It was also the only vision-capable 120B — noted as the one real loss.</li>
+<li>Registry removed: unit <code>llama-nemotron-super-120b.service</code> (disabled), switch case <code>nemotron-super-120b</code>, run script <code>run-nemotron-super-120b.sh</code>.</li>
+<li>Restore: <code>unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF</code>, the <code>UD-Q3_K_XL/</code> triple plus <code>mmproj-BF16.gguf</code>; verify the four sha256s above; serve on :8189 with the projector, <code>-c 131072</code>, q8_0 KV, <code>--jinja</code> (hybrid Mamba-2 MoE, needs a build registering <code>nemotron_h_moe</code>).</li>
 </ul>
-<p>16,528,375,872 B, plus <code>mmproj-Nemotron-3.5-Super-VL-120B-A12B.gguf</code> 1,733,695,840 B (repo name <code>mmproj-BF16.gguf</code>). sha256 <code>b2a570b4…e02fa</code>, <code>94827cf2…c68674</code>, <code>c2245a2f…cef8ce</code>, <code>9c09381a…924d9</code> — identical to <code>unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF</code>.</p>
-<ul>
-<li>Measured: best HE <strong>0.9512 (164@4096)</strong> — run <code>~/runs/20261018-063326-nemotron-super-120b-cap4096.jsonl</code></li>
-</ul>
-<p>(MMLU 0.7583 on that run); best MMLU <strong>0.7667 (120@4096)</strong> — run <code>~/runs/20261019-213244-nemotron-super-vl.jsonl</code> (HE 0.9329 there). Table 4 quoted the best of each axis, as it does everywhere. pp 411 / tg 27.1 / ttft 4.5 s, riddles 11/14, preflight 3/3, needles 2k+8k PASS.</p>
-<ul>
-<li>Why it went: third 120B-class file beside the two favoured gpt-oss builds (59.03 GiB each) which run</li>
-</ul>
-<p>~50 t/s. +2.4 pp of HumanEval at 1.8x the time per token is not a reason to hold 62.86 GiB. It was also the only vision-capable 120B — noted as the one real loss.</p>
-<ul>
-<li>Registry removed: unit <code>llama-nemotron-super-120b.service</code> (disabled), switch case</li>
-</ul>
-<p><code>nemotron-super-120b</code>, run script <code>run-nemotron-super-120b.sh</code>.</p>
-<ul>
-<li>Restore: <code>unsloth/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-GGUF</code>, the <code>UD-Q3_K_XL/</code> triple plus</li>
-</ul>
-<p><code>mmproj-BF16.gguf</code>; verify the four sha256s above; serve on :8189 with the projector, <code>-c 131072</code>, q8_0 KV, <code>--jinja</code> (hybrid Mamba-2 MoE, needs a build registering <code>nemotron_h_moe</code>).</p>
 <h3>Kimi-Linear-48B-A3B-Instruct-abliterated i1-Q4_K_M — 27.66 GiB</h3>
 <ul>
-<li>File <code>Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf</code>, 29,702,759,968 B, sha256</li>
+<li>File <code>Kimi-Linear-48B-A3B-Instruct-abliterated-bf16.i1-Q4_K_M.gguf</code>, 29,702,759,968 B, sha256 <code>ad4eca4c37c688e9d03aaf4558ddb869bd7740bc02423451be6d33e9502cde80</code> — identical to the LFS oid of <code>mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16</code>.</li>
+<li>Measured: HE <strong>0.7866 (164@8192)</strong>, MMLU-Pro <strong>0.5833 (120@8192)</strong>, riddles 13/14, pp 1774 / <strong>tg 74.8</strong> — run <code>~/runs/20261101-140102-kimi-linear-abl-cap8192.jsonl</code>. Earlier 2026-11-01 runs are the abortive probes (<code>-abl</code>, <code>-abl2</code>, <code>-probe</code>) that led to the 8192 cap.</li>
+<li>Why it went: no unit; loses both capability axes to kept files, and its distinct claim (long context) is covered by Qwen3-Next's 262k and the 176.9B pair at ~55 t/s.</li>
+<li>Registry removed: switch case <code>kimi</code> (which pointed at the long-deleted <code>llama-kimi.service</code>), <code>run-kimi-linear-48b.sh</code>, <code>run-kimi-linear-48b-bench.sh</code>.</li>
+<li>Restore: re-download the single file, verify the sha256, serve with <code>--jinja -c 65536</code> (its 1M ctx is measured only to 65k here) on any free port.</li>
 </ul>
-<p><code>ad4eca4c37c688e9d03aaf4558ddb869bd7740bc02423451be6d33e9502cde80</code> — identical to the LFS oid of <code>mradermacher/Kimi-Linear-48B-A3B-Instruct-abliterated-bf16</code>.</p>
-<ul>
-<li>Measured: HE <strong>0.7866 (164@8192)</strong>, MMLU-Pro <strong>0.5833 (120@8192)</strong>, riddles 13/14, pp 1774 / <strong>tg 74.8</strong></li>
-</ul>
-<p>— run <code>~/runs/20261101-140102-kimi-linear-abl-cap8192.jsonl</code>. Earlier 2026-11-01 runs are the abortive probes (<code>-abl</code>, <code>-abl2</code>, <code>-probe</code>) that led to the 8192 cap.</p>
-<ul>
-<li>Why it went: no unit; loses both capability axes to kept files, and its distinct claim (long context) is</li>
-</ul>
-<p>covered by Qwen3-Next's 262k and the 176.9B pair at ~55 t/s.</p>
-<ul>
-<li>Registry removed: switch case <code>kimi</code> (which pointed at the long-deleted <code>llama-kimi.service</code>),</li>
-</ul>
-<p><code>run-kimi-linear-48b.sh</code>, <code>run-kimi-linear-48b-bench.sh</code>.</p>
-<ul>
-<li>Restore: re-download the single file, verify the sha256, serve with <code>--jinja -c 65536</code> (its 1M ctx is</li>
-</ul>
-<p>measured only to 65k here) on any free port.</p>
 <h3>Registry changes made in this pass</h3>
 <ul>
 <li><code>llama-nemotron-super-120b.service</code> disabled and its unit file removed; <code>daemon-reload</code> run.</li>
-<li><code>llama-nemotron-super-120b.service</code> stripped from every survivor's <code>Conflicts=</code> line (13 files) so no</li>
+<li><code>llama-nemotron-super-120b.service</code> stripped from every survivor's <code>Conflicts=</code> line (13 files) so no unit references a target this pass removed. Pre-existing stale peers in those same lines (<code>llama-mellum</code>, <code>llama-kimi</code>, <code>llama-b4-27b</code>, <code>llama-gemma4-31b</code>, <code>llama-hy-memory-*</code>, <code>llama-ingot-genesis-27b</code>, <code>llama-ling3-flash</code>, <code>llama-nemotron-bolt-*</code>, <code>llama-qwen38-27b</code>, <code>llama-granite-switch-*</code>) are left for a dedicated registry audit — they are inert, not dangerous.</li>
+<li><code>llama-switch</code>: cases <code>nemotron-super-120b</code> and <code>kimi</code> removed, all three usage strings rebuilt, syntax checked, 22 cases remain.</li>
+<li>Scripts archived to <code>retired-scripts/</code>: <code>run-groot65b.sh</code>, <code>run-nemotron-super-120b.sh</code>, <code>run-kimi-linear-48b.sh</code>, <code>run-kimi-linear-48b-bench.sh</code>.</li>
 </ul>
-<p>unit references a target this pass removed. Pre-existing stale peers in those same lines (<code>llama-mellum</code>, <code>llama-kimi</code>, <code>llama-b4-27b</code>, <code>llama-gemma4-31b</code>, <code>llama-hy-memory-*</code>, <code>llama-ingot-genesis-27b</code>, <code>llama-ling3-flash</code>, <code>llama-nemotron-bolt-*</code>, <code>llama-qwen38-27b</code>, <code>llama-granite-switch-*</code>) are left for a dedicated registry audit — they are inert, not dangerous.</p>
-<ul>
-<li><code>llama-switch</code>: cases <code>nemotron-super-120b</code> and <code>kimi</code> removed, all three usage strings rebuilt, syntax</li>
-</ul>
-<p>checked, 22 cases remain.</p>
-<ul>
-<li>Scripts archived to <code>retired-scripts/</code>: <code>run-groot65b.sh</code>, <code>run-nemotron-super-120b.sh</code>,</li>
-</ul>
-<p><code>run-kimi-linear-48b.sh</code>, <code>run-kimi-linear-48b-bench.sh</code>.</p>
 <h3>Verification</h3>
 <ul>
 <li>Hashes: 11/11 matched the repos' LFS oids before deletion (169.60 GiB read back).</li>
@@ -722,34 +526,17 @@ a { color:var(--acc); }
 <p>Deleted after the Q4_K_M arm proved the model is deployable at 4x the speed. Both files re-hashed in this pass and both matched their repos' published LFS oids, so both are restorable to the byte.</p>
 <h3>Laguna-XS-2.1 BF16 — 66,930,226,304 B (62.33 GiB)</h3>
 <ul>
-<li>File <code>models/Laguna-XS-2.1/Laguna-XS-2.1-BF16.gguf</code>, sha256</li>
+<li>File <code>models/Laguna-XS-2.1/Laguna-XS-2.1-BF16.gguf</code>, sha256 <code>d1d99abe30c37749ec1b1ae2681cec74caa550ac6243d2ea70b61b1ff9d187ca</code> = the LFS oid of <code>poolside/Laguna-XS-2.1-GGUF</code>.</li>
+<li>Measured 2026-11-06: pp 230.6 / <strong>tg 11.6 t/s</strong> / ttft 7941 ms, preflight 3/3, needles 2k+8k PASS, 3x greedy code generations 11.68 t/s median. No riddles or heavy axes (40 min for the riddle block alone).</li>
+<li>Why it went: <strong>BF16 has no fast matmul path on this box.</strong> Both local Vulkan trees compile zero coopmat2 shaders and the backend gates BF16 on <code>coopmat_bf16_support</code>/<code>coopmat2_bf16_support</code>; the same weights at Q4_K_M run <strong>87.7 t/s</strong>. The BF16 file was a reference copy of something we now have at usable speed for a third of the disk.</li>
+<li>Restore: <code>poolside/Laguna-XS-2.1-GGUF</code>, file <code>Laguna-XS-2.1-BF16.gguf</code>; verify the sha256 above. Serve as in <code>run-laguna-xs.sh</code> with <code>LAG_FILE=Laguna-XS-2.1-BF16.gguf</code> — expect ~11.6 t/s until a build with the BF16 coopmat path exists.</li>
 </ul>
-<p><code>d1d99abe30c37749ec1b1ae2681cec74caa550ac6243d2ea70b61b1ff9d187ca</code> = the LFS oid of <code>poolside/Laguna-XS-2.1-GGUF</code>.</p>
-<ul>
-<li>Measured 2026-11-06: pp 230.6 / <strong>tg 11.6 t/s</strong> / ttft 7941 ms, preflight 3/3, needles 2k+8k PASS,</li>
-</ul>
-<p>3x greedy code generations 11.68 t/s median. No riddles or heavy axes (40 min for the riddle block alone).</p>
-<ul>
-<li>Why it went: <strong>BF16 has no fast matmul path on this box.</strong> Both local Vulkan trees compile zero coopmat2</li>
-</ul>
-<p>shaders and the backend gates BF16 on <code>coopmat_bf16_support</code>/<code>coopmat2_bf16_support</code>; the same weights at Q4_K_M run <strong>87.7 t/s</strong>. The BF16 file was a reference copy of something we now have at usable speed for a third of the disk.</p>
-<ul>
-<li>Restore: <code>poolside/Laguna-XS-2.1-GGUF</code>, file <code>Laguna-XS-2.1-BF16.gguf</code>; verify the sha256 above. Serve as</li>
-</ul>
-<p>in <code>run-laguna-xs.sh</code> with <code>LAG_FILE=Laguna-XS-2.1-BF16.gguf</code> — expect ~11.6 t/s until a build with the BF16 coopmat path exists.</p>
 <h3>Laguna-XS-2.1 DFlash draft head — 494,735,360 B (0.46 GiB)</h3>
 <ul>
-<li>File <code>models/Laguna-XS-2.1-dflash/Laguna-XS-2.1-DFlash-Q8_0.gguf</code>, sha256</li>
+<li>File <code>models/Laguna-XS-2.1-dflash/Laguna-XS-2.1-DFlash-Q8_0.gguf</code>, sha256 <code>40eb6bf48f42ebc1990a0ba8c74d2070a256e7f1842a58d8aa9b195e907b04e8</code> = the LFS oid of <code>meshllm/Laguna-XS-2.1-DFlash-GGUF</code>.</li>
+<li>Why it went: <strong>it never loaded.</strong> <code>done_getting_tensors: wrong number of tensors; expected 64, got 58</code> -&gt; <code>failed to load draft model</code> -&gt; the server exits, on build b3-1a33095. Nothing to measure, and no spec-decode arm exists for this family here.</li>
+<li>Restore: re-download the file and re-test after a build bump; the tensor count must match the laguna loader in that tree, so a newer head or a newer build is required — not just a re-download.</li>
 </ul>
-<p><code>40eb6bf48f42ebc1990a0ba8c74d2070a256e7f1842a58d8aa9b195e907b04e8</code> = the LFS oid of <code>meshllm/Laguna-XS-2.1-DFlash-GGUF</code>.</p>
-<ul>
-<li>Why it went: <strong>it never loaded.</strong> <code>done_getting_tensors: wrong number of tensors; expected 64, got 58</code> -&gt;</li>
-</ul>
-<p><code>failed to load draft model</code> -&gt; the server exits, on build b3-1a33095. Nothing to measure, and no spec-decode arm exists for this family here.</p>
-<ul>
-<li>Restore: re-download the file and re-test after a build bump; the tensor count must match the laguna</li>
-</ul>
-<p>loader in that tree, so a newer head or a newer build is required — not just a re-download.</p>
 <h3>Kept: Laguna-XS-2.1 Q4_K_M — 20,274,300,032 B (18.88 GiB)</h3>
 <p>pp 1320.6 / <strong>tg 87.7 t/s</strong> / ttft 1386 ms; preflight 3/3; needles 2k+8k PASS; riddles 10/14; HE 0.7000 (42/60), MMLU-Pro 0.6000 (24/40), IFEval 0.7667/0.8444 — <strong>with 35 of 308 generations pinned at the 2048 cap</strong>, so the HE/MMLU figures are floors rather than ceilings. Sha256 <code>1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb</code>.</p>
 <hr>

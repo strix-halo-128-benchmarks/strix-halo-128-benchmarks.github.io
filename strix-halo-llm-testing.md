@@ -478,6 +478,42 @@ comparable, and the next person can read this instead of spending two hours rebu
 runs themselves are archived outside the catalogue (`~/runs/ab-build-ab-20261101/`) so they cannot pollute the
 per-model "best run" selection with 60-item probes.
 
+### 4.3 Rebuilt on 2026-11-08 — registered, not measured
+
+Four trees were rebuilt in a seven-minute sweep on the evening of 2026-11-08. **None of them has produced a
+row in this report**, and they are recorded here because a rebuild is the event that dates a build register
+and the gap between what is served and what exists is now visible in two dimensions at once — commit date and
+ggml ABI.
+
+```
+   tree                 commit      server build string                      ggml    built
+   ───────────────────────────────────────────────────────────────────────────────────────────
+   upstream-llama.cpp   7d7f028     0.9.0-dev (build 661, commit 7d7f028)    0.29.0  11-08 22:15
+   flint-llama.cpp      7d7f028     0.9.0-dev (build 274, commit 7d7f028)    0.29.0  11-08 22:17
+   sensenova-llama.cpp  7d7f028     0.9.0-dev (build 323, commit 7d7f028)    0.29.0  11-08 22:19
+   prism-llama.cpp      6447906bf   0.7.0-dev (build 12115, commit 6447906bf) 0.27.0  11-08 22:22
+   ───────────────────────────────────────────────────────────────────────────────────────────
+   halo-box-strix (fork) 1a3309516  0.5.0-dev (build 3, commit 1a33095)      0.25.3  10-16 09:33  ← every row in §9
+```
+
+- **No row in §9 comes from any of them.** Of the 25 model launch scripts that name a binary, 22 serve
+  `halo-box-strix-llama.cpp/build/bin/llama-server`, two serve the `f5c0a7a34` scratch clone of §4.2 and one
+  serves the Bolt tree. The register's answer to "what produced this number" does not change, and the
+  `measured` windows in the table above still end on 2026-11-08 with `1a3309516`.
+- **A rebuild is not a measurement.** The four new binaries have no HumanEval, MMLU-Pro, decode, prefill or
+  needle row — they were compiled, not run against the suite. The archive still rests entirely on
+  `1a3309516`, a binary dated 2026-10-16; the fork's upstream is now **1,081 commits ahead** of that build
+  (it was 1,041 on 2026-11-01, §4.2). Nothing here should be read as the report having been re-measured on a
+  newer core.
+- **The ABI gap is the part that matters.** 0.25.3 against 0.29.0 is four ggml-vulkan minor versions — the
+  same discontinuity that made this register necessary in the first place. A number taken on `7d7f028` would
+  be a new measurement on a new flavour, not a correction of the fork's, and by §4.2's standard it would need
+  paired repetitions on identical weights and flags before it could claim to be one.
+- **Why they appear in a benchmark report at all.** Because a reader who clones one of these trees and builds
+  it gets a binary four ggml-ABI minor revisions away from the one every published number came from
+  (0.29.0 against the served 0.25.3), and that difference is invisible unless it is written down. The sweep is
+  an operational event; it is logged here so the register cannot be read as covering a newer core than it does.
+
 ## 5. Memory accounting and quantisation
 
 Weights are only part of the footprint. KV cache scales linearly with context length and is charged
@@ -2663,8 +2699,10 @@ The seven most recent entries, in brief:
   2026-11-08 but never written into this report, so the previous edition published a data row and three
   regenerated charts with no prose, leaderboard entry or change-log record behind them; §9 and §18.3 counts
   are now recounted from the catalogue (37 matrix rows, 155 runs, 60.6 h, 75 aliases, 16 servable families),
-  and Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside
-  their table.
+  Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside
+  their table, and the four trees rebuilt on the evening of 2026-11-08 are tabulated in **§4.3 — registered,
+  not measured**: `upstream-llama`, `flint` and `sensenova` at `7d7f028` (0.9.0-dev, ggml ABI 0.29.0),
+  `prism` at `6447906bf` (0.7.0-dev, ABI 0.27.0), against the served fork `1a3309516` at ABI 0.25.3.
 
 - **v1.22** — **Laguna-XS-2.1** (poolside, 33B/A3B agentic-coding MoE, OpenMDW-1.1) joins at Q4_K_M: **87.7 t/s
   decode and 1321 t/s prefill, the fastest row on the box**, with **0.8667 code (60@4096) and 0.7000 knowledge

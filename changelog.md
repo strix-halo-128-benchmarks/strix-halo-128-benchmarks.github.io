@@ -48,15 +48,31 @@ matrix, and the counts in §9, §18.3 and §20 that had drifted by one run were 
 the one already in §4.1: the pipeline cannot publish prose it was not given, so a measured row is not a
 published row until the sentence exists.
 
-**One rendering defect fixed in passing.** In Table 4b the closing note sat between the sixth and seventh
+**Two rendering defects fixed in passing.** In Table 4b the closing note sat between the sixth and seventh
 rows, so the last three rows (`qwen38fn-abl`, `Ornith-1.5-35B`, `ornith35b`) had been rendering as literal
 pipe text outside the table since v1.20 — visible on every page view, unnoticed in every diff. The note now
 follows the table.
 
+**The second was the renderer itself.** `md2html.py` emitted one `<li>` per source line and closed the list
+at the first wrapped line, so every bullet longer than one line was published as a one-line list item
+followed by a loose paragraph: §4.1's five bullets, §21's version list and half the retirement notes came out
+that way, with stray `**` in the HTML wherever bold crossed a wrap (393 `<strong>` spans before the fix, 403
+after). The renderer now absorbs indented continuation lines into the item they continue, and it is published
+in `tools/` so the pages can be rebuilt from the markdown this repository holds.
+
+**This edition was published in two commits.** `285c0a7` carried the new row, the recounted totals and the
+Table 4b repair; the second added §4.3 and the renderer fix above. Between them the page was live for about
+an hour with the row but without the rebuild register — the same class of half-published state this edition
+opens by correcting, caught the same day and in the same way: by reading the rebuilt page rather than the
+diff.
+
 **Build identity.** Every number here is fork `b3-1a33095`, kernel `7.3.1-1-cachyos`, Mesa 26.2.5 /
-vulkan-radeon 26.2.5. The four trees rebuilt on the evening of 2026-11-08 — `upstream-llama`, `sensenova` and
-`flint` at upstream `7d7f028`, `prism` at `6447906bf` — serve nothing in this report and appear in no row;
-the build register remains a single-fork register until a benchmark is run on one of them.
+vulkan-radeon 26.2.5, ggml-vulkan ABI 0.25.3. The four trees rebuilt on the evening of 2026-11-08 —
+`upstream-llama`, `flint` and `sensenova` at upstream `7d7f028` (0.9.0-dev, ABI 0.29.0), `prism` at
+`6447906bf` (0.7.0-dev, ABI 0.27.0) — serve nothing in this report and appear in no row. They are now
+tabulated in §4.3, because a reader building one of them gets a binary four ggml ABI minor versions away from
+the one the numbers came from; the build register remains a single-fork register until a benchmark is run,
+with paired reps, on one of them.
 
 ---
 

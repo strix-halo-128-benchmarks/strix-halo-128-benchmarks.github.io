@@ -63,17 +63,10 @@ a { color:var(--acc); }
 <p>Every number here comes from the same matrix as the report, with the same rules. Ranked on one axis at a time, because there is no composite score and this project does not publish one — a model that wins code and loses knowledge is not "0.7 of a model".</p>
 <p><strong>Three things to read before the first table.</strong></p>
 <ol>
-<li><strong>The cap is part of the score.</strong> A row measured at 2048 or 4096 tokens per answer is only comparable</li>
+<li><strong>The cap is part of the score.</strong> A row measured at 2048 or 4096 tokens per answer is only comparable inside that band. Anything measured below 2048 is marked <strong>floor</strong> and ranked in its own table at the bottom, never against a ceiling.</li>
+<li><strong><code>n</code> is the item count, not a formality.</strong> HumanEval is out of 164, MMLU-Pro out of 120. A row at a smaller n is plumbing and says so.</li>
+<li><strong><code>build</code> is the llama.cpp that produced the row.</strong> Decode rates move 10-20% between builds, so a throughput comparison across different builds is a comparison of builds as much as models.</li>
 </ol>
-<p>inside that band. Anything measured below 2048 is marked <strong>floor</strong> and ranked in its own table at the bottom, never against a ceiling.</p>
-<ol>
-<li><strong><code>n</code> is the item count, not a formality.</strong> HumanEval is out of 164, MMLU-Pro out of 120. A row at a</li>
-</ol>
-<p>smaller n is plumbing and says so.</p>
-<ol>
-<li><strong><code>build</code> is the llama.cpp that produced the row.</strong> Decode rates move 10-20% between builds, so a</li>
-</ol>
-<p>throughput comparison across different builds is a comparison of builds as much as models.</p>
 <p>37 measured rows: <strong>18 servable</strong>, 19 retired but kept in place, because a leaderboard with the failures deleted is how the same 60 GB gets downloaded twice.</p>
 <hr>
 <h2>Code — HumanEval, 164 items</h2>
@@ -98,16 +91,9 @@ a { color:var(--acc); }
 <hr>
 <h2>What is deliberately missing</h2>
 <ul>
-<li><strong>No composite index.</strong> Weighting code, knowledge and speed into one number requires assumptions this</li>
+<li><strong>No composite index.</strong> Weighting code, knowledge and speed into one number requires assumptions this project will not make on the reader's behalf.</li>
+<li><strong>No context-window ranking.</strong> Native context is a property of the file, not a measurement; the report covers it per model, including the 1,048,576-token Kimi row and why it is measured at 65536.</li>
+<li><strong>No per-watt axis yet.</strong> Power is measured (§15) but not paired with throughput per model, so any efficiency ranking here would be invented.</li>
 </ul>
-<p>project will not make on the reader's behalf.</p>
-<ul>
-<li><strong>No context-window ranking.</strong> Native context is a property of the file, not a measurement; the report</li>
-</ul>
-<p>covers it per model, including the 1,048,576-token Kimi row and why it is measured at 65536.</p>
-<ul>
-<li><strong>No per-watt axis yet.</strong> Power is measured (§15) but not paired with throughput per model, so any</li>
-</ul>
-<p>efficiency ranking here would be invented.</p>
 <p><em>Source, data and build scripts: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Full report and caveats: <a href="index.html">index.html</a> · deleted models and restore recipes: <a href="retired-models.html">retired-models.html</a>.</em></p>
 </main></body></html>

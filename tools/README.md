@@ -2,12 +2,23 @@
 
 Two probes that produced figures in the report, published so the claims can be re-run rather than
 believed. Both talk to a llama.cpp server over its OpenAI-compatible API — no model is loaded, no
-unit is touched, so they are safe to run against a server that is doing real work.
+unit is touched, so they are safe to run against a server that is doing real work. The page renderer is
+published here too, so the site can be rebuilt from the markdown in this repository.
 
     benchlib.py   the HTTP/timing shim (chat completion → content, token counts, prefill/decode rates)
     checks.py     the harness's checks, including the needle-in-a-haystack probe
     ctxcurve.py   context-scaling curve (§23.2 of the report)
     lucebox30.py  an independent 30-item quality suite (§23.3), fetched from Luce-Org/lucebox
+    md2html.py    markdown → page renderer: tables, fenced blocks, embedded SVG figures, wrapped lists
+
+## Renderer
+
+    python3 md2html.py <input.md> <output.html> "<page title>" "<meta description>"
+
+Handles the subset the report uses and nothing else. One rule worth knowing, because getting it wrong is
+what produced v1.23's rendering fixes: an indented line that follows a bullet and is not itself a marker
+belongs to that bullet, and a non-indented line ends the list. `scripts/build.sh` calls this renderer for all
+four pages.
 
 ## Context curve
 

@@ -70,8 +70,10 @@ a { color:var(--acc); }
 <p><strong>The speed is what two bits buy.</strong> 261 t/s prefill and <strong>34.1 t/s decode</strong>, TTFT 7.0 s on a 1,826-token prompt. Capability was taken at a 4096 cap on both axes: <strong>0.8000 code (48/60) and 0.6750 knowledge (27/40)</strong>, riddles 10/14, preflight 3/3, and both needles — 2k and 8k — retrieved first time, no retry. IFEval is the weak axis and it is not close: <strong>0.2000 prompt-strict / 0.1556 instruction-strict</strong> over 30 items, the lowest instruction-following score of any row that passes preflight. That is a property of the export, not the harness: the same prompts at 4096 on the Q4 files of the same family score 0.7-0.9.</p>
 <p><strong>It wins nothing except parameter count, and the table should say so.</strong> The 176.9B <code>qwen38fn-abl</code> at IQ3_S takes both axes (0.8476 code, 0.8750 knowledge) at 52.9 t/s in 78.78 GiB: 52B fewer parameters, 17 GiB more disk, and better on code, knowledge and speed. Lite-Beam is kept for what it uniquely is — a 228B model inside 62 GiB, with a 200k training context and both needles — not because it beats the resident abl. Wall clock for the whole suite was 6,985 s (1.94 h), HumanEval 3,196 s of it and MMLU-Pro 2,047 s.</p>
 <p><strong>The process failure this edition exists to correct.</strong> The run was measured and catalogued on 2026-11-08 (last axis written 02:51) and the publish pipeline ran at 04:15 the same morning. Because the report body is hand-written and the pipeline only regenerates what the documents already say, that commit (<code>ef2b137</code>) published the catalogue row and three charts redrawn from it — <code>f15-quality-speed</code>, <code>f16-knowledge-speed</code>, <code>f21-profiles</code> — with <strong>no prose, no leaderboard row and no change-log entry</strong> behind it. The site showed a point on two figures that no sentence introduced. The row is written here, the leaderboards follow from the matrix, and the counts in §9, §18.3 and §20 that had drifted by one run were recounted from the catalogue: <strong>37 matrix rows, 155 runs, 60.6 hours, 75 aliases, 16 servable model families</strong>. The rule this points at is the one already in §4.1: the pipeline cannot publish prose it was not given, so a measured row is not a published row until the sentence exists.</p>
-<p><strong>One rendering defect fixed in passing.</strong> In Table 4b the closing note sat between the sixth and seventh rows, so the last three rows (<code>qwen38fn-abl</code>, <code>Ornith-1.5-35B</code>, <code>ornith35b</code>) had been rendering as literal pipe text outside the table since v1.20 — visible on every page view, unnoticed in every diff. The note now follows the table.</p>
-<p><strong>Build identity.</strong> Every number here is fork <code>b3-1a33095</code>, kernel <code>7.3.1-1-cachyos</code>, Mesa 26.2.5 / vulkan-radeon 26.2.5. The four trees rebuilt on the evening of 2026-11-08 — <code>upstream-llama</code>, <code>sensenova</code> and <code>flint</code> at upstream <code>7d7f028</code>, <code>prism</code> at <code>6447906bf</code> — serve nothing in this report and appear in no row; the build register remains a single-fork register until a benchmark is run on one of them.</p>
+<p><strong>Two rendering defects fixed in passing.</strong> In Table 4b the closing note sat between the sixth and seventh rows, so the last three rows (<code>qwen38fn-abl</code>, <code>Ornith-1.5-35B</code>, <code>ornith35b</code>) had been rendering as literal pipe text outside the table since v1.20 — visible on every page view, unnoticed in every diff. The note now follows the table.</p>
+<p><strong>The second was the renderer itself.</strong> <code>md2html.py</code> emitted one <code>&lt;li&gt;</code> per source line and closed the list at the first wrapped line, so every bullet longer than one line was published as a one-line list item followed by a loose paragraph: §4.1's five bullets, §21's version list and half the retirement notes came out that way, with stray <code>**</code> in the HTML wherever bold crossed a wrap (393 <code>&lt;strong&gt;</code> spans before the fix, 403 after). The renderer now absorbs indented continuation lines into the item they continue, and it is published in <code>tools/</code> so the pages can be rebuilt from the markdown this repository holds.</p>
+<p><strong>This edition was published in two commits.</strong> <code>285c0a7</code> carried the new row, the recounted totals and the Table 4b repair; the second added §4.3 and the renderer fix above. Between them the page was live for about an hour with the row but without the rebuild register — the same class of half-published state this edition opens by correcting, caught the same day and in the same way: by reading the rebuilt page rather than the diff.</p>
+<p><strong>Build identity.</strong> Every number here is fork <code>b3-1a33095</code>, kernel <code>7.3.1-1-cachyos</code>, Mesa 26.2.5 / vulkan-radeon 26.2.5, ggml-vulkan ABI 0.25.3. The four trees rebuilt on the evening of 2026-11-08 — <code>upstream-llama</code>, <code>flint</code> and <code>sensenova</code> at upstream <code>7d7f028</code> (0.9.0-dev, ABI 0.29.0), <code>prism</code> at <code>6447906bf</code> (0.7.0-dev, ABI 0.27.0) — serve nothing in this report and appear in no row. They are now tabulated in §4.3, because a reader building one of them gets a binary four ggml ABI minor versions away from the one the numbers came from; the build register remains a single-fork register until a benchmark is run, with paired reps, on one of them.</p>
 <hr>
 <h3>Version 1.22 (2026-11-06)</h3>
 <p><strong>One arrival, and it is the fastest file on the box — with a +16.7 pp cap correction behind its score.</strong></p>
@@ -164,68 +166,32 @@ a { color:var(--acc); }
 <h3>Version 1.7 (2026-10-31)</h3>
 <p><strong>Prior art, and the context curve that was missing.</strong> Reading two other public datasets — <code>lhl</code>'s llama-bench sweeps and <code>pepuscz</code>'s Flash-class results — made two gaps obvious and both are now closed or named:</p>
 <ul>
-<li><strong>§23 prior art.</strong> Four sources tabulated with what each answers and what it does not, plus §23.1 on</li>
+<li><strong>§23 prior art.</strong> Four sources tabulated with what each answers and what it does not, plus §23.1 on the single model measured by both (Qwen3.8-Flash-Next: their 465/42.8 t/s at Q4_XL on Ubuntu vs this report's 448/52.9 at IQ3_S on CachyOS — different quant, consistent result). Their 30-item quality suite cannot rank models because one item is 3.3 pp; that is the gap 164 HumanEval items fills.</li>
+<li><strong>§23.2 context curve.</strong> The open item about no 32k needle is closed for the deployed driver: five depths from 1.8k to 112.9k prompt tokens, retrieval PASS at every one, prefill 1715 → 670 t/s and decode 57.2 → 37.7 t/s. The practical rule is to compact before 64k, not at the window edge.</li>
+<li><strong>§23.3 cross-validation.</strong> Their published 30-item suite, run unchanged on the deployed driver: <strong>30/30</strong> (coding 10/10 executed against their own <code>gold_test</code>, GSM8K 10/10, math 10/10) — the same score their Qwen3.8-Flash-Next deployment reported. The first pass read 26/30 and all four misses were harness defects: a last-number grader that scored "$64 for the 16 glasses" as 16, a LaTeX comparison that read −2/3 as different from <code>-\frac{2}{3}</code>, a <code>\boxed{}</code> regex that truncated <code>\frac{20}{3}</code>, and a fixture whose <code>gold_answer</code> for math_08 says 20 where the correct value is 20/3 — a correction the source itself documents.</li>
+<li><strong>New tooling.</strong> <code>~/bench/ctxcurve.py</code> produces the curve against a live server (no reload, no unit change), and <code>~/bench/lucebox30.py</code> runs the published 30-item suite from <code>Luce-Org/lucebox</code> so the two datasets can be cross-checked on the same model. Both record per-item evidence, not just verdicts.</li>
 </ul>
-<p>the single model measured by both (Qwen3.8-Flash-Next: their 465/42.8 t/s at Q4_XL on Ubuntu vs this report's 448/52.9 at IQ3_S on CachyOS — different quant, consistent result). Their 30-item quality suite cannot rank models because one item is 3.3 pp; that is the gap 164 HumanEval items fills.</p>
-<ul>
-<li><strong>§23.2 context curve.</strong> The open item about no 32k needle is closed for the deployed driver: five</li>
-</ul>
-<p>depths from 1.8k to 112.9k prompt tokens, retrieval PASS at every one, prefill 1715 → 670 t/s and decode 57.2 → 37.7 t/s. The practical rule is to compact before 64k, not at the window edge.</p>
-<ul>
-<li><strong>§23.3 cross-validation.</strong> Their published 30-item suite, run unchanged on the deployed driver:</li>
-</ul>
-<p><strong>30/30</strong> (coding 10/10 executed against their own <code>gold_test</code>, GSM8K 10/10, math 10/10) — the same score their Qwen3.8-Flash-Next deployment reported. The first pass read 26/30 and all four misses were harness defects: a last-number grader that scored "$64 for the 16 glasses" as 16, a LaTeX comparison that read −2/3 as different from <code>-\frac{2}{3}</code>, a <code>\boxed{}</code> regex that truncated <code>\frac{20}{3}</code>, and a fixture whose <code>gold_answer</code> for math_08 says 20 where the correct value is 20/3 — a correction the source itself documents.</p>
-<ul>
-<li><strong>New tooling.</strong> <code>~/bench/ctxcurve.py</code> produces the curve against a live server (no reload, no unit</li>
-</ul>
-<p>change), and <code>~/bench/lucebox30.py</code> runs the published 30-item suite from <code>Luce-Org/lucebox</code> so the two datasets can be cross-checked on the same model. Both record per-item evidence, not just verdicts.</p>
 <h3>Version 1.6 (2026-10-31)</h3>
 <p><strong>Every row now says when it was measured.</strong> Tables 4 and 4b gained a <code>measured</code> column — the date of the best-scoring run for that row, derived by joining each row's HumanEval and MMLU values (with their caps) against <code>~/runs/catalogue.json</code> and taking that run's timestamp. 28 of 28 matrix rows and 16 of 16 servable rows resolved; the one row with no HumanEval cell (<code>Ling-3.0-flash</code>) was dated from its MMLU value alone.</p>
 <p>The join is scripted, not typed: two rows scoring identically at the same cap would have been a coin-flip, so the derivation prefers name overlap and then the most recent run, and it is re-runnable against the catalogue. What the column does not tell you is the model's release date, only when this box measured it — the spread runs from 2026-10-10 to 2026-10-31.</p>
 <h3>Version 1.5 (2026-10-31)</h3>
 <p>One re-measurement, on the boot model: <code>ornith35b</code> (Ornith-1.5-35B-Uncensored-YMQ-M, IQ3_XXS) had been measured only at <strong>cap 512</strong>, which the table's own rules call a floor. It was re-run at 4096:</p>
 <ul>
-<li><strong>Run:</strong> <code>20261031-175808-ornith-boot-4096</code>, 850 s, HE 164 + MMLU-Pro 120 at cap 4096, served from</li>
+<li><strong>Run:</strong> <code>20261031-175808-ornith-boot-4096</code>, 850 s, HE 164 + MMLU-Pro 120 at cap 4096, served from the already-resident boot unit on :8094 — no extra GTT (30.3 of 100 GiB), driver untouched.</li>
+<li><strong>Result: HE 0.5671 (93/164), MMLU-Pro 0.6333 (76/120), riddles 12/14, both needles, 3/3 preflight, pp 1761.8 / tg 69.9 t/s.</strong> The published row was 0.5610 / 0.6000 at cap 512.</li>
+<li><strong>What it settled:</strong> the cap was not hiding anything — one code item and four knowledge items move, both inside the sampling noise at n=164 and n=120. The file is a ~0.57 coder at IQ3_XXS, and the row now states that on a proper budget instead of a floor. Riddles went the other way (13/14 → 12/14): an arithmetic item returned 9.11 where 9.9 was expected.</li>
+<li><strong>Rows updated:</strong> Table 4, Table 4b, the §9.1 "35B trough" paragraph (which previously excused the score as "an aggressive IQ3_XXS load" without having tested that claim), the family-spread section, the riddles and throughput league tables.</li>
+<li><strong>No cap-512 floor remains on disk:</strong> <code>qwen38-35b</code> and <code>Ornith-1.5-35B</code> (the Q4_K_M file) were both re-measured at cap 4096 on 2026-11-01 — see v1.10 in the change log for the numbers.</li>
+<li><strong>§16.4 corrected:</strong> it listed the uncensored boot file as "unmeasured, no row, no verdict". It now has a row (0.5671 / 0.6333 at cap 4096) and the section states plainly that its low score is the IQ3_XXS rung plus the tune, not a measured abliteration cost, because the comparison file is a cap-512 Q4_K_M row. The Abliterated-MTPv2-21G-ICE build is NOT unmeasured after all — it is the file behind the <code>ornith-mtp-21g</code> rows (0.9207 code at 4096, 0.7750 knowledge).</li>
 </ul>
-<p>the already-resident boot unit on :8094 — no extra GTT (30.3 of 100 GiB), driver untouched.</p>
-<ul>
-<li>**Result: HE 0.5671 (93/164), MMLU-Pro 0.6333 (76/120), riddles 12/14, both needles, 3/3</li>
-</ul>
-<p>preflight, pp 1761.8 / tg 69.9 t/s.** The published row was 0.5610 / 0.6000 at cap 512.</p>
-<ul>
-<li><strong>What it settled:</strong> the cap was not hiding anything — one code item and four knowledge items</li>
-</ul>
-<p>move, both inside the sampling noise at n=164 and n=120. The file is a ~0.57 coder at IQ3_XXS, and the row now states that on a proper budget instead of a floor. Riddles went the other way (13/14 → 12/14): an arithmetic item returned 9.11 where 9.9 was expected.</p>
-<ul>
-<li><strong>Rows updated:</strong> Table 4, Table 4b, the §9.1 "35B trough" paragraph (which previously excused</li>
-</ul>
-<p>the score as "an aggressive IQ3_XXS load" without having tested that claim), the family-spread section, the riddles and throughput league tables.</p>
-<ul>
-<li><strong>No cap-512 floor remains on disk:</strong> <code>qwen38-35b</code> and <code>Ornith-1.5-35B</code> (the Q4_K_M file) were both</li>
-</ul>
-<p>re-measured at cap 4096 on 2026-11-01 — see v1.10 in the change log for the numbers.</p>
-<ul>
-<li><strong>§16.4 corrected:</strong> it listed the uncensored boot file as "unmeasured, no row, no verdict". It now</li>
-</ul>
-<p>has a row (0.5671 / 0.6333 at cap 4096) and the section states plainly that its low score is the IQ3_XXS rung plus the tune, not a measured abliteration cost, because the comparison file is a cap-512 Q4_K_M row. The Abliterated-MTPv2-21G-ICE build is NOT unmeasured after all — it is the file behind the <code>ornith-mtp-21g</code> rows (0.9207 code at 4096, 0.7750 knowledge).</p>
 <h3>Version 1.4 (2026-10-31)</h3>
 <p>One new measurement and no method change: <code>Qwen3-Next-80B UD-Q4_K_XL</code> was the only artefact on disk with no capability row, and it was the last one worth spending compute on when the 2026-10-30 model sweep turned up nothing fit to download (700 repos, 131 artefacts in the 3–70 GiB band, all either dense, over-pool, a re-quant, or an arch in neither build tree).</p>
 <ul>
-<li><strong>Run:</strong> <code>20261031-023533-qwen3next-q4-coverage</code>, 1385 s, cap 2048, HE 164 items + MMLU-Pro 120.</li>
+<li><strong>Run:</strong> <code>20261031-023533-qwen3next-q4-coverage</code>, 1385 s, cap 2048, HE 164 items + MMLU-Pro 120. Served on :8082 as a transient unit opposite the driver, 75.1 GiB of the 100 GiB pool, so the channel never dropped. Result: <strong>HE 0.9146 (150/164), MMLU-Pro 0.7417 (89/120), 14/14 riddles, both needles, 3/3 preflight, pp 1218.7 / tg 58.1 t/s.</strong></li>
+<li><strong>What it settled:</strong> the file is dominated. A 15.6 GiB driver scores +4.3 pp code and +10.8 pp knowledge at the same decode speed, and an 18.7 GiB gpt-oss-abliterated beats it on both axes too. 42.9 GiB of weights, 3B active, no measurable advantage over files a third of its size. It is now a retire candidate on evidence — held only because the Qwen3-Next pair is on the protected list.</li>
+<li><strong>Tables updated:</strong> the header roster count (15 → 16 artefacts), Table 4 and Table 4b rows, the code / knowledge / riddles league tables, §9.1 (new per-model paragraph), §20.3 and the open-items list. <code>~/runs/catalogue.json</code> rebuilt to 117 rows from 119 run files.</li>
+<li><strong>One correction carried:</strong> the previous edition said fifteen artefacts had capability rows "plus one without" — the plus-one is now scored, so Table 4b's caption says sixteen and every row has both axes.</li>
 </ul>
-<p>Served on :8082 as a transient unit opposite the driver, 75.1 GiB of the 100 GiB pool, so the channel never dropped. Result: <strong>HE 0.9146 (150/164), MMLU-Pro 0.7417 (89/120), 14/14 riddles, both needles, 3/3 preflight, pp 1218.7 / tg 58.1 t/s.</strong></p>
-<ul>
-<li><strong>What it settled:</strong> the file is dominated. A 15.6 GiB driver scores +4.3 pp code and +10.8 pp</li>
-</ul>
-<p>knowledge at the same decode speed, and an 18.7 GiB gpt-oss-abliterated beats it on both axes too. 42.9 GiB of weights, 3B active, no measurable advantage over files a third of its size. It is now a retire candidate on evidence — held only because the Qwen3-Next pair is on the protected list.</p>
-<ul>
-<li><strong>Tables updated:</strong> the header roster count (15 → 16 artefacts), Table 4 and Table 4b rows, the</li>
-</ul>
-<p>code / knowledge / riddles league tables, §9.1 (new per-model paragraph), §20.3 and the open-items list. <code>~/runs/catalogue.json</code> rebuilt to 117 rows from 119 run files.</p>
-<ul>
-<li><strong>One correction carried:</strong> the previous edition said fifteen artefacts had capability rows "plus</li>
-</ul>
-<p>one without" — the plus-one is now scored, so Table 4b's caption says sixteen and every row has both axes.</p>
 <h3>Version 1.3 (2026-10-30)</h3>
 <p>This edition changes facts, not method. Every number still comes from a file in <code>~/runs/</code> (120 run files at the time of writing; <code>~/runs/catalogue.json</code> rebuilt 2026-10-29 15:53); nothing here is re-measured except where said. The only new measurement taken for this edition is the gemma4-26b-a4b Q8_0 re-run on 2026-10-30.</p>
 <p><strong>The roster moved.</strong> Ten artefacts were retired after the previous edition, in two passes, and the recipes for all ten are in <code>~/llama-local/RETIRED-models.md</code>:</p>
@@ -239,17 +205,10 @@ a { color:var(--acc); }
 <p><strong>The driver changed.</strong> Since 2026-10-28 the channel is answered by the uncensored QAT Q4_K_M build of gemma4-26b-a4b on :8100, not the QAT Q4_0 build on :8099. Version 1.2 called :8099 the deployed driver; that unit is disabled and nothing listens on the port. §0, §6.1, §9.1, §11 and §12 are corrected accordingly, and the endpoint map in §20.2 now lists only live ports.</p>
 <p><strong>Three rows in Table 4 were wrong, and are fixed:</strong></p>
 <ol>
-<li><code>qwen3next-q6</code> was published as 0.9207 (164@2048). No run supports it: its best is **0.9296 over</li>
+<li><code>qwen3next-q6</code> was published as 0.9207 (164@2048). No run supports it: its best is <strong>0.9296 over 142 items</strong>, and 0.9207 is <code>ornith-mtp-21g</code>'s figure, copied onto it. Symptom to watch for: two unrelated models with a score identical to four decimals.</li>
+<li><code>nemotron-super-120b</code> was published as 0.9329 (164@4096). Its runs read <strong>0.9512 (156/164)</strong> and 0.9470 (154/164) at that cap; the printed figure matched neither.</li>
+<li><code>gemma4-26b-a4b</code> and <code>gemma4-26b-qat-q4</code> were listed as two models. They are <strong>one file</strong> measured twice (156/164 and 154/164, MMLU 101/120 both). The run alias was shared with the Q8_0 baseline.</li>
 </ol>
-<p>142 items**, and 0.9207 is <code>ornith-mtp-21g</code>'s figure, copied onto it. Symptom to watch for: two unrelated models with a score identical to four decimals.</p>
-<ol>
-<li><code>nemotron-super-120b</code> was published as 0.9329 (164@4096). Its runs read <strong>0.9512 (156/164)</strong> and</li>
-</ol>
-<p>0.9470 (154/164) at that cap; the printed figure matched neither.</p>
-<ol>
-<li><code>gemma4-26b-a4b</code> and <code>gemma4-26b-qat-q4</code> were listed as two models. They are <strong>one file</strong> measured</li>
-</ol>
-<p>twice (156/164 and 154/164, MMLU 101/120 both). The run alias was shared with the Q8_0 baseline.</p>
 <p><strong>What was deliberately not changed.</strong> §10's family-spread analysis, §13's platform comparison, §14's hosted comparison, §15's power section, §16's abliteration analysis and §17's DeepSeek deployment analysis were left alone: none of their inputs moved, and re-cutting them would mix a roster change into an argument about method. Rows for deleted models are retained throughout, marked <code>✗</code> with the retirement date, because a table that silently drops its losers cannot be audited.</p>
 <p><strong>Figures rebuilt, and four pipeline bugs fixed.</strong> §19's ten figures were regenerated from the rebuilt catalogue, and doing it accurately turned up three defects that had been silently distorting them: (a) <code>charts.py</code> merged every run under one alias, so the Q8_0 gemma and the QAT file collapsed into each other and both <code>ornith35b</code> files did too — it now canonicalises one name per weight file, and figure 19's fourth pair is a real Q8_0→QAT comparison instead of a file against itself; (b) it took the <em>latest</em> run per axis rather than the <em>best</em>, contradicting §9's stated rule — it now takes the best, so figures and Table 4 agree; (c) §8's poisoned-MMLU rule was applied by deleting the whole run rather than the cell, so <code>qwen38fn-abl</code>'s good HumanEval row (0.8476) disappeared from every figure along with its 1/120 MMLU — the filter now blanks the axis and keeps the rest; (d) <code>runs-catalogue.py</code> read the FIRST row of each axis, and IFEval writes an empty n=0 row before its scored n=30 row, so every IFEval score in the catalogue was being dropped — fixed, which is why the live driver now appears in figures 18 and 21. Figure 23 also used to plot the retired flint40b-abl run, whose 1-second samples had aged out of the 72 h raw window so it could no longer be rebuilt; it now plots the 2026-11-01 Kimi-Linear full suite, the longest run still inside that window.</p>
 <p><strong>Known open items.</strong> <code>qwen38fn-abl</code>'s MMLU-Pro cell is a poisoned 1/120 rather than a score, and it cannot be re-measured without stopping the driver (the file is 78.1 GiB, past the pool beside a resident model), which this project does not do; and the driver's context curve (§23.2) now covers 32k, 64k and 113k prompts — but no <em>other</em> model on disk has been measured beyond an 8k needle since the kernel moved to 7.3.0-5.</p>
