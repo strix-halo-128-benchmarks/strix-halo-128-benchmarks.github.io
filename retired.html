@@ -48,6 +48,9 @@ strong { color:var(--fg); }
 em { color:var(--dim); font-style:italic; }
 nav { border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin:1.4em 0 2.2em;
   background:var(--code); font-size:.9em; }
+blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc);
+  background:var(--code); border-radius:0 6px 6px 0; color:var(--dim); }
+blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
 nav ol { margin:.4em 0 0; padding-left:1.3em; }
@@ -60,7 +63,7 @@ a { color:var(--acc); }
 <h1>Retired local models — restore recipes</h1>
 <nav><strong>Contents</strong><ol></ol></nav>
 
-<p>&gt; Part of <a href="index.html">Local LLM benchmarks on AMD Strix Halo</a>. Every deletion here is reversible: each entry carries file sizes, sha256s, the upstream repo and the flags that worked.</p>
+<blockquote>Part of <a href="index.html">Local LLM benchmarks on AMD Strix Halo</a>. Every deletion here is reversible: each entry carries file sizes, sha256s, the upstream repo and the flags that worked.</blockquote>
 <p>Kept so a deletion is reversible without re-researching URLs, hashes and flags.</p>
 <h2>Instella-MoE-16B-A3B-Think (retired 2026-10-12)</h2>
 <p>Removed at the user's request: the weights, its unit, run script, switch entry, log files, and the bespoke <code>instella-moe</code> llama.cpp fork tree it needed.</p>

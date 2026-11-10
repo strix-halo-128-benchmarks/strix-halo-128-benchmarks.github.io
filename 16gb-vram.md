@@ -1,9 +1,9 @@
-# 16 GiB of VRAM: which local models actually fit, and what they score
+# 16 GiB of VRAM: which local LLMs fit, and what they score
 
-- **Document version:** **1.3** · 10th November 2026 · decision map added (§7), zones marked on the class figure
+- **Document version:** **1.4** · 10th November 2026 · title names local LLMs, licence section added
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
-- **History of this page:** §14 · **Wider report on this platform:** [index.html](index.html)
+- **History of this page:** §15 · **Wider report on this platform:** [index.html](index.html)
 
 
 
@@ -306,10 +306,48 @@ python3 humaneval.py --port 8180 --limit 164 --max-tokens 8192
 
 Figures on this page are generated from the same run archive by `charts16.py`; the fit arithmetic in the tables is the expression `matrix.py budget` prints, so a figure and a table cannot disagree.
 
-## 14. Document history
+## 14. Licence
+
+Everything on this page — the prose, the tables, the figures and the selection of measurements behind
+them — is published under **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**. You may copy it,
+quote it, republish it and build on it, including commercially, provided you credit it, link the licence
+and say what you changed. The attribution line to use:
+
+```
+16 GiB of VRAM: which local LLMs fit, and what they score — strix-halo-128-benchmarks,
+CC BY 4.0, https://strix-halo-128-benchmarks.github.io/16gb.html
+```
+
+That is worth stating precisely, because "a licence on information" is only partly possible:
+
+- **What is licensed is the expression and the compilation**, not the facts. Nobody owns the measurement
+  that this 26B MoE scores 0.902 on HumanEval at cap 512: you can re-measure it, quote the number, and
+  disagree with it in public without asking anyone. The licence binds you when you copy the *page*, the
+  *figures* or a substantial part of the *dataset*.
+- **The database right is licensed too.** In the UK and the EU a collection of measurements can carry a
+  separate sui generis right against extraction and re-utilisation even when individual facts are free.
+  CC BY 4.0 covers that right explicitly, so bulk reuse of the rows is permitted with attribution rather
+  than silently allowed.
+- **It is not a warranty and not a patent grant.** The numbers are one machine, one build, stated caps;
+  the licence gives you no assurance they describe your hardware, and CC licences grant no patent rights.
+- **Model weights are not distributed here.** Every file named on this page carries its own licence from
+  its publisher, and nothing on this page changes it — check the model card before you redistribute
+  weights.
+- **The benchmarks belong to their authors.** HumanEval, MMLU-Pro and IFEval are run against this box, not
+  republished; cite the papers when you cite the scores.
+- **The scripts in the repository are covered by the same licence**, because that is what its `LICENSE`
+  file says. CC BY is written for prose and gives no patent grant, so if the intent is for other people to
+  reuse the harness, a code-specific licence (MIT or Apache-2.0) for `scripts/` and `tools/` is the better
+  split.
+
+The machine-readable form is alongside the page: a `license` field in the page's JSON-LD, a `rel="license"`
+link in the document head, and the same CC BY 4.0 statement in the repository's `LICENSE` file.
+
+## 15. Document history
 
 | version | date | what changed |
 |---|---|---|
+| 1.4 | 10th November 2026 | Title now says local LLMs. Adds §14: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line. |
 | 1.3 | 10th November 2026 | Adds a decision map (Figure 6): mean quality against footprint with the 15 GiB wall, a stated 0.78 competitive line and the three picks ringed, so "where is good" is visible without reading a table. Deliberately not a quadrant — no median crosshair, because the good direction here is up and to the left. Figures renumbered; the decode figure now marks the region that fits the card. |
 | 1.2 | 10th November 2026 | §11 extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box". |
 | 1.1 | 10th November 2026 | Adds §11: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it. |

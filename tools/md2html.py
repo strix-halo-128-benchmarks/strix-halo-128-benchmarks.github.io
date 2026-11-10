@@ -43,6 +43,9 @@ strong { color:var(--fg); }
 em { color:var(--dim); font-style:italic; }
 nav { border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin:1.4em 0 2.2em;
   background:var(--code); font-size:.9em; }
+blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc);
+  background:var(--code); border-radius:0 6px 6px 0; color:var(--dim); }
+blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
 nav ol { margin:.4em 0 0; padding-left:1.3em; }
@@ -97,6 +100,15 @@ def render(md: str) -> str:
             svg = svg[svg.index("<svg"):] if "<svg" in svg else svg
             out.append("<figure class=\"fig\">" + svg + "</figure>")
             i += 1
+            continue
+
+        # blockquote: consecutive lines starting with '>'
+        if line.startswith(">"):
+            buf = []
+            while i < len(lines) and lines[i].startswith(">"):
+                buf.append(lines[i].lstrip("> ").strip())
+                i += 1
+            out.append("<blockquote>" + "<br>".join(inline(b) for b in buf) + "</blockquote>")
             continue
 
         # fenced code
@@ -243,7 +255,9 @@ def main():
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(title)}</title>{head_extra}<style>{CSS}</style></head>
+<title>{html.escape(title)}</title>{head_extra}
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+<link rel="author" href="https://github.com/strix-halo-128-benchmarks"><style>{CSS}</style></head>
 <body><main>
 {titleblock}
 <nav><strong>Contents</strong><ol>{"".join(toc)}</ol></nav>

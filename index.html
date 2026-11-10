@@ -48,6 +48,9 @@ strong { color:var(--fg); }
 em { color:var(--dim); font-style:italic; }
 nav { border:1px solid var(--line); border-radius:8px; padding:14px 18px; margin:1.4em 0 2.2em;
   background:var(--code); font-size:.9em; }
+blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc);
+  background:var(--code); border-radius:0 6px 6px 0; color:var(--dim); }
+blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
 nav ol { margin:.4em 0 0; padding-left:1.3em; }
@@ -60,7 +63,7 @@ a { color:var(--acc); }
 <h1>Testing Local LLMs on AMD Strix Halo</h1>
 <nav><strong>Contents</strong><ol><li><a href="#s0">Executive summary</a></li><li><a href="#s1">Why test at all — the problem this solves</a></li><li><a href="#s2">The platform: what Strix Halo actually is</a></li><li><a href="#s3">The OS and driver stack</a></li><li><a href="#s4">The runtime: three llama.cpp trees and why</a></li><li><a href="#s5">Memory accounting and quantisation</a></li><li><a href="#s6">The serving architecture</a></li><li><a href="#s7">The harness</a></li><li><a href="#s8">How to read the results that follow</a></li><li><a href="#s9">Results — the measured matrix</a></li><li><a href="#s10">Can you extrapolate from one model to another in the same family?</a></li><li><a href="#s11">The leaders, in one screen</a></li><li><a href="#s12">Which model for which job</a></li><li><a href="#s13">Strix Halo against Nvidia and Apple</a></li><li><a href="#s14">Hosted frontier models as a reference point</a></li><li><a href="#s15">What a local run costs in power, heat and money</a></li><li><a href="#s16">Uncensored and abliterated models: what the removal actually costs</a></li><li><a href="#s17">Why the hosted DeepSeek numbers look the way they do</a></li><li><a href="#s18">For newcomers: what to expect, and what to avoid</a></li><li><a href="#s19">The same data, plotted</a></li><li><a href="#s20">Appendix</a></li><li><a href="#s21">Change log</a></li><li><a href="#s22">Credits and tooling</a></li><li><a href="#s23">Prior art — what exists already, and which question each source answers</a></li></ol></nav>
 
-<p>&gt; <strong>Also published:</strong> <a href="leaderboards.html">Leaderboards by axis</a> — code, knowledge, reasoning, decode and prefill, each row with its cap and build · <a href="retired-models.html">Retired models — what was deleted, why, with hashes and restore recipes</a> · <a href="changelog.html">Change log</a> — every correction and the numbers that forced it · <a href="16gb.html">16 GiB of VRAM</a> — what fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.</p>
+<blockquote><strong>Also published:</strong> <a href="leaderboards.html">Leaderboards by axis</a> — code, knowledge, reasoning, decode and prefill, each row with its cap and build · <a href="retired-models.html">Retired models — what was deleted, why, with hashes and restore recipes</a> · <a href="changelog.html">Change log</a> — every correction and the numbers that forced it · <a href="16gb.html">16 GiB of VRAM</a> — what fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.</blockquote>
 <p><strong>Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what</strong></p>
 <ul>
 <li><strong>Host:</strong> Minisforum <strong>MS-S1 MAX</strong> (product_family <code>MINISFORUM</code>, board <code>SHWSA</code>, BIOS 1.06, EC 0.15) · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)</li>

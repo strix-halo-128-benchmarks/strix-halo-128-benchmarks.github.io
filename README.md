@@ -12,7 +12,7 @@ NVMe, zram swap), on llama.cpp/Vulkan.
   with file sizes, sha256s and restore recipes.
 - **[Change log](https://strix-halo-128-benchmarks.github.io/changelog.html)** — every correction and the
   measurement that forced it.
-- **[16 GiB of VRAM](https://strix-halo-128-benchmarks.github.io/16gb.html)** — a second, separate question:
+- **[16 GiB of VRAM: local LLMs](https://strix-halo-128-benchmarks.github.io/16gb.html)** — a second, separate question:
   which models fit a 16 GiB graphics card, what they score there, what the KV cache costs at each context,
   and how the answer changes between a unified APU, a discrete card and Apple Silicon.
 

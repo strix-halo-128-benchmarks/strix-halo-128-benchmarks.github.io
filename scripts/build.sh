@@ -42,8 +42,8 @@ for a, b in (("`mss1-max`", "the reference host"),
 banner = ("\n> **Also published:** [Leaderboards by axis](leaderboards.html) — code, knowledge, "
           "reasoning, decode and prefill, each row with its cap and build · [Retired models — what was "
           "deleted, why, with hashes and restore recipes](retired-models.html) · [Change log](changelog.html) "
-          "— every correction and the numbers that forced it · [16 GiB of VRAM](16gb.html) — what fits on a "
-          "16 GiB card, what it scores, and why the answer changes with the memory architecture.\n")
+          "— every correction and the numbers that forced it · [16 GiB of VRAM — local LLMs](16gb.html) — what "
+          "fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.\n")
 if "retired-models.html" not in txt:
     i = txt.find("\n", txt.find("# "))
     txt = txt[:i] + banner + txt[i:]
@@ -147,8 +147,8 @@ DESC="Measured capability and throughput for local LLMs on AMD Strix Halo (gfx11
       "Leaderboards by axis — local LLMs on AMD Strix Halo" \
       "Per-axis rankings of local LLMs measured on Strix Halo: HumanEval, MMLU-Pro, reasoning traps, decode and prefill, each row with its token cap, item count and llama.cpp build."
 "$PY" "$DOCS/md2html.py" "$REPO/16gb-vram.md" "$REPO/16gb.html" \
-      "16 GiB of VRAM: which local models fit, and what they score" \
-      "Measured roster for a 16 GiB graphics card: HumanEval, MMLU-Pro and IFEval at stated caps, fit arithmetic, KV-cache and context budgets, dense versus MoE, and how Strix Halo, NVIDIA and Apple memory architectures change the answer."
+      "16 GiB of VRAM: which local LLMs fit, and what they score" \
+      "Which local LLMs fit a 16 GiB graphics card and what they score: HumanEval, MMLU-Pro and IFEval at stated caps, fit and KV-cache arithmetic, context budgets, dense versus MoE, a decision map, thirteen 16 GB cards compared, and the licence on the data."
 
 echo "== 5b. discovery files (robots + sitemap)"
 cat > "$REPO/robots.txt" <<ROBOTS
