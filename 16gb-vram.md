@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.6** · 10th November 2026 · axes explained up front
+- **Document version:** **1.7** · 10th November 2026 · axes, cap and budget defined up front
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -52,6 +52,31 @@ scores is unreadable without knowing which one a column is.
 | riddles | 14 short arithmetic and logic probes | exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer | 14 probes at temperature 0.2 | anything statistical: it is a smoke test for gross failure, not an axis |
 
 *Table 2 — the axes, as they were actually run. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence.*
+
+### Cap, budget, and what the budget is spent on
+
+Every number on this page is qualified by one of these, so they are worth fixing before the scores.
+
+- **cap** — the maximum number of tokens the model was allowed to generate for a single answer
+  (`max_tokens` in a chat request, `max_gen_toks` in lm-eval). It is part of the measurement, not a
+  setting: the same model at cap 512 and at 8192 is two different results, and a deliberating model at a
+  small cap produces no answer at all — the reasoning block eats the budget and the failure reads as a
+  wrong answer rather than a truncated one. Wherever a cap is unusual it is printed in the row and in the
+  figure caption, because a score without its cap cannot be compared with anything.
+- **budget** — the memory a card can actually spend: **15 GiB on a 16 GiB card**, after the driver and
+  runtime have taken their share. Weights, the KV cache for the context, and about 1 GiB of runtime
+  overhead all have to fit inside it. A model over budget does not run slowly, it does not run — so fit is
+  settled before speed is discussed, and every table marks it: `ok` = at least 1 GiB of headroom left,
+  `tight` = fits with less, `NO` = over budget.
+- **footprint** — how much of that budget a model actually takes: weights, plus KV at the context it is
+  run at, plus the 1 GiB overhead. It is why a 6.26 GiB file can occupy 7.67 GiB, and why the same file at
+  32k costs more than at 8k.
+- **KV cache** — per-conversation memory for attention. It grows linearly with context and is set by the
+  model's attention layout, not its size: on this roster a 14B dense model costs 160 MiB per 1k tokens
+  against a 26B MoE's 20, which is why the smaller-looking model is the one that only fits 4k (§6).
+
+None of these is a preference. Cap is a fact about the run, budget is arithmetic about the card, footprint
+and KV are what the arithmetic is spent on.
 
 The three quality axes are not interchangeable, and the roster makes the point by disagreeing with itself:
 
@@ -381,6 +406,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.7 | 10th November 2026 | Defines cap, budget, footprint and KV cache in §2 alongside the axes — the four terms every number on the page is qualified by, none of which was explained where it was first used. |
 | 1.6 | 10th November 2026 | Adds §2: what HumanEval, MMLU-Pro, IFEval, prefill/decode and the riddle probes actually measure, how each is scored, what was run here, and what each one cannot tell you — before any table of scores. Sections and tables renumbered. |
 | 1.5 | 10th November 2026 | Names the author and copyright holder (Dom, github.com/barmynon) instead of leaving the person behind the measurements anonymous, and adds a `CITATION.cff` so the work can be cited. |
 | 1.4 | 10th November 2026 | Title now says local LLMs. Adds the licence section: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line. |
