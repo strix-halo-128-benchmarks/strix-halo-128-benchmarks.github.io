@@ -1,7 +1,7 @@
 # 16 GiB of VRAM: which local models actually fit, and what they score
 
-- **Document version:** **1.0** · published 2026-11-10 · first release of this page
-- **Measured:** 2026-11-10 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
+- **Document version:** **1.0** · published 10th November 2026 · first release of this page
+- **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §13 · **Wider report on this platform:** [index.html](index.html)
 
@@ -247,7 +247,7 @@ Figures on this page are generated from the same run archive by `charts16.py`; t
 
 | version | date | what changed |
 |---|---|---|
-| 1.0 | 2026-11-10 | First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison. |
+| 1.0 | 10th November 2026 | First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison. |
 
 *The version number belongs to this page. The wider report on this platform has its own history in
 [the change log](changelog.html); a correction to a number here bumps the version above and states what the

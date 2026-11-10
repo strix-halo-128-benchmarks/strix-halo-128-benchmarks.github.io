@@ -61,8 +61,8 @@ a { color:var(--acc); }
 <nav><strong>Contents</strong><ol><li><a href="#s1">The roster</a></li><li><a href="#s2">What wins, on each axis and overall</a></li><li><a href="#s3">How to read the numbers</a></li><li><a href="#s4">Quality against what the card has to hold</a></li><li><a href="#s5">Context is a second budget</a></li><li><a href="#s6">Dense or MoE</a></li><li><a href="#s7">What a 16 GiB card can actually run</a></li><li><a href="#s8">Quantisation on a fixed budget</a></li><li><a href="#s9">When it does not fit</a></li><li><a href="#s10">Three memory architectures</a></li><li><a href="#s11">What this page does not measure</a></li><li><a href="#s12">Reproduce any row</a></li><li><a href="#s13">Document history</a></li></ol></nav>
 
 <ul>
-<li><strong>Document version:</strong> <strong>1.0</strong> · published 2026-11-10 · first release of this page</li>
-<li><strong>Measured:</strong> 2026-11-10 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot</li>
+<li><strong>Document version:</strong> <strong>1.0</strong> · published 10th November 2026 · first release of this page</li>
+<li><strong>Measured:</strong> 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot</li>
 <li><strong>Axes:</strong> HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3</li>
 <li><strong>History of this page:</strong> §13 · <strong>Wider report on this platform:</strong> <a href="index.html">index.html</a></li>
 </ul>
@@ -4212,7 +4212,7 @@ python3 humaneval.py --port 8180 --limit 164 --max-tokens 8192
   --gen_kwargs max_gen_toks=4096      # only for a deliberating model</code></pre>
 <p>Figures on this page are generated from the same run archive by <code>charts16.py</code>; the fit arithmetic in the tables is the expression <code>matrix.py budget</code> prints, so a figure and a table cannot disagree.</p>
 <h2 id="s13">Document history</h2>
-<table><thead><tr><th>version</th><th>date</th><th>what changed</th></tr></thead><tbody><tr><td>1.0</td><td>2026-11-10</td><td>First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison.</td></tr></tbody></table>
+<table><thead><tr><th>version</th><th>date</th><th>what changed</th></tr></thead><tbody><tr><td>1.0</td><td>10th November 2026</td><td>First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison.</td></tr></tbody></table>
 <p><em>The version number belongs to this page. The wider report on this platform has its own history in <a href="changelog.html">the change log</a>; a correction to a number here bumps the version above and states what the previous value was, on the same rule the main report follows.</em></p>
 <hr>
 <p><em>Source, data and build scripts: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Text, figures and data: CC BY 4.0.</em></p>
