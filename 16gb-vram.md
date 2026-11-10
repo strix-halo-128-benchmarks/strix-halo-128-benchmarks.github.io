@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.9** · 10th November 2026 · duplicated axis commentary removed
+- **Document version:** **1.10** · 10th November 2026 · "both platforms" replaced by the three actually compared
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -133,7 +133,7 @@ What that table means in practice:
 ## 4. How to read the numbers
 
 - **Quality does not depend on the GPU.** HumanEval, MMLU-Pro, IFEval, the needle probes and the protocol checks are all hardware-independent. They transfer to a card unchanged.
-- **Decode ranks transfer, absolute rates do not.** Both platforms are bandwidth-bound on bytes read per token, so the ordering holds; the numbers scale with bandwidth, and the MS-S1 MAX sits at ~256 GB/s.
+- **Decode ranks transfer, absolute rates do not.** Decode is bandwidth-bound on bytes read per token on all three architectures this page compares — the unified APU, a discrete card, an Apple SoC — so the ordering survives the hop even though the rates do not: the MS-S1 MAX sits at ~256 GB/s against 288-896 GB/s on a 16 GB card and 546-819 GB/s on Apple silicon.
 - **Prefill does not transfer at all.** It is compute-bound, and an MoE's prefill touches every expert that receives a token, so a discrete card pulls further ahead on exactly the rows where the numbers below look slowest.
 - **Caps and sample sizes are part of the result.** HumanEval is 164 items (±2.3 points at a score of 0.90), MMLU-Pro 120 items (±4.4 at 0.61), IFEval 50 prompts (±3.8 at 0.92). Roughly eight points on IFEval or nine on MMLU-Pro is the smallest difference worth arguing about. MMLU-Pro here is a 0-shot chat probe, not the 5-shot loglikelihood protocol the public leaderboards use: the column is internally consistent and sits below published scores by design.
 
@@ -265,7 +265,7 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 | quantity | transfers? | why |
 |---|---|---|
 | quality scores | yes, unchanged | depends on weights, quant, cap and prompt protocol only |
-| decode ranking | yes | both platforms bandwidth-bound on bytes read per token |
+| decode ranking | yes | bandwidth-bound on bytes read per token on all three architectures, so the ordering holds |
 | decode absolute rate | no | scale by bandwidth: 256 GB/s here against 1008-1792 GB/s on a card |
 | prefill ranking | partly | dense-to-dense mostly holds; MoE prefill is understated here |
 | prefill absolute rate | no | a card has far more compute per byte of bandwidth |
@@ -406,6 +406,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.10 | 10th November 2026 | Fixes "both platforms" in §4 and in the transferability table: that phrase dates from when the page compared only this box and a discrete card. It now names the three architectures the page actually compares and gives each one's bandwidth range. |
 | 1.9 | 10th November 2026 | Removes duplication in §2: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope. |
 | 1.8 | 10th November 2026 | The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you. |
 | 1.7 | 10th November 2026 | Defines cap, budget, footprint and KV cache in §2 alongside the axes — the four terms every number on the page is qualified by, none of which was explained where it was first used. |
