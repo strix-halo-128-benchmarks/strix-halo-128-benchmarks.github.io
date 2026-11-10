@@ -1,9 +1,9 @@
 # 16 GiB of VRAM: which local models actually fit, and what they score
 
-- **Document version:** **1.0** · published 10th November 2026 · first release of this page
+- **Document version:** **1.1** · 10th November 2026 · adds the 16 GB card bandwidth and decode table (§11)
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
-- **History of this page:** §13 · **Wider report on this platform:** [index.html](index.html)
+- **History of this page:** §14 · **Wider report on this platform:** [index.html](index.html)
 
 
 
@@ -208,7 +208,52 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 
 *Table 7 — what may be carried from this page to another machine, and what may not.*
 
-## 11. What this page does not measure
+## 11. Which 16 GiB card, and what it implies
+
+Every card in this class has the same 16 GB of VRAM, so **capacity decides nothing between them — bandwidth
+decides everything**, and within the class bandwidth spans 3.1x. That single number is the purchase decision.
+
+| card | memory | peak bandwidth | 26B-A4B MoE, predicted | 12B dense, predicted |
+|---|---|---|---|---|
+| this box (reference) | unified LPDDR5X-8000, 256-bit | 256 GB/s | **59 tok/s measured** | **28 tok/s measured** |
+| RTX 4060 Ti 16 GB | 128-bit GDDR6, 18 Gbps | 288 GB/s | 44-69 | 24-33 |
+| RTX 5060 Ti 16 GB | 128-bit GDDR7, 28 Gbps | 448 GB/s | 68-108 | 37-52 |
+| Intel Arc A770 16 GB | 256-bit GDDR6, 17.5 Gbps | 560 GB/s | 86-134 | 46-65 |
+| RX 7800 XT 16 GB | 256-bit GDDR6, 19.5 Gbps | 624 GB/s | 95-150 | 51-72 |
+| RX 9070 16 GB | 256-bit GDDR6, 20 Gbps | 640 GB/s | 98-154 | 52-74 |
+| RTX 4070 Ti Super 16 GB | 256-bit GDDR6X, 21 Gbps | 672 GB/s | 103-161 | 55-78 |
+| RTX 5070 Ti 16 GB | 256-bit GDDR7, 28 Gbps | 896 GB/s | 137-215 | 73-104 |
+
+*Table 8 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Vendor bandwidth is the published peak from the card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured.*
+
+How the prediction is made, so it can be checked and discounted: decode is bandwidth-bound, so
+`predicted = bandwidth / bytes-read-per-active-token × efficiency`, where efficiency is the fraction of the
+ceiling the hardware actually reaches. This box measures 53% of its own ceiling on the MoE (59 of 111 tok/s)
+and 73% on the dense model (28 of 38). The bands in Table 8 use 35-55% for the MoE and 55-78% for the dense
+model — deliberately wide, because a discrete card's CUDA kernels and a 128-bit card's higher latency per
+byte will not match this box's Vulkan path exactly. Both measured values sit inside their bands, which is the
+only calibration available without borrowing a card.
+
+Three things follow, and one warning:
+
+- **A 128-bit 16 GB card buys capacity at the cost of speed.** The 4060 Ti 16 GB at 288 GB/s and the 5060 Ti
+  16 GB at 448 GB/s are the two cheapest ways to hold 16 GB, and they decode at 0.9-1.8x this box. If the
+  plan is "run a 13 GiB MoE", they hold it and they run it slowly.
+- **The 256-bit cards are where the value is for this workload.** 560-672 GB/s covers the Arc A770, the RX
+  7800 XT/9070 and the 4070 Ti Super: roughly 2.2-2.6x this box's decode for the same 16 GB, which turns the
+  26B MoE from usable into comfortable.
+- **The 5070 Ti is the top of the class and pays for it.** 896 GB/s is 3.5x this box, and it is the only 16 GB
+  card here where a 12B dense model plausibly clears 70 tok/s.
+- **Warning: bandwidth does not buy prefill in the same proportion.** These predictions cover decode only.
+  Prefill is compute-bound and an MoE's prefill touches every expert, so every card in this table will beat
+  its decode-side prediction on long prompts by a margin this box cannot show — the same caveat that applies
+  to Table 7.
+
+{{svg charts/16gb-f7.svg}}
+
+*Figure 7 — Left: vendor bandwidth for the 16 GB cards, against this box measured at 256 GB/s. Right: the decode band each bandwidth implies for the two reference models, with this box's measured points marked. The bars are a prediction from measured efficiency; the markers are the only measurements on the page.*
+
+## 12. What this page does not measure
 
 Listed because the gaps are the useful part of a benchmark:
 
@@ -219,7 +264,7 @@ Listed because the gaps are the useful part of a benchmark:
 - **Quant ladders per model.** One quant per model was measured. The claim that QAT holds up better than post-training quant at equal bpw rests on the controlled pair, not on a sweep.
 - **Real spill behaviour.** This host cannot show it. The spill penalty quoted for discrete cards is from the literature and the PCIe arithmetic, not from a measurement on a card.
 
-## 12. Reproduce any row
+## 13. Reproduce any row
 
 The roster is one directory of stdlib scripts driving one llama.cpp server at a time:
 
@@ -243,10 +288,11 @@ python3 humaneval.py --port 8180 --limit 164 --max-tokens 8192
 
 Figures on this page are generated from the same run archive by `charts16.py`; the fit arithmetic in the tables is the expression `matrix.py budget` prints, so a figure and a table cannot disagree.
 
-## 13. Document history
+## 14. Document history
 
 | version | date | what changed |
 |---|---|---|
+| 1.1 | 10th November 2026 | Adds §11: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it. |
 | 1.0 | 10th November 2026 | First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison. |
 
 *The version number belongs to this page. The wider report on this platform has its own history in
