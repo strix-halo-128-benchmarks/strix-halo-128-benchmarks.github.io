@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.14** · 10th November 2026 · Minor updates
+- **Document version:** **1.15** · 10th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -28,9 +28,12 @@ Three of the numbers on this page — decode, prefill, and every footprint the f
 | graphics stack | Mesa 26.2.6, `vulkan-radeon` 26.2.6, Vulkan 1.4, RADV (`STRIX_HALO`) | llama.cpp's Vulkan backend is what executes, so a driver change moves every rate here |
 | inference build | llama.cpp fork, build `b3-1a33095` (0.5.0-dev, commit 1a33095), `ggml-vulkan` ABI 0.25.3, clean tree | one program for all eleven files: no row is a different build |
 | server flags | `-ngl 99`, `-c` per model, `--flash-attn on`, `--jinja`, KV cache `q8_0` on both K and V, `-b 4096 -ub 2048`, one slot (`-np 1`); speculative decoding off except on the MTP row; reasoning off with a zero budget on `lfm25-24b-a2b` | one context and batching policy for every row, and the `q8_0` KV is why §6 halves the fp16 figure |
+| telemetry | the host's own monitor: CPU `Tctl/Tdie` to 0.1 °C, GPU temperature in 1 °C steps, CPU package power and GPU PPT, sampled every ~2 s, raw kept 72 h and 1-minute rollups for 90 days | every run can be re-read against its temperatures and power draw; the ranges quoted under this table come from it, not from a spot check |
 *Table 1 — the platform. Every number on this page comes off this stack; the right-hand column says which measurements would move if a part of it changed, and which are properties of the models alone.*
 
-Two things that table does not claim. Power and package temperature were not recorded per run, so the throughput columns are what this box delivers on its own firmware policy, not what the silicon can reach. And the host has no 16 GiB wall at all: the card being studied here is a budget applied in arithmetic, not a device, which is exactly why the measurements were taken on it.
+Power and temperature are logged, not assumed: the host's own monitor samples CPU and GPU temperature and package power every couple of seconds, so every run can be read back against its thermals. Across the 24 runs long enough to have a measured window, GPU temperature averaged 69 °C against a hottest run average of 79 °C and a hottest single sample of 88 °C, and package power averaged 96 W with a peak of 129 W. No run applied a power cap — the SoC pulls what its firmware allows — so the throughput columns are this box's behaviour rather than a ceiling for the silicon.
+
+The other thing this table does not claim is that the host is representative of the class it measures. It has no 16 GiB wall at all: the card being studied here is a budget applied in arithmetic, not a device, which is exactly why the measurements were taken on it.
 
 
 
@@ -357,7 +360,7 @@ Listed because the gaps are the useful part of a benchmark:
 
 - **Agentic tool use.** Preflight confirms an OpenAI-shaped client can read the reply (3/3 on every row: non-empty content, a JSON object, a one-word answer). A multi-round tool loop was not run, and a model can pass preflight and still fail to drive tools.
 - **Long-context retrieval per model.** The roster's needle probes are at 2k and 8k. A depth curve to 100k+ was run for other models on this platform, not for these.
-- **Energy and thermals per token.** Package power during a batch sat around 96 W with the GPU at 76 °C on the MS-S1 MAX, but that is a spot sample, not an energy-per-1k-tokens measurement.
+- **Energy and thermals per token.** Package power during a batch sat around 96 W with the GPU at 76 °C on the MS-S1 MAX; the monitor records that as a trace at ~2 s, so it is a thermal record rather than a spot sample — but it is still not an energy-per-1k-tokens measurement, which would need the integral.
 - **Concurrency.** Every row was measured with one slot. Throughput under `-np 4` is a different measurement with a different KV footprint.
 - **Quant ladders per model.** One quant per model was measured. The claim that QAT holds up better than post-training quant at equal bpw rests on the controlled pair, not on a sweep.
 - **Real spill behaviour.** This host cannot show it. The spill penalty quoted for discrete cards is from the literature and the PCIe arithmetic, not from a measurement on a card.
@@ -429,6 +432,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.15 | 10th November 2026 | Corrects the claim that power and temperature were not recorded: the host's monitor logs both at ~2 s throughout, and the platform table now says so with retention. The introduction quotes the campaign's measured envelope — GPU 69 °C mean, 88 °C hottest sample, package power 96 W mean, 129 W peak — so the throughput numbers come with a thermal context instead of an unstated one. |
 | 1.14 | 10th November 2026 | The platform table gains the OS: distribution, init, C library, and on the kernel row the pstate mode and EPP hint, because on this host the governor is what decides how long the boost is held. |
 | 1.13 | 10th November 2026 | The platform table gains storage: the NVMe drive and filesystem the weight files live on, with measured direct-read rates. It is in the table to say what it does not affect — weights are read once at load, so storage sets load time, not decode. |
 | 1.12 | 10th November 2026 | The introduction gains a platform table: CPU, GPU, unified memory and the GTT window, kernel, graphics stack, inference build and server flags, each with the reason it is stated. Power and temperature are named as unrecorded rather than implied to be controlled. The spec list that used to sit in the prose is folded into the table instead of being repeated above it. It is Table 1, so every later table is numbered one higher than before. |
