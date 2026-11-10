@@ -2,6 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
+- **Document version:** **1.10** · 10th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -405,7 +406,6 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
-| 1.11 | 10th November 2026 | The header no longer restates the version and the last change; the version, the date and every change are recorded once, in this table. Nothing in the body changed. |
 | 1.10 | 10th November 2026 | Fixes "both platforms" in §4 and in the transferability table: that phrase dates from when the page compared only this box and a discrete card. It now names the three architectures the page actually compares and gives each one's bandwidth range. |
 | 1.9 | 10th November 2026 | Removes duplication in §2: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope. |
 | 1.8 | 10th November 2026 | The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you. |
