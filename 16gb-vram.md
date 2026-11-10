@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.15** · 10th November 2026 · Minor updates
+- **Document version:** **1.16** · 10th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -159,7 +159,7 @@ What that table means in practice:
 - **Quality does not depend on the GPU.** HumanEval, MMLU-Pro, IFEval, the needle probes and the protocol checks are all hardware-independent. They transfer to a card unchanged.
 - **Decode ranks transfer, absolute rates do not.** Decode is bandwidth-bound on bytes read per token on all three architectures this page compares — the unified APU, a discrete card, an Apple SoC — so the ordering survives the hop even though the rates do not: the MS-S1 MAX sits at ~256 GB/s against 288-896 GB/s on a 16 GB card and 546-819 GB/s on Apple silicon.
 - **Prefill does not transfer at all.** It is compute-bound, and an MoE's prefill touches every expert that receives a token, so a discrete card pulls further ahead on exactly the rows where the numbers below look slowest.
-- **Caps and sample sizes are part of the result.** HumanEval is 164 items (±2.3 points at a score of 0.90), MMLU-Pro 120 items (±4.4 at 0.61), IFEval 50 prompts (±3.8 at 0.92). Roughly eight points on IFEval or nine on MMLU-Pro is the smallest difference worth arguing about. MMLU-Pro here is a 0-shot chat probe, not the 5-shot loglikelihood protocol the public leaderboards use: the column is internally consistent and sits below published scores by design.
+- **Caps and sample sizes are part of the result.** One standard error is ±2.3 points on HumanEval (164 items at a score of 0.90), ±4.5 on MMLU-Pro (120 at 0.61) and ±3.8 on IFEval (50 prompts at 0.92). Twice those — roughly eight points on IFEval, nine on MMLU-Pro — is the smallest difference worth arguing about. The whiskers on Figures 1 and 4 are 95% **confidence intervals** — the range the score would fall in on a fresh sample of the same size, computed as ±1.96 × √(p(1-p)/n) over the item count, which is about double the standard errors quoted here. That is what "95% CI" in those chart titles means: the text quotes one standard error, the charts draw 95% intervals, and both say which they are so a number cannot be read in the wrong units. MMLU-Pro here is a 0-shot chat probe, not the 5-shot loglikelihood protocol the public leaderboards use: the column is internally consistent and sits below published scores by design.
 
 ## 5. Quality against what the card has to hold
 
@@ -284,7 +284,7 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 
 *Figure 7 — Peak memory bandwidth on a log scale, with the PCIe spill path for comparison. Bandwidth sets decode; whether there is a hard ceiling at all decides what runs.*
 
-- **Unified APU (this class of box).** 128 GB of LPDDR5X-8000 on a 256-bit bus, ~256 GB/s, with up to ~96 GiB GPU-addressable and an 8 GiB carve-out. No wall to cross, so a 40 GiB model runs — at the speed 256 GB/s allows.
+- **Unified APU (this class of box).** 128 GiB of LPDDR5X-8000 on a 256-bit bus, ~256 GB/s, with a 100 GiB GTT window on top of an 8 GiB carve-out. No wall to cross, so a 40 GiB model runs — at the speed 256 GB/s allows.
 - **Discrete card.** 24 GB at 1008 GB/s or 32 GB at 1792 GB/s: four to seven times the bandwidth on a fifth of the capacity. Over the VRAM limit, layers spill to host memory across PCIe (~64 GB/s on a 5.0 x16 link) and decode falls by roughly an order of magnitude. In this class the card is not capacity-constrained at all — the whole roster fits at 24 GB.
 - **Apple Silicon.** Unified like the APU, with a wider bus: 546 GB/s on an M4 Max, 819 GB/s on an M3 Ultra, capacities from 36 GB to 512 GB. No hard wall, a driver-capped GPU share, and a Metal rather than CUDA/ROCm software path.
 
@@ -432,6 +432,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.16 | 10th November 2026 | §4 now says which uncertainty it quotes: the three figures there are one standard error, the paragraph defines the 95% confidence intervals the charts draw and says they are about double these. §11's memory figures move to the host's own units — 128 GiB and a 100 GiB GTT window — replacing a 96 GiB figure that no reading on the box produces. |
 | 1.15 | 10th November 2026 | Corrects the claim that power and temperature were not recorded: the host's monitor logs both at ~2 s throughout, and the platform table now says so with retention. The introduction quotes the campaign's measured envelope — GPU 69 °C mean, 88 °C hottest sample, package power 96 W mean, 129 W peak — so the throughput numbers come with a thermal context instead of an unstated one. |
 | 1.14 | 10th November 2026 | The platform table gains the OS: distribution, init, C library, and on the kernel row the pstate mode and EPP hint, because on this host the governor is what decides how long the boost is held. |
 | 1.13 | 10th November 2026 | The platform table gains storage: the NVMe drive and filesystem the weight files live on, with measured direct-read rates. It is in the table to say what it does not affect — weights are read once at load, so storage sets load time, not decode. |
