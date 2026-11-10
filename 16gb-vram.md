@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.10** · 10th November 2026 · Minor updates
+- **Document version:** **1.11** · 10th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -19,21 +19,21 @@ Eleven files, 164-item HumanEval, 120-item MMLU-Pro, 50-prompt IFEval, 113.8 GiB
 
 ## 1. The roster
 
-| model | class | weights GiB (bpw) | footprint at its context | context | pp / tg t/s | HumanEval | MMLU-Pro | IFEval | riddles |
-|---|---|---|---|---|---|---|---|---|---|
-| g4-e4b-qat | dense | 3.93 (4.52) | 5.40 ok | 32k | 2243 / 58 | 0.866 | 0.467 | 0.900 | 14/14 |
-| qwen3-8b-q4 | dense | 4.68 (4.91) | 7.93 ok | 32k | 1300 / 39 | 0.787 | 0.583 | 0.900 | 13/14 |
-| g4-12b-qat | dense | 6.26 (4.52) | 7.67 ok | 32k | 911 / 28 | 0.896 | 0.575 | 0.920 | 14/14 |
-| qwen3-14b-q4 | dense | 8.38 (4.87) | 10.63 ok | 16k | 743 / 24 | 0.854 | 0.608 | 0.880 | 14/14 |
-| gpt-oss-20b-mxfp4 | MoE | 11.28 (4.63) | 12.65 ok | 32k | 2169 / 74 | 0.585 | 0.558 | 0.480 | 14/14 |
-| lfm25-24b-a2b | MoE | 12.65 (4.53) | 13.96 ok | 32k | 3345 / 110 | 0.640 | 0.192 | 0.860 | 13/14 |
-| lfm25-24b-a2b-think | MoE | 12.65 (4.53) | 13.96 ok | 32k | 3360 / 111 | 0.970 | 0.692 | 0.920 | 14/14 |
-| mistral-24b-q4 | dense | 13.35 (4.86) | 14.66 tight | 4k | 460 / 15 | 0.823 | 0.608 | 0.820 | 12/14 |
-| g4-26b-a4b-qat | MoE | 13.45 (4.58) | 14.70 tight | 16k | 1893 / 59 | 0.902 | 0.633 | 0.860 | 14/14 |
-| qwen3-30b-a3b-q3 | MoE | 13.70 (3.85) | 14.79 tight | 4k | 1910 / 80 | 0.854 | 0.617 | 0.860 | 14/14 |
-| g4-26b-a4b-qat-mtp | MoE | 13.45 (4.58) | 15.06 **NO** | 8k | 1886 / 55 | — | — | — | 14/14 |
+| model | class | weights GiB (bpw) | footprint at its context | context | pp / tg t/s | HumanEval | MMLU-Pro | IFEval | mean quality | quality per GiB | riddles |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| g4-e4b-qat | dense | 3.93 (4.52) | 5.40 ok | 32k | 2243 / 58 | 0.866 | 0.467 | 0.900 | 0.744 | 0.138 | 14/14 |
+| qwen3-8b-q4 | dense | 4.68 (4.91) | 7.93 ok | 32k | 1300 / 39 | 0.787 | 0.583 | 0.900 | 0.757 | 0.095 | 13/14 |
+| g4-12b-qat | dense | 6.26 (4.52) | 7.67 ok | 32k | 911 / 28 | 0.896 | 0.575 | 0.920 | 0.797 | 0.104 | 14/14 |
+| qwen3-14b-q4 | dense | 8.38 (4.87) | 10.63 ok | 16k | 743 / 24 | 0.854 | 0.608 | 0.880 | 0.781 | 0.073 | 14/14 |
+| gpt-oss-20b-mxfp4 | MoE | 11.28 (4.63) | 12.65 ok | 32k | 2169 / 74 | 0.585 | 0.558 | 0.480 | 0.541 | 0.043 | 14/14 |
+| lfm25-24b-a2b | MoE | 12.65 (4.53) | 13.96 ok | 32k | 3345 / 110 | 0.640 | 0.192 | 0.860 | 0.564 | 0.040 | 13/14 |
+| lfm25-24b-a2b-think | MoE | 12.65 (4.53) | 13.96 ok | 32k | 3360 / 111 | 0.970 | 0.692 | 0.920 | 0.860 | 0.062 | 14/14 |
+| mistral-24b-q4 | dense | 13.35 (4.86) | 14.66 tight | 4k | 460 / 15 | 0.823 | 0.608 | 0.820 | 0.751 | 0.051 | 12/14 |
+| g4-26b-a4b-qat | MoE | 13.45 (4.58) | 14.70 tight | 16k | 1893 / 59 | 0.902 | 0.633 | 0.860 | 0.799 | 0.054 | 14/14 |
+| qwen3-30b-a3b-q3 | MoE | 13.70 (3.85) | 14.79 tight | 4k | 1910 / 80 | 0.854 | 0.617 | 0.860 | 0.777 | 0.053 | 14/14 |
+| g4-26b-a4b-qat-mtp | MoE | 13.45 (4.58) | 15.06 **NO** | 8k | 1886 / 55 | — | — | — | — | — | 14/14 |
 
-*Table 1 — the roster, sorted by footprint. `ok` = at least 1 GiB of headroom against a 15 GiB budget, `tight` = fits with less, `NO` = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. HumanEval at cap 512 (8192 for the thinking arm), MMLU-Pro at cap 512 (4096 for the thinking arm), IFEval at n=50 and the task's 1280 cap (4096 for the thinking arm). The MTP row has no quality axes: it is the same weights as `g4-26b-a4b-qat` plus a 0.43 GiB draft head, measured for speed and fit only. What each column measures, and what it cannot tell you, is §2.*
+*Table 1 — the roster, sorted by footprint. `ok` = at least 1 GiB of headroom against a 15 GiB budget, `tight` = fits with less, `NO` = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. HumanEval at cap 512 (8192 for the thinking arm), MMLU-Pro at cap 512 (4096 for the thinking arm), IFEval at n=50 and the task's 1280 cap (4096 for the thinking arm). Mean quality and quality per GiB are the two derived rows of §2: the first is the average of the three scores to its left, the second divides that average by the footprint column — not by the weights, which is the error that makes a big-context model look cheap. Neither is a measurement, and neither carries a cap of its own. The MTP row has no quality axes: it is the same weights as `g4-26b-a4b-qat` plus a 0.43 GiB draft head, measured for speed and fit only. What each column measures, and what it cannot tell you, is §2.*
 
 The rule that makes any of this a comparison: **matched family, matched quant family, one cap, one context policy, one build**. The controlled pair is `g4-12b-qat` (dense) against `g4-26b-a4b-qat` (MoE) — same tokenizer, same training recipe, both quantisation-aware at ~4.5 effective bpw. A Q4_K_M row against a QAT Q4_0 row would be a quantisation comparison wearing an architecture label.
 
@@ -194,10 +194,12 @@ The honest reading is that neither is strictly better:
 | HumanEval | 0.896 | 0.902 | one problem — tie |
 | MMLU-Pro | 0.575 | 0.633 | MoE, 7 points — real |
 | IFEval | 0.920 | 0.860 | dense, 3 prompts |
+| **mean quality** *(derived)* | 0.797 | 0.799 | 0.002 — a tie, and it hides opposite directions |
+| **quality per GiB** *(derived)* | 0.104 | 0.054 | dense, 1.9x — memory is what the tie costs |
 | decode | 27.8 tok/s | 59.2 tok/s | MoE, 2.1x |
 | footprint | 7.67 GiB at 32k | 14.70 GiB at 16k | dense, 2x the context |
 
-*Table 5 — the controlled pair. Choose the MoE when knowledge and throughput matter; choose the dense model when instruction-following, context or headroom matter.*
+*Table 5 — the controlled pair. Choose the MoE when knowledge and throughput matter; choose the dense model when instruction-following, context or headroom matter. The two derived rows say what the mean cannot: at 0.002 apart the pair is tied on average quality while disagreeing by 7 points on knowledge and 3 prompts on instruction-following, and the tie costs 1.9x the memory.*
 
 ## 8. What a 16 GiB card can actually run
 
@@ -213,7 +215,7 @@ The honest reading is that neither is strictly better:
 | 24 GB | 23 GiB | 11 of 11 | lfm25-24b-a2b-think | everything here fits, at its context, with room for a second model |
 | 32 GB+ | 31 GiB+ | 11 of 11 | lfm25-24b-a2b-think | this roster saturates; the limit is the roster, not the card |
 
-*Table 6 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.*
+*Table 6 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.* Quality per GiB is deliberately not a column here: at every rung its winner is `g4-e4b-qat`, the smallest file, because the metric divides by footprint — which answers "what is cheapest per gigabyte", not "what is the best that fits". The column is the best that fits.
 
 The step from 12 GB to 16 GB is the one that matters. It is not a larger dense model that you gain — it is the MoE tier, and with it the only rows in this roster that score above 0.90 HumanEval while fitting at 32k context.
 
@@ -406,6 +408,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.11 | 10th November 2026 | Mean quality and quality per GiB now appear in every table that lists per-model scores: two columns in the roster (§1) and two rows in the controlled pair (§7). Both are marked derived, and both state the divisor is the footprint at the model's context. The ladder (§8) says why it has no per-GiB column. |
 | 1.10 | 10th November 2026 | Fixes "both platforms" in §4 and in the transferability table: that phrase dates from when the page compared only this box and a discrete card. It now names the three architectures the page actually compares and gives each one's bandwidth range. |
 | 1.9 | 10th November 2026 | Removes duplication in §2: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope. |
 | 1.8 | 10th November 2026 | The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you. |
