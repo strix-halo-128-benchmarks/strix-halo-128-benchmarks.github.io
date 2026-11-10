@@ -24,6 +24,8 @@ echo "== 1. catalogue from the run archive"
 
 echo "== 2. figures from the catalogue (needs matplotlib, hence $PY)"
 (cd "$DOCS" && "$PY" charts.py)
+echo "== 2b. figures for the 16 GiB page (same archive, same conventions)"
+(cd "$DOCS" && "$PY" charts16.py)
 
 echo "== 3. sanitised report"
 mkdir -p "$REPO/charts" "$REPO/data"
@@ -40,7 +42,8 @@ for a, b in (("`mss1-max`", "the reference host"),
 banner = ("\n> **Also published:** [Leaderboards by axis](leaderboards.html) — code, knowledge, "
           "reasoning, decode and prefill, each row with its cap and build · [Retired models — what was "
           "deleted, why, with hashes and restore recipes](retired-models.html) · [Change log](changelog.html) "
-          "— every correction and the numbers that forced it.\n")
+          "— every correction and the numbers that forced it · [16 GiB of VRAM](16gb.html) — what fits on a "
+          "16 GiB card, what it scores, and why the answer changes with the memory architecture.\n")
 if "retired-models.html" not in txt:
     i = txt.find("\n", txt.find("# "))
     txt = txt[:i] + banner + txt[i:]
@@ -99,6 +102,32 @@ echo "== 3c. leaderboards by axis (from the published matrix, so the two cannot 
 python3 "$REPO/scripts/leaderboards.py" "$REPO/strix-halo-llm-testing.md" "$REPO/leaderboards.md"
 leakcheck "$REPO/leaderboards.md"
 
+echo "== 3d. 16 GiB VRAM page (its own document: the class is defined by the card, not by this box)"
+python3 - "$DOCS/16gb-vram.md" "$REPO/16gb-vram.md" <<'PY'
+import sys
+src, dst = sys.argv[1]
+txt = open(src, encoding="utf-8").read()
+for a, b in (("`mss1-max`", "the reference host"), ("`mss1-max-hwinfo`", "the hardware monitor"),
+             ("mss1-max-hwinfo", "the hardware monitor"), ("mss1-max", "the reference host"),
+             ("/home/dom", "~")):
+    txt = txt.replace(a, b)
+banner = ("\n> **Also published:** [the main report](index.html) — the wider model matrix on this "
+          "platform · [leaderboards by axis](leaderboards.html) · [retired models](retired.html) · "
+          "[change log](changelog.html).\n")
+if "leaderboards.html" not in txt.split("## 1.")[0]:
+    i = txt.find("\n", txt.find("# "))
+    txt = txt[:i] + banner + txt[i:]
+footer = ("\n---\n\n*Source, data and build scripts: "
+          "[github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io]"
+          "(https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). "
+          "Text, figures and data: CC BY 4.0.*\n")
+if "Source, data and build scripts" not in txt:
+    txt = txt.rstrip("\n") + "\n" + footer
+open(dst, "w", encoding="utf-8").write(txt)
+print(f"   {len(txt)} bytes")
+PY
+leakcheck "$REPO/16gb-vram.md"
+
 echo "== 4. figures into the repo"
 cp "$DOCS"/charts/*.svg "$REPO/charts/"
 
@@ -117,6 +146,9 @@ DESC="Measured capability and throughput for local LLMs on AMD Strix Halo (gfx11
 "$PY" "$DOCS/md2html.py" "$REPO/leaderboards.md" "$REPO/leaderboards.html" \
       "Leaderboards by axis — local LLMs on AMD Strix Halo" \
       "Per-axis rankings of local LLMs measured on Strix Halo: HumanEval, MMLU-Pro, reasoning traps, decode and prefill, each row with its token cap, item count and llama.cpp build."
+"$PY" "$DOCS/md2html.py" "$REPO/16gb-vram.md" "$REPO/16gb.html" \
+      "16 GiB of VRAM: which local models fit, and what they score" \
+      "Measured roster for a 16 GiB graphics card: HumanEval, MMLU-Pro and IFEval at stated caps, fit arithmetic, KV-cache and context budgets, dense versus MoE, and how Strix Halo, NVIDIA and Apple memory architectures change the answer."
 
 echo "== 5b. discovery files (robots + sitemap)"
 cat > "$REPO/robots.txt" <<ROBOTS
@@ -126,7 +158,7 @@ Allow: /
 Sitemap: ${PUBLIC_URL}/sitemap.xml
 ROBOTS
 printf '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' > "$REPO/sitemap.xml"
-for page in "" "leaderboards.html" "retired.html" "changelog.html"; do
+for page in "" "leaderboards.html" "retired.html" "changelog.html" "16gb.html"; do
   printf '  <url><loc>%s/%s</loc><lastmod>%s</lastmod></url>\n' "$PUBLIC_URL" "$page" "$(date +%F)" >> "$REPO/sitemap.xml"
 done
 printf '</urlset>\n' >> "$REPO/sitemap.xml"
@@ -164,6 +196,10 @@ grep -q 'index.html'          "$REPO/retired.html" || { echo "FAIL: ledger does 
 grep -q 'leaderboards.html'   "$REPO/index.html"    || { echo "FAIL: report does not link the leaderboards"; exit 1; }
 grep -q 'changelog.html'      "$REPO/index.html"    || { echo "FAIL: report does not link the change log"; exit 1; }
 grep -q 'index.html'          "$REPO/changelog.html" || { echo "FAIL: change log does not link the report"; exit 1; }
+grep -q '16gb.html'        "$REPO/index.html"    || { echo "FAIL: report does not link the 16 GiB page"; exit 1; }
+grep -q 'index.html'       "$REPO/16gb.html"     || { echo "FAIL: 16 GiB page does not link the report"; exit 1; }
+test "$(grep -c '<svg' "$REPO/16gb.html")" -ge 6 || { echo "FAIL: 16 GiB page should inline 6 figures"; exit 1; }
+! grep -q 'missing figure' "$REPO/16gb.html"     || { echo "FAIL: 16 GiB page has an unresolved figure"; exit 1; }
 python3 "$REPO/scripts/check-prose.py" "$REPO/strix-halo-llm-testing.md" "$REPO/changelog.md" "$RUNS" \
     || { echo "FAIL: a prose score disagrees with the matrix"; exit 1; }
 grep -q 'index.html'          "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the report"; exit 1; }

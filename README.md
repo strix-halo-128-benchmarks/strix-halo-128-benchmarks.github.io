@@ -12,12 +12,18 @@ NVMe, zram swap), on llama.cpp/Vulkan.
   with file sizes, sha256s and restore recipes.
 - **[Change log](https://strix-halo-128-benchmarks.github.io/changelog.html)** — every correction and the
   measurement that forced it.
+- **[16 GiB of VRAM](https://strix-halo-128-benchmarks.github.io/16gb.html)** — a second, separate question:
+  which models fit a 16 GiB graphics card, what they score there, what the KV cache costs at each context,
+  and how the answer changes between a unified APU, a discrete card and Apple Silicon.
 
 Two documents:
 
 | Page | What it is |
 |---|---|
 | [index.html](index.html) | the report — method, measured matrix, league tables, figures, per-model analysis |
+| [16gb.html](16gb.html) | the 16 GiB card page — a roster defined by what fits 16 GiB of VRAM, measured
+  on the same host, with fit arithmetic, KV/context budgets, a quantisation ladder and a three-platform
+  comparison |
 | [retired-models.html](retired-models.html) | the retirement ledger — every deleted model with the reason, the measured scores that justified it, file sizes, sha256s, upstream repo and the flags that worked, so any deletion can be reversed or re-tested |
 
 Every number in the report comes from a run recorded in [`data/catalogue.json`](data/catalogue.json):
