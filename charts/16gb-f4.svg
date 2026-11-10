@@ -563,7 +563,7 @@ L 753.48 23.64
     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="687.449987" y="63.747543" transform="rotate(-0 687.449987 63.747543)">59.2</text>
    </g>
    <g id="text_33">
-    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="620.072422" y="17.64" transform="rotate(-0 620.072422 17.64)">Decode at the same cap, one box</text>
+    <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="620.072422" y="17.64" transform="rotate(-0 620.072422 17.64)">Decode at the same cap, one machine</text>
    </g>
   </g>
  </g>

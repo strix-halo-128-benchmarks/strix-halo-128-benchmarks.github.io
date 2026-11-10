@@ -1,6 +1,6 @@
 # 16 GiB of VRAM: which local models actually fit, and what they score
 
-- **Document version:** **1.1** · 10th November 2026 · adds the 16 GB card bandwidth and decode table (§11)
+- **Document version:** **1.2** · 10th November 2026 · AMD cards added to §11 (seven in the table), reference machine named
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §14 · **Wider report on this platform:** [index.html](index.html)
@@ -9,7 +9,7 @@
 
 A 16 GiB graphics card is the tightest interesting class of consumer accelerator: 16 GiB of VRAM, about 15 GiB usable once the driver and runtime have taken their share, and a hard wall at the end of it. This page answers two questions about that class. Which open-weight models fit, and what do they score. Then: how much of that answer depends on the memory architecture underneath, because the same 13.4 GiB file behaves very differently on a unified-memory APU, a discrete card and an Apple SoC.
 
-Every number here was measured on a machine that does **not** have the constraint being studied. The reference host has 100 GiB of GPU-addressable memory, so no model is truncated or spilled while it is being benchmarked. That is deliberate: the scores describe the model, the arithmetic describes the card, and the two are never confounded. Where a figure is arithmetic rather than measurement, it says so.
+Every number here was measured on a machine that does **not** have the constraint being studied. The reference host is a Minisforum MS-S1 MAX (Ryzen AI Max+ 395, 128 GB unified memory, Radeon 8060S) and has 100 GiB of GPU-addressable memory, so no model is truncated or spilled while it is being benchmarked. That is deliberate: the scores describe the model, the arithmetic describes the card, and the two are never confounded. Where a figure is arithmetic rather than measurement, it says so.
 
 Eleven files, 164-item HumanEval, 120-item MMLU-Pro, 50-prompt IFEval, 113.8 GiB of weights, one build.
 
@@ -76,7 +76,7 @@ What that table means in practice:
 ## 3. How to read the numbers
 
 - **Quality does not depend on the GPU.** HumanEval, MMLU-Pro, IFEval, the needle probes and the protocol checks are all hardware-independent. They transfer to a card unchanged.
-- **Decode ranks transfer, absolute rates do not.** Both platforms are bandwidth-bound on bytes read per token, so the ordering holds; the numbers scale with bandwidth, and the reference host sits at ~256 GB/s.
+- **Decode ranks transfer, absolute rates do not.** Both platforms are bandwidth-bound on bytes read per token, so the ordering holds; the numbers scale with bandwidth, and the MS-S1 MAX sits at ~256 GB/s.
 - **Prefill does not transfer at all.** It is compute-bound, and an MoE's prefill touches every expert that receives a token, so a discrete card pulls further ahead on exactly the rows where the numbers below look slowest.
 - **Caps and sample sizes are part of the result.** HumanEval is 164 items (±2.3 points at a score of 0.90), MMLU-Pro 120 items (±4.4 at 0.61), IFEval 50 prompts (±3.8 at 0.92). Roughly eight points on IFEval or nine on MMLU-Pro is the smallest difference worth arguing about. MMLU-Pro here is a 0-shot chat probe, not the 5-shot loglikelihood protocol the public leaderboards use: the column is internally consistent and sits below published scores by design.
 
@@ -212,46 +212,55 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 
 Every card in this class has the same 16 GB of VRAM, so **capacity decides nothing between them — bandwidth
 decides everything**, and within the class bandwidth spans 3.1x. That single number is the purchase decision.
+The spread is not a brand story: AMD's seven 16 GB boards run from 288 to 640 GB/s, NVIDIA's three from 288
+to 896, Intel's one entry sits at 560.
 
 | card | memory | peak bandwidth | 26B-A4B MoE, predicted | 12B dense, predicted |
 |---|---|---|---|---|
-| this box (reference) | unified LPDDR5X-8000, 256-bit | 256 GB/s | **59 tok/s measured** | **28 tok/s measured** |
-| RTX 4060 Ti 16 GB | 128-bit GDDR6, 18 Gbps | 288 GB/s | 44-69 | 24-33 |
-| RTX 5060 Ti 16 GB | 128-bit GDDR7, 28 Gbps | 448 GB/s | 68-108 | 37-52 |
+| Minisforum MS-S1 MAX (reference) | unified LPDDR5X-8000, 256-bit | 256 GB/s | **59 tok/s measured** | **28 tok/s measured** |
+| NVIDIA RTX 4060 Ti 16 GB | 128-bit GDDR6, 18 Gbps | 288 GB/s | 44-69 | 24-33 |
+| AMD RX 7600 XT 16 GB | 128-bit GDDR6, 18 Gbps | 288 GB/s | 44-69 | 24-33 |
+| AMD RX 9060 XT 16 GB | 128-bit GDDR6, 20 Gbps | 320 GB/s | 49-77 | 26-37 |
+| NVIDIA RTX 5060 Ti 16 GB | 128-bit GDDR7, 28 Gbps | 448 GB/s | 68-108 | 37-52 |
+| AMD RX 6800 16 GB | 256-bit GDDR6, 16 Gbps | 512 GB/s | 78-123 | 42-59 |
 | Intel Arc A770 16 GB | 256-bit GDDR6, 17.5 Gbps | 560 GB/s | 86-134 | 46-65 |
-| RX 7800 XT 16 GB | 256-bit GDDR6, 19.5 Gbps | 624 GB/s | 95-150 | 51-72 |
-| RX 9070 16 GB | 256-bit GDDR6, 20 Gbps | 640 GB/s | 98-154 | 52-74 |
-| RTX 4070 Ti Super 16 GB | 256-bit GDDR6X, 21 Gbps | 672 GB/s | 103-161 | 55-78 |
-| RTX 5070 Ti 16 GB | 256-bit GDDR7, 28 Gbps | 896 GB/s | 137-215 | 73-104 |
+| AMD RX 6950 XT 16 GB | 256-bit GDDR6, 18 Gbps | 576 GB/s | 88-138 | 47-67 |
+| AMD RX 7900 GRE 16 GB | 256-bit GDDR6, 18 Gbps | 576 GB/s | 88-138 | 47-67 |
+| AMD RX 7800 XT 16 GB | 256-bit GDDR6, 19.5 Gbps | 624 GB/s | 95-150 | 51-72 |
+| AMD RX 9070 16 GB | 256-bit GDDR6, 20 Gbps | 640 GB/s | 98-154 | 52-74 |
+| NVIDIA RTX 4070 Ti Super 16 GB | 256-bit GDDR6X, 21 Gbps | 672 GB/s | 103-161 | 55-78 |
+| NVIDIA RTX 5070 Ti 16 GB | 256-bit GDDR7, 28 Gbps | 896 GB/s | 137-215 | 73-104 |
 
-*Table 8 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Vendor bandwidth is the published peak from the card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured.*
+*Table 8 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Bandwidth is the peak published in each card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured. Cards are grouped by bandwidth, not by brand.*
 
 How the prediction is made, so it can be checked and discounted: decode is bandwidth-bound, so
 `predicted = bandwidth / bytes-read-per-active-token × efficiency`, where efficiency is the fraction of the
-ceiling the hardware actually reaches. This box measures 53% of its own ceiling on the MoE (59 of 111 tok/s)
-and 73% on the dense model (28 of 38). The bands in Table 8 use 35-55% for the MoE and 55-78% for the dense
-model — deliberately wide, because a discrete card's CUDA kernels and a 128-bit card's higher latency per
-byte will not match this box's Vulkan path exactly. Both measured values sit inside their bands, which is the
-only calibration available without borrowing a card.
+ceiling the hardware actually reaches. The MS-S1 MAX measures 53% of its own ceiling on the MoE (59 of 111
+tok/s) and 73% on the dense model (28 of 38). The bands in Table 8 use 35-55% for the MoE and 55-78% for the
+dense model — deliberately wide, because a discrete card's kernels and a 128-bit card's higher latency per
+byte will not match the MS-S1 MAX's Vulkan path exactly. Both measured values sit inside their bands, which
+is the only calibration available without borrowing a card.
 
 Three things follow, and one warning:
 
-- **A 128-bit 16 GB card buys capacity at the cost of speed.** The 4060 Ti 16 GB at 288 GB/s and the 5060 Ti
-  16 GB at 448 GB/s are the two cheapest ways to hold 16 GB, and they decode at 0.9-1.8x this box. If the
-  plan is "run a 13 GiB MoE", they hold it and they run it slowly.
-- **The 256-bit cards are where the value is for this workload.** 560-672 GB/s covers the Arc A770, the RX
-  7800 XT/9070 and the 4070 Ti Super: roughly 2.2-2.6x this box's decode for the same 16 GB, which turns the
-  26B MoE from usable into comfortable.
-- **The 5070 Ti is the top of the class and pays for it.** 896 GB/s is 3.5x this box, and it is the only 16 GB
-  card here where a 12B dense model plausibly clears 70 tok/s.
+- **A 128-bit 16 GB card buys capacity at the cost of speed.** The four 128-bit boards — RTX 4060 Ti and RX
+  7600 XT at 288 GB/s, RX 9060 XT at 320, RTX 5060 Ti at 448 — are the cheapest ways to hold 16 GB, and they
+  decode at 0.9-1.8x the MS-S1 MAX. If the plan is "run a 13 GiB MoE", they hold it and they run it slowly.
+- **The 256-bit cards are where the value is for this workload.** 512-672 GB/s covers the RX 6800, the Arc
+  A770, the RX 6950 XT / 7900 GRE / 7800 XT / 9070 and the 4070 Ti Super: 2.0-2.6x the MS-S1 MAX's decode for
+  the same 16 GB, which turns the 26B MoE from usable into comfortable. AMD is the wider choice here — five
+  boards between 512 and 640 GB/s, with NVIDIA's nearest the 4070 Ti Super at 672.
+- **The 5070 Ti is the top of the class and pays for it.** 896 GB/s is 3.5x the MS-S1 MAX, and it is the only
+  16 GB card here where a 12B dense model plausibly clears 70 tok/s.
 - **Warning: bandwidth does not buy prefill in the same proportion.** These predictions cover decode only.
   Prefill is compute-bound and an MoE's prefill touches every expert, so every card in this table will beat
-  its decode-side prediction on long prompts by a margin this box cannot show — the same caveat that applies
-  to Table 7.
+  its decode-side prediction on long prompts by a margin the MS-S1 MAX cannot show — the same caveat that
+  applies to Table 7. On the AMD side the software path matters too: these cards run through ROCm or Vulkan
+  on Linux, and backend efficiency, not the memory spec, is what moves prefill.
 
 {{svg charts/16gb-f7.svg}}
 
-*Figure 7 — Left: vendor bandwidth for the 16 GB cards, against this box measured at 256 GB/s. Right: the decode band each bandwidth implies for the two reference models, with this box's measured points marked. The bars are a prediction from measured efficiency; the markers are the only measurements on the page.*
+*Figure 7 — Left: vendor bandwidth for the 16 GB cards, against the MS-S1 MAX measured at 256 GB/s. Right: the decode band each bandwidth implies for the two reference models, with the MS-S1 MAX's measured points marked. The bars are a prediction from measured efficiency; the markers are the only measurements on the page.*
 
 ## 12. What this page does not measure
 
@@ -259,7 +268,7 @@ Listed because the gaps are the useful part of a benchmark:
 
 - **Agentic tool use.** Preflight confirms an OpenAI-shaped client can read the reply (3/3 on every row: non-empty content, a JSON object, a one-word answer). A multi-round tool loop was not run, and a model can pass preflight and still fail to drive tools.
 - **Long-context retrieval per model.** The roster's needle probes are at 2k and 8k. A depth curve to 100k+ was run for other models on this platform, not for these.
-- **Energy and thermals per token.** Package power during a batch sat around 96 W with the GPU at 76 °C on the reference host, but that is a spot sample, not an energy-per-1k-tokens measurement.
+- **Energy and thermals per token.** Package power during a batch sat around 96 W with the GPU at 76 °C on the MS-S1 MAX, but that is a spot sample, not an energy-per-1k-tokens measurement.
 - **Concurrency.** Every row was measured with one slot. Throughput under `-np 4` is a different measurement with a different KV footprint.
 - **Quant ladders per model.** One quant per model was measured. The claim that QAT holds up better than post-training quant at equal bpw rests on the controlled pair, not on a sweep.
 - **Real spill behaviour.** This host cannot show it. The spill penalty quoted for discrete cards is from the literature and the PCIe arithmetic, not from a measurement on a card.
@@ -292,6 +301,7 @@ Figures on this page are generated from the same run archive by `charts16.py`; t
 
 | version | date | what changed |
 |---|---|---|
+| 1.2 | 10th November 2026 | §11 extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box". |
 | 1.1 | 10th November 2026 | Adds §11: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it. |
 | 1.0 | 10th November 2026 | First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison. |
 
