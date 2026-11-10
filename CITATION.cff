@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use these measurements, cite this record."
+title: "Local LLM benchmarks on AMD Strix Halo (gfx1151), and the 16 GiB VRAM class"
+type: dataset
+authors:
+  - name: "Dom"
+    alias: "barmynon"
+    website: "https://github.com/barmynon"
+date-released: 2026-11-10
+url: "https://strix-halo-128-benchmarks.github.io/"
+repository-code: "https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io"
+license: CC-BY-4.0
+abstract: >-
+  Measured capability and throughput for open-weight local LLMs on a single AMD
+  Strix Halo machine (Ryzen AI Max+ 395, 128 GB unified memory), on llama.cpp over
+  Vulkan. HumanEval pass@1 and MMLU-Pro accuracy at stated token caps, IFEval,
+  prefill and decode, all with build identity and quant per run; plus a roster
+  defined by what fits a 16 GiB graphics card, with fit and KV-cache arithmetic,
+  context budgets, thirteen 16 GB cards compared, and the platform differences
+  between a unified APU, a discrete card and Apple Silicon. Every figure is
+  traceable to a run id in the published catalogue.
+keywords:
+  - local LLM
+  - llama.cpp
+  - Strix Halo
+  - gfx1151
+  - Vulkan
+  - HumanEval
+  - MMLU-Pro
+  - IFEval
+  - GGUF quantisation
+  - 16 GiB VRAM

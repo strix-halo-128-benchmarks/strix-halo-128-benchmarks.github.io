@@ -1,6 +1,8 @@
 # 16 GiB of VRAM: which local LLMs fit, and what they score
 
-- **Document version:** **1.4** · 10th November 2026 · title names local LLMs, licence section added
+- **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
+  with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
+- **Document version:** **1.5** · 10th November 2026 · named author, citation file
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §15 · **Wider report on this platform:** [index.html](index.html)
@@ -340,6 +342,8 @@ That is worth stating precisely, because "a licence on information" is only part
   reuse the harness, a code-specific licence (MIT or Apache-2.0) for `scripts/` and `tools/` is the better
   split.
 
+The copyright holder is Dom ([github.com/barmynon](https://github.com/barmynon)); the repository's `CITATION.cff` carries the citable form of that attribution.
+
 The machine-readable form is alongside the page: a `license` field in the page's JSON-LD, a `rel="license"`
 link in the document head, and the same CC BY 4.0 statement in the repository's `LICENSE` file.
 
@@ -347,6 +351,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.5 | 10th November 2026 | Names the author and copyright holder (Dom, github.com/barmynon) instead of leaving the person behind the measurements anonymous, and adds a `CITATION.cff` so the work can be cited. |
 | 1.4 | 10th November 2026 | Title now says local LLMs. Adds §14: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line. |
 | 1.3 | 10th November 2026 | Adds a decision map (Figure 6): mean quality against footprint with the 15 GiB wall, a stated 0.78 competitive line and the three picks ringed, so "where is good" is visible without reading a table. Deliberately not a quadrant — no median crosshair, because the good direction here is up and to the left. Figures renumbered; the decode figure now marks the region that fits the card. |
 | 1.2 | 10th November 2026 | §11 extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box". |
