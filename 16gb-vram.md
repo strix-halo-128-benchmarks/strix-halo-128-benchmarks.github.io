@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.7** · 10th November 2026 · axes, cap and budget defined up front
+- **Document version:** **1.8** · 10th November 2026 · derived metrics defined in the axis table
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -50,8 +50,10 @@ scores is unreadable without knowing which one a column is.
 | IFEval | prompts carrying mechanically checkable constraints — "more than 400 words", "exactly 5 bullet points", "in JSON", "end with this phrase" | code checks each constraint: strict is exact text, loose allows whitespace and quote normalisation; prompt level means every constraint met, instruction level is the per-constraint average | 50 prompts at the task's own 1280-token cap (4096 for the thinking arm) | whether the content is right, or whether it obeys constraints nobody spelled out |
 | prefill and decode (pp / tg) | the same server under load: a 2000-token prompt in, then generation out | tokens per second from the server's own counters, one slot | one measurement per model, one context, one build | batch throughput, power, or what a card would do — §4 and §12 cover transfer |
 | riddles | 14 short arithmetic and logic probes | exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer | 14 probes at temperature 0.2 | anything statistical: it is a smoke test for gross failure, not an axis |
+| **mean quality** *(derived)* | nothing is run — it is the average of the three quality scores | `(HumanEval + MMLU-Pro + IFEval) / 3`, computed from the rows above | every model that has all three axes; the MTP row has none | that a model is good at any one thing. It is a sorting device, not a score, and it hides the fact that IFEval checks compliance and HumanEval checks code |
+| **quality per GiB** *(derived)* | nothing is run either — it is that mean divided by the model's footprint | `mean quality ÷ footprint at its own context`, in GiB | footprint, not weights: the number the card actually spends | that a model is good. A cheap model can top this rank while scoring badly — which is exactly what the budget pick does, at 0.744 mean and 0.138 per GiB |
 
-*Table 2 — the axes, as they were actually run. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence.*
+*Table 2 — the axes, as they were actually run, plus the two derived numbers the tables lean on. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence. The derived rows have no cap of their own and inherit the caps of what they average.*
 
 ### Cap, budget, and what the budget is spent on
 
@@ -105,7 +107,7 @@ axis. Counts are in items, not percentages, because that is what the sample supp
 | decode | lfm25-24b-a2b-think | 111 tok/s | qwen3-30b-a3b-q3 80 tok/s | the budget-0 arm of the same file is 110 tok/s, so this is one winner, not two |
 | prefill | lfm25-24b-a2b-think | 3360 tok/s | g4-e4b-qat 2243 tok/s | fastest here, and the least portable number on the page |
 | riddles | eight models tied | 14/14 | qwen3-8b-q4 and lfm25-24b-a2b at 13/14 | mistral-24b alone at 12/14 |
-| quality per GiB | g4-e4b-qat | 0.138 mean/GiB | g4-12b-qat 0.104 | both beat every 13 GiB row on this measure |
+| quality per GiB *(derived, §2)* | g4-e4b-qat | 0.138 mean/GiB | g4-12b-qat 0.104 | both beat every 13 GiB row on this measure |
 | **overall** | **lfm25-24b-a2b-think** | **0.860 mean** | g4-26b-a4b-qat 0.799 | top or joint-top on all three quality axes, fastest decode and prefill, and it fits at 32k |
 
 *Table 3 — the winners. "Overall" is the mean of HumanEval, MMLU-Pro and IFEval, which is a convenience, not a protocol: a coding workload should read the first row and ignore the last, and a knowledge workload the second.*
@@ -406,6 +408,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.8 | 10th November 2026 | The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you. |
 | 1.7 | 10th November 2026 | Defines cap, budget, footprint and KV cache in §2 alongside the axes — the four terms every number on the page is qualified by, none of which was explained where it was first used. |
 | 1.6 | 10th November 2026 | Adds §2: what HumanEval, MMLU-Pro, IFEval, prefill/decode and the riddle probes actually measure, how each is scored, what was run here, and what each one cannot tell you — before any table of scores. Sections and tables renumbered. |
 | 1.5 | 10th November 2026 | Names the author and copyright holder (Dom, github.com/barmynon) instead of leaving the person behind the measurements anonymous, and adds a `CITATION.cff` so the work can be cited. |
