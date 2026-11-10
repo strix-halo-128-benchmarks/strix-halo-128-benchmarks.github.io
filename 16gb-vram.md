@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.13** · 10th November 2026 · Minor updates
+- **Document version:** **1.14** · 10th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -23,7 +23,8 @@ Three of the numbers on this page — decode, prefill, and every footprint the f
 | GPU | Radeon 8060S, RDNA 3.5 (`gfx1151`), 40 CUs | the only compute device; weights and ALUs share one memory, so there is no PCIe hop for a token to cross |
 | memory | 128 GiB LPDDR5X-8000, 256-bit, unified: an 8 GiB UMA carve-out reported as VRAM, plus a 100 GiB GTT window (`ttm.pages_limit` 26,214,400 pages) | sets the ~256 GB/s decode ceiling (§11) and is the memory a footprint is held against; a 13.4 GiB file is resident in it, not paged from disk |
 | storage | BIWIN X570 PRO 4TB NVMe, btrfs, `/home`: 771 GiB of weight files | weights are mmap'd once at load and then sit in the GTT window, so the disk sets load time and nothing else — direct reads measured 0.5-1.9 GB/s on this drive, about 10 s for the largest roster file. A slower disk would move no score on this page |
-| kernel | 7.3.3 (CachyOS), `amdgpu` | the GTT window is raised by a kernel parameter, not shipped this way, and its size is what decides whether a file stays resident |
+| OS | CachyOS (Arch-based, rolling), systemd 262, glibc 2.44 | it fixes the kernel build, the Mesa version and the CPU governor below; the same silicon on a stock distribution would be a different stack |
+| kernel | 7.3.3 (CachyOS), `amdgpu`, `amd-pstate-epp` active, governor `powersave` with EPP `balance_performance` | the 100 GiB GTT window comes from a module option in `/etc/modprobe.d/ttm.conf`, not from a default, and its size decides whether a file stays resident; the pstate mode decides how far the 5.19 GHz boost is held under sustained load |
 | graphics stack | Mesa 26.2.6, `vulkan-radeon` 26.2.6, Vulkan 1.4, RADV (`STRIX_HALO`) | llama.cpp's Vulkan backend is what executes, so a driver change moves every rate here |
 | inference build | llama.cpp fork, build `b3-1a33095` (0.5.0-dev, commit 1a33095), `ggml-vulkan` ABI 0.25.3, clean tree | one program for all eleven files: no row is a different build |
 | server flags | `-ngl 99`, `-c` per model, `--flash-attn on`, `--jinja`, KV cache `q8_0` on both K and V, `-b 4096 -ub 2048`, one slot (`-np 1`); speculative decoding off except on the MTP row; reasoning off with a zero budget on `lfm25-24b-a2b` | one context and batching policy for every row, and the `q8_0` KV is why §6 halves the fp16 figure |
@@ -428,6 +429,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.14 | 10th November 2026 | The platform table gains the OS: distribution, init, C library, and on the kernel row the pstate mode and EPP hint, because on this host the governor is what decides how long the boost is held. |
 | 1.13 | 10th November 2026 | The platform table gains storage: the NVMe drive and filesystem the weight files live on, with measured direct-read rates. It is in the table to say what it does not affect — weights are read once at load, so storage sets load time, not decode. |
 | 1.12 | 10th November 2026 | The introduction gains a platform table: CPU, GPU, unified memory and the GTT window, kernel, graphics stack, inference build and server flags, each with the reason it is stated. Power and temperature are named as unrecorded rather than implied to be controlled. The spec list that used to sit in the prose is folded into the table instead of being repeated above it. It is Table 1, so every later table is numbered one higher than before. |
 | 1.11 | 10th November 2026 | Mean quality and quality per GiB now appear in every table that lists per-model scores: two columns in the roster (§1) and two rows in the controlled pair (§7). Both are marked derived, and both state the divisor is the footprint at the model's context. The ladder (§8) says why it has no per-GiB column. |
