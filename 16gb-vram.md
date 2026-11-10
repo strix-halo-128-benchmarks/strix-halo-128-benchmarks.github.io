@@ -2,10 +2,10 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.5** · 10th November 2026 · named author, citation file
+- **Document version:** **1.6** · 10th November 2026 · axes explained up front
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
-- **History of this page:** §15 · **Wider report on this platform:** [index.html](index.html)
+- **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
 
 
 
@@ -33,11 +33,41 @@ Eleven files, 164-item HumanEval, 120-item MMLU-Pro, 50-prompt IFEval, 113.8 GiB
 | qwen3-30b-a3b-q3 | MoE | 13.70 (3.85) | 14.79 tight | 4k | 1910 / 80 | 0.854 | 0.617 | 0.860 | 14/14 |
 | g4-26b-a4b-qat-mtp | MoE | 13.45 (4.58) | 15.06 **NO** | 8k | 1886 / 55 | — | — | — | 14/14 |
 
-*Table 1 — the roster, sorted by footprint. `ok` = at least 1 GiB of headroom against a 15 GiB budget, `tight` = fits with less, `NO` = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. HumanEval at cap 512 (8192 for the thinking arm), MMLU-Pro at cap 512 (4096 for the thinking arm), IFEval at n=50 and the task's 1280 cap (4096 for the thinking arm). The MTP row has no quality axes: it is the same weights as `g4-26b-a4b-qat` plus a 0.43 GiB draft head, measured for speed and fit only.*
+*Table 1 — the roster, sorted by footprint. `ok` = at least 1 GiB of headroom against a 15 GiB budget, `tight` = fits with less, `NO` = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. HumanEval at cap 512 (8192 for the thinking arm), MMLU-Pro at cap 512 (4096 for the thinking arm), IFEval at n=50 and the task's 1280 cap (4096 for the thinking arm). The MTP row has no quality axes: it is the same weights as `g4-26b-a4b-qat` plus a 0.43 GiB draft head, measured for speed and fit only. What each column measures, and what it cannot tell you, is §2.*
 
 The rule that makes any of this a comparison: **matched family, matched quant family, one cap, one context policy, one build**. The controlled pair is `g4-12b-qat` (dense) against `g4-26b-a4b-qat` (MoE) — same tokenizer, same training recipe, both quantisation-aware at ~4.5 effective bpw. A Q4_K_M row against a QAT Q4_0 row would be a quantisation comparison wearing an architecture label.
 
-## 2. What wins, on each axis and overall
+## 2. What the evaluation axes actually measure
+
+Every quality number on this page comes from one of three public benchmarks, run here at a stated sample
+size and a stated token cap. They measure different things and they fail in different ways, so a table of
+scores is unreadable without knowing which one a column is.
+
+| axis | what the model is asked to do | how it is scored | what was run here | what it does not tell you |
+|---|---|---|---|---|
+| HumanEval | 164 short Python problems: a docstring and a signature, write the function body | the generated code is executed against unit tests; pass@1 is the fraction passing on the first attempt at temperature 0 | 164 items, complete-program prompt, cap 512 (8192 for the thinking arm) | other languages, multi-file work, debugging, or whether it can drive a tool |
+| MMLU-Pro | multiple-choice questions over 14 academic domains, 10 options rather than 4, so guessing pays less than on MMLU | the answer letter is parsed out of a chat completion, 0-shot — no worked examples | 120 items, 0-shot chat probe, cap 512 (4096 for the thinking arm) | reasoning depth, recency or calibration; it is a knowledge quiz, not a task |
+| IFEval | prompts carrying mechanically checkable constraints — "more than 400 words", "exactly 5 bullet points", "in JSON", "end with this phrase" | code checks each constraint: strict is exact text, loose allows whitespace and quote normalisation; prompt level means every constraint met, instruction level is the per-constraint average | 50 prompts at the task's own 1280-token cap (4096 for the thinking arm) | whether the content is right, or whether it obeys constraints nobody spelled out |
+| prefill and decode (pp / tg) | the same server under load: a 2000-token prompt in, then generation out | tokens per second from the server's own counters, one slot | one measurement per model, one context, one build | batch throughput, power, or what a card would do — §4 and §12 cover transfer |
+| riddles | 14 short arithmetic and logic probes | exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer | 14 probes at temperature 0.2 | anything statistical: it is a smoke test for gross failure, not an axis |
+
+*Table 2 — the axes, as they were actually run. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence.*
+
+The three quality axes are not interchangeable, and the roster makes the point by disagreeing with itself:
+
+- **HumanEval rewards code shape**, not understanding. It is one short function with a test harness, no
+  imports of your project, no ambiguity about the interface. A model can score 0.90 here and be unable to
+  explain why the function works.
+- **MMLU-Pro rewards recall and discrimination** — it is a quiz with ten plausible options, so a model that
+  knows the topic but not the fine distinction scores like a model that knows neither.
+- **IFEval rewards compliance.** Nothing in it checks whether the answer is correct; a confidently wrong
+  answer that appears in exactly five bullet points scores full marks.
+
+That is why the winners differ by axis (§3), and why the "mean of the three" used for ranking is a
+convenience rather than a claim that a model is 0.86 good. Read the column that matches your workload and
+ignore the rest; read the mean only to sort a shortlist.
+
+## 3. What wins, on each axis and overall
 
 Each axis has a different winner, and the model that wins overall is not the one that wins the cheap
 axis. Counts are in items, not percentages, because that is what the sample supports.
@@ -53,7 +83,7 @@ axis. Counts are in items, not percentages, because that is what the sample supp
 | quality per GiB | g4-e4b-qat | 0.138 mean/GiB | g4-12b-qat 0.104 | both beat every 13 GiB row on this measure |
 | **overall** | **lfm25-24b-a2b-think** | **0.860 mean** | g4-26b-a4b-qat 0.799 | top or joint-top on all three quality axes, fastest decode and prefill, and it fits at 32k |
 
-*Table 2 — the winners. "Overall" is the mean of HumanEval, MMLU-Pro and IFEval, which is a convenience, not a protocol: a coding workload should read the first row and ignore the last, and a knowledge workload the second.*
+*Table 3 — the winners. "Overall" is the mean of HumanEval, MMLU-Pro and IFEval, which is a convenience, not a protocol: a coding workload should read the first row and ignore the last, and a knowledge workload the second.*
 
 What that table means in practice:
 
@@ -75,14 +105,14 @@ What that table means in practice:
   the 30B is fast and knowledgeable enough to be interesting, and still loses on usability to a 12B that
   runs at 32k.
 
-## 3. How to read the numbers
+## 4. How to read the numbers
 
 - **Quality does not depend on the GPU.** HumanEval, MMLU-Pro, IFEval, the needle probes and the protocol checks are all hardware-independent. They transfer to a card unchanged.
 - **Decode ranks transfer, absolute rates do not.** Both platforms are bandwidth-bound on bytes read per token, so the ordering holds; the numbers scale with bandwidth, and the MS-S1 MAX sits at ~256 GB/s.
 - **Prefill does not transfer at all.** It is compute-bound, and an MoE's prefill touches every expert that receives a token, so a discrete card pulls further ahead on exactly the rows where the numbers below look slowest.
 - **Caps and sample sizes are part of the result.** HumanEval is 164 items (±2.3 points at a score of 0.90), MMLU-Pro 120 items (±4.4 at 0.61), IFEval 50 prompts (±3.8 at 0.92). Roughly eight points on IFEval or nine on MMLU-Pro is the smallest difference worth arguing about. MMLU-Pro here is a 0-shot chat probe, not the 5-shot loglikelihood protocol the public leaderboards use: the column is internally consistent and sits below published scores by design.
 
-## 4. Quality against what the card has to hold
+## 5. Quality against what the card has to hold
 
 {{svg charts/16gb-f1.svg}}
 
@@ -96,7 +126,7 @@ Three things fall out of that figure.
 
 **Two rows are a warning, not a candidate.** `mistral-24b-q4` and `qwen3-30b-a3b-q3` fit only at 4k context. At this footprint, capacity buys parameters at the cost of the context you need to use them.
 
-## 5. Context is a second budget
+## 6. Context is a second budget
 
 Weights are the visible cost. KV cache is the one that decides whether the model is usable, and it is not proportional to model size — it follows the attention layout. On this roster a 14B dense model costs 160 MiB per 1k tokens of context while a 26B MoE costs 20.
 
@@ -112,7 +142,7 @@ Weights are the visible cost. KV cache is the one that decides whether the model
 | qwen3-14b-q4 | 160 | 0.62 | 1.25 | 2.50 | 5.00 |
 | mistral-24b-q4 | 160 | 0.62 | 1.25 | 2.50 | 5.00 |
 
-*Table 3 — KV cache cost in GiB, measured per model at q8_0 and halved from the fp16 figure by the loader's KV quantisation. This is why a 24B dense model is a 4k-context model on a 16 GiB card and a 26B MoE is a 16k-context model.*
+*Table 4 — KV cache cost in GiB, measured per model at q8_0 and halved from the fp16 figure by the loader's KV quantisation. This is why a 24B dense model is a 4k-context model on a 16 GiB card and a 26B MoE is a 16k-context model.*
 
 {{svg charts/16gb-f2.svg}}
 
@@ -120,7 +150,7 @@ Weights are the visible cost. KV cache is the one that decides whether the model
 
 The practical rule: **when a model does not fit, cut context first, then KV precision, then quantisation depth, and only then offload.** Context is the cheapest thing to give up and the only one that costs no quality at all.
 
-## 6. Dense or MoE
+## 7. Dense or MoE
 
 A dense model runs every parameter for every token. An MoE routes each token to a subset of experts, so a 26B model with 8 of 128 active does roughly the arithmetic of a 4B model while carrying 26B of weights. Footprint follows total parameters; decode speed follows active parameters; the two stop being proportional.
 
@@ -142,9 +172,9 @@ The honest reading is that neither is strictly better:
 | decode | 27.8 tok/s | 59.2 tok/s | MoE, 2.1x |
 | footprint | 7.67 GiB at 32k | 14.70 GiB at 16k | dense, 2x the context |
 
-*Table 4 — the controlled pair. Choose the MoE when knowledge and throughput matter; choose the dense model when instruction-following, context or headroom matter.*
+*Table 5 — the controlled pair. Choose the MoE when knowledge and throughput matter; choose the dense model when instruction-following, context or headroom matter.*
 
-## 7. What a 16 GiB card can actually run
+## 8. What a 16 GiB card can actually run
 
 {{svg charts/16gb-f5.svg}}
 
@@ -158,7 +188,7 @@ The honest reading is that neither is strictly better:
 | 24 GB | 23 GiB | 11 of 11 | lfm25-24b-a2b-think | everything here fits, at its context, with room for a second model |
 | 32 GB+ | 31 GiB+ | 11 of 11 | lfm25-24b-a2b-think | this roster saturates; the limit is the roster, not the card |
 
-*Table 5 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.*
+*Table 6 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.*
 
 The step from 12 GB to 16 GB is the one that matters. It is not a larger dense model that you gain — it is the MoE tier, and with it the only rows in this roster that score above 0.90 HumanEval while fitting at 32k context.
 
@@ -171,7 +201,7 @@ top-left corner, the value pick sitting on the same quality with half the footpr
 below the line at a third of it. Everything else in the roster is either under the line, over the wall, or
 both.
 
-## 8. Quantisation on a fixed budget
+## 9. Quantisation on a fixed budget
 
 Effective bits per weight is measured from the file, so the ladder below is arithmetic anchored on measured files rather than on vendor claims:
 
@@ -181,15 +211,15 @@ Effective bits per weight is measured from the file, so the ladder below is arit
 | ~13.6 GiB | 5.0 bpw | no — 15.6 GiB of weights |
 | ~13.6 GiB | 3.9 bpw | yes, and leaves ~2 GiB of KV room — what `qwen3-30b-a3b-q3` does at 3.85 bpw |
 
-*Table 6 — the quantisation ceiling on a 16 GiB card. Arithmetic from file size and parameter count; the budget shown excludes KV.*
+*Table 7 — the quantisation ceiling on a 16 GiB card. Arithmetic from file size and parameter count; the budget shown excludes KV.*
 
 Two observations from the measured rows rather than the arithmetic. First, QAT pays: the quantisation-aware `g4-12b-qat` reaches 0.896 HumanEval at 4.52 bpw, which no 4-bit post-training quant in this roster matches at that footprint. Second, going deeper costs knowledge unevenly — the 3.85 bpw 30B keeps 0.617 MMLU-Pro, but it only affords 13k of context, so on this card the trade is context, not accuracy.
 
-## 9. When it does not fit
+## 10. When it does not fit
 
 The MTP row is the useful failure: 15.06 GiB at 8k context, over budget by 0.06 GiB. That is what the wall looks like — not a crash, but a model that loads and then spends its life at the edge of the pool. In order of cost:
 
-1. **Cut context.** Halving 32k to 16k returns 0.3-2.5 GiB depending on the model's attention layout (Table 3), and costs nothing in quality for prompts that fit.
+1. **Cut context.** Halving 32k to 16k returns 0.3-2.5 GiB depending on the model's attention layout (Table 4), and costs nothing in quality for prompts that fit.
 2. **Quantise the KV cache.** q8_0 is already assumed throughout; q4_0 halves it again at a small quality cost and is the standard second lever.
 3. **Drop the drafter.** A speculative-decoding head costs weights plus a second KV cache; on this roster it is 0.43 GiB and pushes a fitting model over the line.
 4. **Drop quantisation depth.** One step down is roughly 0.5-1 GiB on a 25B model. It is the only lever that changes what the model knows.
@@ -197,7 +227,7 @@ The MTP row is the useful failure: 15.06 GiB at 8k context, over budget by 0.06 
 
 Flags that matter on this class, all used for every row above: `-ngl 99` (all layers on the GPU), `-c` set to the context you measured at rather than the model's maximum, `--flash-attn on`, `--cache-type-k q8_0 --cache-type-v q8_0`, `-np 1` (one slot — concurrency multiplies KV), `-b 4096 -ub 2048` for prefill batching. Nothing here is exotic; the discipline is that each of them changes what fits.
 
-## 10. Three memory architectures
+## 11. Three memory architectures
 
 {{svg charts/16gb-f7.svg}}
 
@@ -217,9 +247,9 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 | fit | no | arithmetic against the target's own memory ceiling |
 | needle, riddles, protocol | yes | nothing in the path touches the GPU pool |
 
-*Table 7 — what may be carried from this page to another machine, and what may not.*
+*Table 8 — what may be carried from this page to another machine, and what may not.*
 
-## 11. Which 16 GiB card, and what it implies
+## 12. Which 16 GiB card, and what it implies
 
 Every card in this class has the same 16 GB of VRAM, so **capacity decides nothing between them — bandwidth
 decides everything**, and within the class bandwidth spans 3.1x. That single number is the purchase decision.
@@ -242,12 +272,12 @@ to 896, Intel's one entry sits at 560.
 | NVIDIA RTX 4070 Ti Super 16 GB | 256-bit GDDR6X, 21 Gbps | 672 GB/s | 103-161 | 55-78 |
 | NVIDIA RTX 5070 Ti 16 GB | 256-bit GDDR7, 28 Gbps | 896 GB/s | 137-215 | 73-104 |
 
-*Table 8 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Bandwidth is the peak published in each card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured. Cards are grouped by bandwidth, not by brand.*
+*Table 9 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Bandwidth is the peak published in each card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured. Cards are grouped by bandwidth, not by brand.*
 
 How the prediction is made, so it can be checked and discounted: decode is bandwidth-bound, so
 `predicted = bandwidth / bytes-read-per-active-token × efficiency`, where efficiency is the fraction of the
 ceiling the hardware actually reaches. The MS-S1 MAX measures 53% of its own ceiling on the MoE (59 of 111
-tok/s) and 73% on the dense model (28 of 38). The bands in Table 8 use 35-55% for the MoE and 55-78% for the
+tok/s) and 73% on the dense model (28 of 38). The bands in Table 9 use 35-55% for the MoE and 55-78% for the
 dense model — deliberately wide, because a discrete card's kernels and a 128-bit card's higher latency per
 byte will not match the MS-S1 MAX's Vulkan path exactly. Both measured values sit inside their bands, which
 is the only calibration available without borrowing a card.
@@ -266,14 +296,14 @@ Three things follow, and one warning:
 - **Warning: bandwidth does not buy prefill in the same proportion.** These predictions cover decode only.
   Prefill is compute-bound and an MoE's prefill touches every expert, so every card in this table will beat
   its decode-side prediction on long prompts by a margin the MS-S1 MAX cannot show — the same caveat that
-  applies to Table 7. On the AMD side the software path matters too: these cards run through ROCm or Vulkan
+  applies to Table 8. On the AMD side the software path matters too: these cards run through ROCm or Vulkan
   on Linux, and backend efficiency, not the memory spec, is what moves prefill.
 
 {{svg charts/16gb-f8.svg}}
 
 *Figure 8 — Left: vendor bandwidth for the 16 GB cards, against the MS-S1 MAX measured at 256 GB/s. Right: the decode band each bandwidth implies for the two reference models, with the MS-S1 MAX's measured points marked. The bars are a prediction from measured efficiency; the markers are the only measurements on the page.*
 
-## 12. What this page does not measure
+## 13. What this page does not measure
 
 Listed because the gaps are the useful part of a benchmark:
 
@@ -284,7 +314,7 @@ Listed because the gaps are the useful part of a benchmark:
 - **Quant ladders per model.** One quant per model was measured. The claim that QAT holds up better than post-training quant at equal bpw rests on the controlled pair, not on a sweep.
 - **Real spill behaviour.** This host cannot show it. The spill penalty quoted for discrete cards is from the literature and the PCIe arithmetic, not from a measurement on a card.
 
-## 13. Reproduce any row
+## 14. Reproduce any row
 
 The roster is one directory of stdlib scripts driving one llama.cpp server at a time:
 
@@ -308,7 +338,7 @@ python3 humaneval.py --port 8180 --limit 164 --max-tokens 8192
 
 Figures on this page are generated from the same run archive by `charts16.py`; the fit arithmetic in the tables is the expression `matrix.py budget` prints, so a figure and a table cannot disagree.
 
-## 14. Licence
+## 15. Licence
 
 Everything on this page — the prose, the tables, the figures and the selection of measurements behind
 them — is published under **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**. You may copy it,
@@ -347,15 +377,16 @@ The copyright holder is Dom ([github.com/barmynon](https://github.com/barmynon))
 The machine-readable form is alongside the page: a `license` field in the page's JSON-LD, a `rel="license"`
 link in the document head, and the same CC BY 4.0 statement in the repository's `LICENSE` file.
 
-## 15. Document history
+## 16. Document history
 
 | version | date | what changed |
 |---|---|---|
+| 1.6 | 10th November 2026 | Adds §2: what HumanEval, MMLU-Pro, IFEval, prefill/decode and the riddle probes actually measure, how each is scored, what was run here, and what each one cannot tell you — before any table of scores. Sections and tables renumbered. |
 | 1.5 | 10th November 2026 | Names the author and copyright holder (Dom, github.com/barmynon) instead of leaving the person behind the measurements anonymous, and adds a `CITATION.cff` so the work can be cited. |
-| 1.4 | 10th November 2026 | Title now says local LLMs. Adds §14: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line. |
+| 1.4 | 10th November 2026 | Title now says local LLMs. Adds the licence section: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line. |
 | 1.3 | 10th November 2026 | Adds a decision map (Figure 6): mean quality against footprint with the 15 GiB wall, a stated 0.78 competitive line and the three picks ringed, so "where is good" is visible without reading a table. Deliberately not a quadrant — no median crosshair, because the good direction here is up and to the left. Figures renumbered; the decode figure now marks the region that fits the card. |
-| 1.2 | 10th November 2026 | §11 extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box". |
-| 1.1 | 10th November 2026 | Adds §11: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it. |
+| 1.2 | 10th November 2026 | the card comparison extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box". |
+| 1.1 | 10th November 2026 | Adds the 16 GB card section: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it. |
 | 1.0 | 10th November 2026 | First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison. |
 
 *The version number belongs to this page. The wider report on this platform has its own history in
