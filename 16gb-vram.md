@@ -1,6 +1,6 @@
 # 16 GiB of VRAM: which local models actually fit, and what they score
 
-- **Document version:** **1.2** · 10th November 2026 · AMD cards added to §11 (seven in the table), reference machine named
+- **Document version:** **1.3** · 10th November 2026 · decision map added (§7), zones marked on the class figure
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §14 · **Wider report on this platform:** [index.html](index.html)
@@ -160,6 +160,15 @@ The honest reading is that neither is strictly better:
 
 The step from 12 GB to 16 GB is the one that matters. It is not a larger dense model that you gain — it is the MoE tier, and with it the only rows in this roster that score above 0.90 HumanEval while fitting at 32k context.
 
+{{svg charts/16gb-f6.svg}}
+
+*Figure 6 — The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and a 0.78 competitive line drawn across. The three rings are the shortlist, and they are deliberately not the three highest dots — the budget pick sits below the line because it costs 5.4 GiB. Both lines are stated thresholds, not statistics: at 0.79 only two models clear the bar, at 0.75 seven do. There is no median crosshair and no upper-right "leader" corner, because here smaller footprint and higher score are both good, which a quadrant cannot express.*
+
+The map is the one place where the three recommendations can be seen at once: the quality pick in the
+top-left corner, the value pick sitting on the same quality with half the footprint, and the budget pick
+below the line at a third of it. Everything else in the roster is either under the line, over the wall, or
+both.
+
 ## 8. Quantisation on a fixed budget
 
 Effective bits per weight is measured from the file, so the ladder below is arithmetic anchored on measured files rather than on vendor claims:
@@ -188,9 +197,9 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 
 ## 10. Three memory architectures
 
-{{svg charts/16gb-f6.svg}}
+{{svg charts/16gb-f7.svg}}
 
-*Figure 6 — Peak memory bandwidth on a log scale, with the PCIe spill path for comparison. Bandwidth sets decode; whether there is a hard ceiling at all decides what runs.*
+*Figure 7 — Peak memory bandwidth on a log scale, with the PCIe spill path for comparison. Bandwidth sets decode; whether there is a hard ceiling at all decides what runs.*
 
 - **Unified APU (this class of box).** 128 GB of LPDDR5X-8000 on a 256-bit bus, ~256 GB/s, with up to ~96 GiB GPU-addressable and an 8 GiB carve-out. No wall to cross, so a 40 GiB model runs — at the speed 256 GB/s allows.
 - **Discrete card.** 24 GB at 1008 GB/s or 32 GB at 1792 GB/s: four to seven times the bandwidth on a fifth of the capacity. Over the VRAM limit, layers spill to host memory across PCIe (~64 GB/s on a 5.0 x16 link) and decode falls by roughly an order of magnitude. In this class the card is not capacity-constrained at all — the whole roster fits at 24 GB.
@@ -258,9 +267,9 @@ Three things follow, and one warning:
   applies to Table 7. On the AMD side the software path matters too: these cards run through ROCm or Vulkan
   on Linux, and backend efficiency, not the memory spec, is what moves prefill.
 
-{{svg charts/16gb-f7.svg}}
+{{svg charts/16gb-f8.svg}}
 
-*Figure 7 — Left: vendor bandwidth for the 16 GB cards, against the MS-S1 MAX measured at 256 GB/s. Right: the decode band each bandwidth implies for the two reference models, with the MS-S1 MAX's measured points marked. The bars are a prediction from measured efficiency; the markers are the only measurements on the page.*
+*Figure 8 — Left: vendor bandwidth for the 16 GB cards, against the MS-S1 MAX measured at 256 GB/s. Right: the decode band each bandwidth implies for the two reference models, with the MS-S1 MAX's measured points marked. The bars are a prediction from measured efficiency; the markers are the only measurements on the page.*
 
 ## 12. What this page does not measure
 
@@ -301,6 +310,7 @@ Figures on this page are generated from the same run archive by `charts16.py`; t
 
 | version | date | what changed |
 |---|---|---|
+| 1.3 | 10th November 2026 | Adds a decision map (Figure 6): mean quality against footprint with the 15 GiB wall, a stated 0.78 competitive line and the three picks ringed, so "where is good" is visible without reading a table. Deliberately not a quadrant — no median crosshair, because the good direction here is up and to the left. Figures renumbered; the decode figure now marks the region that fits the card. |
 | 1.2 | 10th November 2026 | §11 extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box". |
 | 1.1 | 10th November 2026 | Adds §11: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it. |
 | 1.0 | 10th November 2026 | First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison. |
