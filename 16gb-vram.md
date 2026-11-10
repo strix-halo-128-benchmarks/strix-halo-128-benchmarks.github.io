@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.8** · 10th November 2026 · derived metrics defined in the axis table
+- **Document version:** **1.9** · 10th November 2026 · duplicated axis commentary removed
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -50,7 +50,7 @@ scores is unreadable without knowing which one a column is.
 | IFEval | prompts carrying mechanically checkable constraints — "more than 400 words", "exactly 5 bullet points", "in JSON", "end with this phrase" | code checks each constraint: strict is exact text, loose allows whitespace and quote normalisation; prompt level means every constraint met, instruction level is the per-constraint average | 50 prompts at the task's own 1280-token cap (4096 for the thinking arm) | whether the content is right, or whether it obeys constraints nobody spelled out |
 | prefill and decode (pp / tg) | the same server under load: a 2000-token prompt in, then generation out | tokens per second from the server's own counters, one slot | one measurement per model, one context, one build | batch throughput, power, or what a card would do — §4 and §12 cover transfer |
 | riddles | 14 short arithmetic and logic probes | exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer | 14 probes at temperature 0.2 | anything statistical: it is a smoke test for gross failure, not an axis |
-| **mean quality** *(derived)* | nothing is run — it is the average of the three quality scores | `(HumanEval + MMLU-Pro + IFEval) / 3`, computed from the rows above | every model that has all three axes; the MTP row has none | that a model is good at any one thing. It is a sorting device, not a score, and it hides the fact that IFEval checks compliance and HumanEval checks code |
+| **mean quality** *(derived)* | nothing is run — it is the average of the three quality scores | `(HumanEval + MMLU-Pro + IFEval) / 3`, computed from the rows above | every model that has all three axes; the MTP row has none | that a model is good at any one thing. It is a sorting device, not a score, and it hides which axis a model is actually good at |
 | **quality per GiB** *(derived)* | nothing is run either — it is that mean divided by the model's footprint | `mean quality ÷ footprint at its own context`, in GiB | footprint, not weights: the number the card actually spends | that a model is good. A cheap model can top this rank while scoring badly — which is exactly what the budget pick does, at 0.744 mean and 0.138 per GiB |
 
 *Table 2 — the axes, as they were actually run, plus the two derived numbers the tables lean on. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence. The derived rows have no cap of their own and inherit the caps of what they average.*
@@ -80,19 +80,17 @@ Every number on this page is qualified by one of these, so they are worth fixing
 None of these is a preference. Cap is a fact about the run, budget is arithmetic about the card, footprint
 and KV are what the arithmetic is spent on.
 
-The three quality axes are not interchangeable, and the roster makes the point by disagreeing with itself:
+Each axis can also be satisfied without doing the thing it is named after — which is the part that makes the
+roster disagree with itself:
 
-- **HumanEval rewards code shape**, not understanding. It is one short function with a test harness, no
-  imports of your project, no ambiguity about the interface. A model can score 0.90 here and be unable to
-  explain why the function works.
-- **MMLU-Pro rewards recall and discrimination** — it is a quiz with ten plausible options, so a model that
-  knows the topic but not the fine distinction scores like a model that knows neither.
-- **IFEval rewards compliance.** Nothing in it checks whether the answer is correct; a confidently wrong
-  answer that appears in exactly five bullet points scores full marks.
+- **HumanEval rewards code shape.** 0.90 here and the model may still be unable to say why the function works.
+- **MMLU-Pro rewards discrimination between near-neighbours.** Know the topic, miss the distinction, and the
+  score is indistinguishable from knowing neither.
+- **IFEval rewards compliance.** Format it correctly and the marks are yours even when the content is wrong.
 
-That is why the winners differ by axis (§3), and why the "mean of the three" used for ranking is a
-convenience rather than a claim that a model is 0.86 good. Read the column that matches your workload and
-ignore the rest; read the mean only to sort a shortlist.
+That is why the winners differ by axis (§3), and why the "mean of the three" is a sorting device rather than
+a claim that a model is 0.86 good. Read the column that matches your workload; read the mean only to order a
+shortlist.
 
 ## 3. What wins, on each axis and overall
 
@@ -408,6 +406,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.9 | 10th November 2026 | Removes duplication in §2: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope. |
 | 1.8 | 10th November 2026 | The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you. |
 | 1.7 | 10th November 2026 | Defines cap, budget, footprint and KV cache in §2 alongside the axes — the four terms every number on the page is qualified by, none of which was explained where it was first used. |
 | 1.6 | 10th November 2026 | Adds §2: what HumanEval, MMLU-Pro, IFEval, prefill/decode and the riddle probes actually measure, how each is scored, what was run here, and what each one cannot tell you — before any table of scores. Sections and tables renumbered. |
