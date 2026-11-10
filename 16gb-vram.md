@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.11** · 10th November 2026 · Minor updates
+- **Document version:** **1.12** · 10th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -11,7 +11,26 @@
 
 A 16 GiB graphics card is the tightest interesting class of consumer accelerator: 16 GiB of VRAM, about 15 GiB usable once the driver and runtime have taken their share, and a hard wall at the end of it. This page answers two questions about that class. Which open-weight models fit, and what do they score. Then: how much of that answer depends on the memory architecture underneath, because the same 13.4 GiB file behaves very differently on a unified-memory APU, a discrete card and an Apple SoC.
 
-Every number here was measured on a machine that does **not** have the constraint being studied. The reference host is a Minisforum MS-S1 MAX (Ryzen AI Max+ 395, 128 GB unified memory, Radeon 8060S) and has 100 GiB of GPU-addressable memory, so no model is truncated or spilled while it is being benchmarked. That is deliberate: the scores describe the model, the arithmetic describes the card, and the two are never confounded. Where a figure is arithmetic rather than measurement, it says so.
+Every number here was measured on a machine that does **not** have the constraint being studied. The reference host is a Minisforum MS-S1 MAX with no VRAM ceiling — a 100 GiB GTT window means nothing is truncated or spilled while it is being benchmarked. That is deliberate: the scores describe the model, the arithmetic describes the card, and the two are never confounded. Where a figure is arithmetic rather than measurement, it says so.
+
+### What it ran on
+
+Three of the numbers on this page — decode, prefill, and every footprint the fit arithmetic produces — are properties of the stack below as much as of the models, so the stack is stated rather than assumed.
+
+| component | this host | why it is in the table |
+|---|---|---|
+| CPU | AMD Ryzen AI Max+ 395 (Zen 5), 16 cores / 32 threads, 625 MHz – 5.19 GHz, 64 MiB L3 | prompt handling and sampling run beside the GPU, so prefill is not a pure GPU rate |
+| GPU | Radeon 8060S, RDNA 3.5 (`gfx1151`), 40 CUs | the only compute device; weights and ALUs share one memory, so there is no PCIe hop for a token to cross |
+| memory | 128 GiB LPDDR5X-8000, 256-bit, unified: an 8 GiB UMA carve-out reported as VRAM, plus a 100 GiB GTT window (`ttm.pages_limit` 26,214,400 pages) | sets the ~256 GB/s decode ceiling (§11) and is the memory a footprint is held against; a 13.4 GiB file is resident in it, not paged from disk |
+| kernel | 7.3.3 (CachyOS), `amdgpu` | the GTT window is raised by a kernel parameter, not shipped this way, and its size is what decides whether a file stays resident |
+| graphics stack | Mesa 26.2.6, `vulkan-radeon` 26.2.6, Vulkan 1.4, RADV (`STRIX_HALO`) | llama.cpp's Vulkan backend is what executes, so a driver change moves every rate here |
+| inference build | llama.cpp fork, build `b3-1a33095` (0.5.0-dev, commit 1a33095), `ggml-vulkan` ABI 0.25.3, clean tree | one program for all eleven files: no row is a different build |
+| server flags | `-ngl 99`, `-c` per model, `--flash-attn on`, `--jinja`, KV cache `q8_0` on both K and V, `-b 4096 -ub 2048`, one slot (`-np 1`); speculative decoding off except on the MTP row; reasoning off with a zero budget on `lfm25-24b-a2b` | one context and batching policy for every row, and the `q8_0` KV is why §6 halves the fp16 figure |
+*Table 1 — the platform. Every number on this page comes off this stack; the right-hand column says which measurements would move if a part of it changed, and which are properties of the models alone.*
+
+Two things that table does not claim. Power and package temperature were not recorded per run, so the throughput columns are what this box delivers on its own firmware policy, not what the silicon can reach. And the host has no 16 GiB wall at all: the card being studied here is a budget applied in arithmetic, not a device, which is exactly why the measurements were taken on it.
+
+
 
 Eleven files, 164-item HumanEval, 120-item MMLU-Pro, 50-prompt IFEval, 113.8 GiB of weights, one build.
 
@@ -33,7 +52,7 @@ Eleven files, 164-item HumanEval, 120-item MMLU-Pro, 50-prompt IFEval, 113.8 GiB
 | qwen3-30b-a3b-q3 | MoE | 13.70 (3.85) | 14.79 tight | 4k | 1910 / 80 | 0.854 | 0.617 | 0.860 | 0.777 | 0.053 | 14/14 |
 | g4-26b-a4b-qat-mtp | MoE | 13.45 (4.58) | 15.06 **NO** | 8k | 1886 / 55 | — | — | — | — | — | 14/14 |
 
-*Table 1 — the roster, sorted by footprint. `ok` = at least 1 GiB of headroom against a 15 GiB budget, `tight` = fits with less, `NO` = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. HumanEval at cap 512 (8192 for the thinking arm), MMLU-Pro at cap 512 (4096 for the thinking arm), IFEval at n=50 and the task's 1280 cap (4096 for the thinking arm). Mean quality and quality per GiB are the two derived rows of §2: the first is the average of the three scores to its left, the second divides that average by the footprint column — not by the weights, which is the error that makes a big-context model look cheap. Neither is a measurement, and neither carries a cap of its own. The MTP row has no quality axes: it is the same weights as `g4-26b-a4b-qat` plus a 0.43 GiB draft head, measured for speed and fit only. What each column measures, and what it cannot tell you, is §2.*
+*Table 2 — the roster, sorted by footprint. `ok` = at least 1 GiB of headroom against a 15 GiB budget, `tight` = fits with less, `NO` = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. HumanEval at cap 512 (8192 for the thinking arm), MMLU-Pro at cap 512 (4096 for the thinking arm), IFEval at n=50 and the task's 1280 cap (4096 for the thinking arm). Mean quality and quality per GiB are the two derived rows of §2: the first is the average of the three scores to its left, the second divides that average by the footprint column — not by the weights, which is the error that makes a big-context model look cheap. Neither is a measurement, and neither carries a cap of its own. The MTP row has no quality axes: it is the same weights as `g4-26b-a4b-qat` plus a 0.43 GiB draft head, measured for speed and fit only. What each column measures, and what it cannot tell you, is §2.*
 
 The rule that makes any of this a comparison: **matched family, matched quant family, one cap, one context policy, one build**. The controlled pair is `g4-12b-qat` (dense) against `g4-26b-a4b-qat` (MoE) — same tokenizer, same training recipe, both quantisation-aware at ~4.5 effective bpw. A Q4_K_M row against a QAT Q4_0 row would be a quantisation comparison wearing an architecture label.
 
@@ -53,7 +72,7 @@ scores is unreadable without knowing which one a column is.
 | **mean quality** *(derived)* | nothing is run — it is the average of the three quality scores | `(HumanEval + MMLU-Pro + IFEval) / 3`, computed from the rows above | every model that has all three axes; the MTP row has none | that a model is good at any one thing. It is a sorting device, not a score, and it hides which axis a model is actually good at |
 | **quality per GiB** *(derived)* | nothing is run either — it is that mean divided by the model's footprint | `mean quality ÷ footprint at its own context`, in GiB | footprint, not weights: the number the card actually spends | that a model is good. A cheap model can top this rank while scoring badly — which is exactly what the budget pick does, at 0.744 mean and 0.138 per GiB |
 
-*Table 2 — the axes, as they were actually run, plus the two derived numbers the tables lean on. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence. The derived rows have no cap of their own and inherit the caps of what they average.*
+*Table 3 — the axes, as they were actually run, plus the two derived numbers the tables lean on. Sample size and cap belong to the result: a HumanEval row at 512 and one at 8192 are not the same measurement, and §4 explains what that costs in confidence. The derived rows have no cap of their own and inherit the caps of what they average.*
 
 ### Cap, budget, and what the budget is spent on
 
@@ -108,7 +127,7 @@ axis. Counts are in items, not percentages, because that is what the sample supp
 | quality per GiB *(derived, §2)* | g4-e4b-qat | 0.138 mean/GiB | g4-12b-qat 0.104 | both beat every 13 GiB row on this measure |
 | **overall** | **lfm25-24b-a2b-think** | **0.860 mean** | g4-26b-a4b-qat 0.799 | top or joint-top on all three quality axes, fastest decode and prefill, and it fits at 32k |
 
-*Table 3 — the winners. "Overall" is the mean of HumanEval, MMLU-Pro and IFEval, which is a convenience, not a protocol: a coding workload should read the first row and ignore the last, and a knowledge workload the second.*
+*Table 4 — the winners. "Overall" is the mean of HumanEval, MMLU-Pro and IFEval, which is a convenience, not a protocol: a coding workload should read the first row and ignore the last, and a knowledge workload the second.*
 
 What that table means in practice:
 
@@ -167,7 +186,7 @@ Weights are the visible cost. KV cache is the one that decides whether the model
 | qwen3-14b-q4 | 160 | 0.62 | 1.25 | 2.50 | 5.00 |
 | mistral-24b-q4 | 160 | 0.62 | 1.25 | 2.50 | 5.00 |
 
-*Table 4 — KV cache cost in GiB, measured per model at q8_0 and halved from the fp16 figure by the loader's KV quantisation. This is why a 24B dense model is a 4k-context model on a 16 GiB card and a 26B MoE is a 16k-context model.*
+*Table 5 — KV cache cost in GiB, measured per model at q8_0 and halved from the fp16 figure by the loader's KV quantisation. This is why a 24B dense model is a 4k-context model on a 16 GiB card and a 26B MoE is a 16k-context model.*
 
 {{svg charts/16gb-f2.svg}}
 
@@ -199,7 +218,7 @@ The honest reading is that neither is strictly better:
 | decode | 27.8 tok/s | 59.2 tok/s | MoE, 2.1x |
 | footprint | 7.67 GiB at 32k | 14.70 GiB at 16k | dense, 2x the context |
 
-*Table 5 — the controlled pair. Choose the MoE when knowledge and throughput matter; choose the dense model when instruction-following, context or headroom matter. The two derived rows say what the mean cannot: at 0.002 apart the pair is tied on average quality while disagreeing by 7 points on knowledge and 3 prompts on instruction-following, and the tie costs 1.9x the memory.*
+*Table 6 — the controlled pair. Choose the MoE when knowledge and throughput matter; choose the dense model when instruction-following, context or headroom matter. The two derived rows say what the mean cannot: at 0.002 apart the pair is tied on average quality while disagreeing by 7 points on knowledge and 3 prompts on instruction-following, and the tie costs 1.9x the memory.*
 
 ## 8. What a 16 GiB card can actually run
 
@@ -215,7 +234,7 @@ The honest reading is that neither is strictly better:
 | 24 GB | 23 GiB | 11 of 11 | lfm25-24b-a2b-think | everything here fits, at its context, with room for a second model |
 | 32 GB+ | 31 GiB+ | 11 of 11 | lfm25-24b-a2b-think | this roster saturates; the limit is the roster, not the card |
 
-*Table 6 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.* Quality per GiB is deliberately not a column here: at every rung its winner is `g4-e4b-qat`, the smallest file, because the metric divides by footprint — which answers "what is cheapest per gigabyte", not "what is the best that fits". The column is the best that fits.
+*Table 7 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.* Quality per GiB is deliberately not a column here: at every rung its winner is `g4-e4b-qat`, the smallest file, because the metric divides by footprint — which answers "what is cheapest per gigabyte", not "what is the best that fits". The column is the best that fits.
 
 The step from 12 GB to 16 GB is the one that matters. It is not a larger dense model that you gain — it is the MoE tier, and with it the only rows in this roster that score above 0.90 HumanEval while fitting at 32k context.
 
@@ -238,7 +257,7 @@ Effective bits per weight is measured from the file, so the ladder below is arit
 | ~13.6 GiB | 5.0 bpw | no — 15.6 GiB of weights |
 | ~13.6 GiB | 3.9 bpw | yes, and leaves ~2 GiB of KV room — what `qwen3-30b-a3b-q3` does at 3.85 bpw |
 
-*Table 7 — the quantisation ceiling on a 16 GiB card. Arithmetic from file size and parameter count; the budget shown excludes KV.*
+*Table 8 — the quantisation ceiling on a 16 GiB card. Arithmetic from file size and parameter count; the budget shown excludes KV.*
 
 Two observations from the measured rows rather than the arithmetic. First, QAT pays: the quantisation-aware `g4-12b-qat` reaches 0.896 HumanEval at 4.52 bpw, which no 4-bit post-training quant in this roster matches at that footprint. Second, going deeper costs knowledge unevenly — the 3.85 bpw 30B keeps 0.617 MMLU-Pro, but it only affords 13k of context, so on this card the trade is context, not accuracy.
 
@@ -246,7 +265,7 @@ Two observations from the measured rows rather than the arithmetic. First, QAT p
 
 The MTP row is the useful failure: 15.06 GiB at 8k context, over budget by 0.06 GiB. That is what the wall looks like — not a crash, but a model that loads and then spends its life at the edge of the pool. In order of cost:
 
-1. **Cut context.** Halving 32k to 16k returns 0.3-2.5 GiB depending on the model's attention layout (Table 4), and costs nothing in quality for prompts that fit.
+1. **Cut context.** Halving 32k to 16k returns 0.3-2.5 GiB depending on the model's attention layout (Table 5), and costs nothing in quality for prompts that fit.
 2. **Quantise the KV cache.** q8_0 is already assumed throughout; q4_0 halves it again at a small quality cost and is the standard second lever.
 3. **Drop the drafter.** A speculative-decoding head costs weights plus a second KV cache; on this roster it is 0.43 GiB and pushes a fitting model over the line.
 4. **Drop quantisation depth.** One step down is roughly 0.5-1 GiB on a 25B model. It is the only lever that changes what the model knows.
@@ -274,7 +293,7 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 | fit | no | arithmetic against the target's own memory ceiling |
 | needle, riddles, protocol | yes | nothing in the path touches the GPU pool |
 
-*Table 8 — what may be carried from this page to another machine, and what may not.*
+*Table 9 — what may be carried from this page to another machine, and what may not.*
 
 ## 12. Which 16 GiB card, and what it implies
 
@@ -299,12 +318,12 @@ to 896, Intel's one entry sits at 560.
 | NVIDIA RTX 4070 Ti Super 16 GB | 256-bit GDDR6X, 21 Gbps | 672 GB/s | 103-161 | 55-78 |
 | NVIDIA RTX 5070 Ti 16 GB | 256-bit GDDR7, 28 Gbps | 896 GB/s | 137-215 | 73-104 |
 
-*Table 9 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Bandwidth is the peak published in each card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured. Cards are grouped by bandwidth, not by brand.*
+*Table 10 — 16 GB cards, vendor bandwidth, and the decode range it implies for the two models that matter here: the 13.45 GiB MoE (2.29 GB read per token) and the 6.26 GiB dense 12B (6.73 GB read per token). Bandwidth is the peak published in each card's own specification; every predicted figure is an extrapolation, not a measurement, and only the reference row is measured. Cards are grouped by bandwidth, not by brand.*
 
 How the prediction is made, so it can be checked and discounted: decode is bandwidth-bound, so
 `predicted = bandwidth / bytes-read-per-active-token × efficiency`, where efficiency is the fraction of the
 ceiling the hardware actually reaches. The MS-S1 MAX measures 53% of its own ceiling on the MoE (59 of 111
-tok/s) and 73% on the dense model (28 of 38). The bands in Table 9 use 35-55% for the MoE and 55-78% for the
+tok/s) and 73% on the dense model (28 of 38). The bands in Table 10 use 35-55% for the MoE and 55-78% for the
 dense model — deliberately wide, because a discrete card's kernels and a 128-bit card's higher latency per
 byte will not match the MS-S1 MAX's Vulkan path exactly. Both measured values sit inside their bands, which
 is the only calibration available without borrowing a card.
@@ -323,7 +342,7 @@ Three things follow, and one warning:
 - **Warning: bandwidth does not buy prefill in the same proportion.** These predictions cover decode only.
   Prefill is compute-bound and an MoE's prefill touches every expert, so every card in this table will beat
   its decode-side prediction on long prompts by a margin the MS-S1 MAX cannot show — the same caveat that
-  applies to Table 8. On the AMD side the software path matters too: these cards run through ROCm or Vulkan
+  applies to Table 9. On the AMD side the software path matters too: these cards run through ROCm or Vulkan
   on Linux, and backend efficiency, not the memory spec, is what moves prefill.
 
 {{svg charts/16gb-f8.svg}}
@@ -363,7 +382,7 @@ python3 humaneval.py --port 8180 --limit 164 --max-tokens 8192
   --gen_kwargs max_gen_toks=4096      # only for a deliberating model
 ```
 
-Figures on this page are generated from the same run archive by `charts16.py`; the fit arithmetic in the tables is the expression `matrix.py budget` prints, so a figure and a table cannot disagree.
+Figures on this page are generated from the same run archive by `charts16.py`; the fit arithmetic in the tables is the expression `matrix.py budget` prints, so a figure and a table cannot disagree. The machine, build and server flags are the table at the top of the page; nothing in that stack is a variable in the commands above.
 
 ## 15. Licence
 
@@ -408,6 +427,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.12 | 10th November 2026 | The introduction gains a platform table: CPU, GPU, unified memory and the GTT window, kernel, graphics stack, inference build and server flags, each with the reason it is stated. Power and temperature are named as unrecorded rather than implied to be controlled. The spec list that used to sit in the prose is folded into the table instead of being repeated above it. It is Table 1, so every later table is numbered one higher than before. |
 | 1.11 | 10th November 2026 | Mean quality and quality per GiB now appear in every table that lists per-model scores: two columns in the roster (§1) and two rows in the controlled pair (§7). Both are marked derived, and both state the divisor is the footprint at the model's context. The ladder (§8) says why it has no per-GiB column. |
 | 1.10 | 10th November 2026 | Fixes "both platforms" in §4 and in the transferability table: that phrase dates from when the page compared only this box and a discrete card. It now names the three architectures the page actually compares and gives each one's bandwidth range. |
 | 1.9 | 10th November 2026 | Removes duplication in §2: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope. |
