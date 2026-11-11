@@ -1,5 +1,5 @@
 # Testing Local LLMs on AMD Strix Halo
-> **Also published:** [Leaderboards by axis](leaderboards.html) — code, knowledge, reasoning, decode and prefill, each row with its cap and build · [Retired models — what was deleted, why, with hashes and restore recipes](retired-models.html) · [Change log](changelog.html) — every correction and the numbers that forced it · [16 GiB of VRAM](16gb.html) — what fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.
+> **Also published:** [Leaderboards by axis](leaderboards.html) — code, knowledge, reasoning, decode and prefill, each row with its cap and build · [Retired models — what was deleted, why, with hashes and restore recipes](retired-models.html) · [Change log](changelog.html) — every correction and the numbers that forced it · [16 GiB of VRAM — local LLMs](16gb.html) — what fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.
 
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
@@ -2669,7 +2669,7 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
    8183 swift15-fn-heretic (transient bench unit; on disk, no roster unit)
    8185 ornith-mtp-21g    8186 minicpm-v47-35b
    8189 nemotron-super   8094 orient-ornith (SYSTEM unit, boot model)
-   8090 the hardware monitor (hardware monitor, tailnet-only)   8188 ComfyUI (image generation)
+   8090 the hardware monitor (hardware monitor, private network only)   8188 ComfyUI (image generation)
 
    Retired 2026-10-29/30 and no longer bound: 8087 kimi, 8091 mellum, 8095 qwen38-27b,
    8180 nemotron-bolt, 8182 hy-memory, 8184 ling3-flash, 8185 gemma4-31b, 8187 nemotron-bolt-e4b
