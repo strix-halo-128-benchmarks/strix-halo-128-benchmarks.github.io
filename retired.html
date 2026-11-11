@@ -39,6 +39,9 @@ figure.fig { margin:1.6em 0 0.6em; padding:10px 12px; background:var(--code);
 figure.fig svg { display:block; width:100%; height:auto; max-width:100%; }
 pre code { background:none; padding:0; font-size:.8em; line-height:1.5; }
 table { border-collapse:collapse; width:100%; margin:1.2em 0; font-size:.9em; display:block; overflow-x:auto; }
+/* eight or more columns: the cells are short and numeric, so let the table scroll instead of
+   squeezing model names and headers onto three lines each */
+table.wide th, table.wide td { white-space:nowrap; }
 th,td { border:1px solid var(--line); padding:.5em .7em; text-align:left; vertical-align:top; }
 th { background:var(--code); font-weight:600; }
 hr { border:0; border-top:1px solid var(--line); margin:2.2em 0; }
@@ -53,8 +56,10 @@ blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc
 blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
-nav ol { margin:.4em 0 0; padding-left:1.3em; }
+nav ol { margin:.4em 0 0; padding-left:.2em; list-style:none; }
 a { color:var(--acc); }
+a.sref { color:inherit; text-decoration:none; border-bottom:1px dotted var(--dim); }
+a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 .meta { color:var(--dim); font-size:.9em; }
 @media print { body{background:#fff;color:#000} nav{display:none} h2{page-break-after:avoid}
   pre,table{page-break-inside:avoid} main{max-width:none} }

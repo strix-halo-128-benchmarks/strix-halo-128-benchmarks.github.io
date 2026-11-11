@@ -34,6 +34,9 @@ figure.fig { margin:1.6em 0 0.6em; padding:10px 12px; background:var(--code);
 figure.fig svg { display:block; width:100%; height:auto; max-width:100%; }
 pre code { background:none; padding:0; font-size:.8em; line-height:1.5; }
 table { border-collapse:collapse; width:100%; margin:1.2em 0; font-size:.9em; display:block; overflow-x:auto; }
+/* eight or more columns: the cells are short and numeric, so let the table scroll instead of
+   squeezing model names and headers onto three lines each */
+table.wide th, table.wide td { white-space:nowrap; }
 th,td { border:1px solid var(--line); padding:.5em .7em; text-align:left; vertical-align:top; }
 th { background:var(--code); font-weight:600; }
 hr { border:0; border-top:1px solid var(--line); margin:2.2em 0; }
@@ -48,8 +51,10 @@ blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc
 blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
-nav ol { margin:.4em 0 0; padding-left:1.3em; }
+nav ol { margin:.4em 0 0; padding-left:.2em; list-style:none; }
 a { color:var(--acc); }
+a.sref { color:inherit; text-decoration:none; border-bottom:1px dotted var(--dim); }
+a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 .meta { color:var(--dim); font-size:.9em; }
 @media print { body{background:#fff;color:#000} nav{display:none} h2{page-break-after:avoid}
   pre,table{page-break-inside:avoid} main{max-width:none} }
@@ -130,7 +135,7 @@ def render(md: str) -> str:
             while i < len(lines) and lines[i].startswith("|"):
                 rows.append([c.strip() for c in lines[i].strip().strip("|").split("|")])
                 i += 1
-            t = ["<table><thead><tr>"]
+            t = [f'<table class="wide"><thead><tr>' if len(header) >= 8 else "<table><thead><tr>"]
             t += [f"<th>{inline(c)}</th>" for c in header]
             t.append("</tr></thead><tbody>")
             for r in rows:
@@ -234,15 +239,27 @@ def main():
 "distribution":[{{"@type":"DataDownload","encodingFormat":"application/json",
 "contentUrl":"{public}/data/catalogue.json"}}]}}</script>'''
 
-    # build a contents list from the h2 headings
+    # build a contents list from the h2 headings, numbers included: the body calls sections §N,
+    # so a contents entry without its number is not a pointer to the same thing
     toc = []
     for m in re.finditer(r"^## (\d+)\. (.+)$", md, re.M):
         anchor = f"s{m.group(1)}"
-        toc.append(f'<li><a href="#{anchor}">{html.escape(m.group(2))}</a></li>')
-    # inject ids into the rendered h2s
+        toc.append(f'<li><a href="#{anchor}">{html.escape(m.group(1) + ". " + m.group(2))}</a></li>')
+    # inject ids into the rendered h2s, keeping the number in the heading text
     def add_id(m):
-        return f'<h2 id="s{m.group(1)}">{m.group(2)}</h2>'
+        return f'<h2 id="s{m.group(1)}">{m.group(1)}. {m.group(2)}</h2>'
     body = re.sub(r"<h2>(\d+)\. (.*?)</h2>", add_id, body)
+
+    # §N is a cross-reference, so make it one: link the ones whose section exists, and leave code
+    # spans and code blocks alone, where § is text and not a pointer.
+    ids = set(re.findall(r'<h2 id="s(\d+)"', body))
+
+    def sref(m):
+        n = m.group(1)
+        return f'<a class="sref" href="#s{n}">&#167;{n}</a>' if n in ids else m.group(0)
+
+    body = "".join(part if part.startswith(("<pre", "<code")) else re.sub(r"§(\d+)", sref, part)
+                   for part in re.split(r"(<pre\b.*?</pre>|<code\b.*?</code>)", body, flags=re.S))
 
     # title block first, then the contents, then the body
     h1 = re.search(r"<h1>(.*?)</h1>", body, re.S)
@@ -255,9 +272,7 @@ def main():
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(title)}</title>{head_extra}
-<link rel="license" href="https://creativecommons.org/licenses/by/4.0/">
-<link rel="author" href="https://github.com/strix-halo-128-benchmarks"><style>{CSS}</style></head>
+<title>{html.escape(title)}</title>{head_extra}<style>{CSS}</style></head>
 <body><main>
 {titleblock}
 <nav><strong>Contents</strong><ol>{"".join(toc)}</ol></nav>
