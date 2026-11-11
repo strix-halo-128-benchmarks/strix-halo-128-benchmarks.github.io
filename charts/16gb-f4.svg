@@ -1,4 +1,4 @@
-<svg role="img" aria-label="The controlled pair. Same family, same quantisation-aware ~4.5 bpw training, same caps, one box. Bars carry 95% confidence intervals; the difference on HumanEval is one problem and the difference on MMLU-Pro is seven" xmlns:xlink="http://www.w3.org/1999/xlink" width="763.2pt" height="273.6pt" viewBox="0 0 763.2 273.6" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>The controlled pair. Same family, same quantisation-aware ~4.5 bpw training, same caps, one box. Bars carry 95% confidence intervals; the difference on HumanEval is one problem and the difference on MMLU-Pro is seven</title><desc>The controlled pair. Same family, same quantisation-aware ~4.5 bpw training, same caps, one box. Bars carry 95% confidence intervals; the difference on HumanEval is one problem and the difference on MMLU-Pro is seven — computed from the run archive, not drawn by hand.</desc>
+<svg role="img" aria-label="The controlled pair. Same family, same quantisation-aware ~4.5 bpw training, same caps, one box. Left: the three quality axes, bars carrying 95% confidence intervals at n = 164 / 120 / 50 — the difference on HumanEval is one problem, on MMLU-Pro seven. Right: decode for the same two files at the same cap, 28 against 59 tok/s" xmlns:xlink="http://www.w3.org/1999/xlink" width="763.2pt" height="273.6pt" viewBox="0 0 763.2 273.6" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>The controlled pair. Same family, same quantisation-aware ~4.5 bpw training, same caps, one box. Left: the three quality axes, bars carrying 95% confidence intervals at n = 164 / 120 / 50 — the difference on HumanEval is one problem, on MMLU-Pro seven. Right: decode for the same two files at the same cap, 28 against 59 tok/s</title><desc>The controlled pair. Same family, same quantisation-aware ~4.5 bpw training, same caps, one box. Left: the three quality axes, bars carrying 95% confidence intervals at n = 164 / 120 / 50 — the difference on HumanEval is one problem, on MMLU-Pro seven. Right: decode for the same two files at the same cap, 28 against 59 tok/s — computed from the run archive, not drawn by hand.</desc>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -557,10 +557,10 @@ L 753.48 23.64
 " style="fill: none; stroke: var(--line); stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_31">
-    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="552.694857" y="158.418557" transform="rotate(-0 552.694857 158.418557)">27.8</text>
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="552.694857" y="158.418557" transform="rotate(-0 552.694857 158.418557)">28</text>
    </g>
    <g id="text_32">
-    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="687.449987" y="63.747543" transform="rotate(-0 687.449987 63.747543)">59.2</text>
+    <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="687.449987" y="63.747543" transform="rotate(-0 687.449987 63.747543)">59</text>
    </g>
    <g id="text_33">
     <text style="font-size: 9.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="620.072422" y="17.64" transform="rotate(-0 620.072422 17.64)">Decode at the same cap, one machine</text>

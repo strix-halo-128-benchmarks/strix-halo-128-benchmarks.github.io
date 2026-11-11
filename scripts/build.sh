@@ -105,7 +105,7 @@ leakcheck "$REPO/leaderboards.md"
 echo "== 3d. 16 GiB VRAM page (its own document: the class is defined by the card, not by this box)"
 python3 - "$DOCS/16gb-vram.md" "$REPO/16gb-vram.md" <<'PY'
 import sys
-src, dst = sys.argv[1]
+src, dst = sys.argv[1], sys.argv[2]
 txt = open(src, encoding="utf-8").read()
 for a, b in (("`mss1-max`", "the reference host"), ("`mss1-max-hwinfo`", "the hardware monitor"),
              ("mss1-max-hwinfo", "the hardware monitor"), ("mss1-max", "the reference host"),

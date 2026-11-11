@@ -1,4 +1,4 @@
-<svg role="img" aria-label="The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and a 0.78 competitive line drawn across. The three rings are the shortlist, and they are deliberately not the three highest dots — the budget pick sits below the line because it costs 5.4 GiB. Both lines are stated thresholds, not statistics: at 0.79 only two models clear the bar, at 0.75 seven do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express" xmlns:xlink="http://www.w3.org/1999/xlink" width="763.2pt" height="338.4pt" viewBox="0 0 763.2 338.4" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and a 0.78 competitive line drawn across. The three rings are the shortlist, and they are deliberately not the three highest dots — the budget pick sits below the line because it costs 5.4 GiB. Both lines are stated thresholds, not statistics: at 0.79 only two models clear the bar, at 0.75 seven do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express</title><desc>The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and a 0.78 competitive line drawn across. The three rings are the shortlist, and they are deliberately not the three highest dots — the budget pick sits below the line because it costs 5.4 GiB. Both lines are stated thresholds, not statistics: at 0.79 only two models clear the bar, at 0.75 seven do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express — computed from the run archive, not drawn by hand.</desc>
+<svg role="img" aria-label="The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and two stated thresholds drawn across — 0.78, the competitive line, and 0.85, the top of the class. The three rings are the shortlist: the quality pick `lfm25-24b-a2b-think`, the value pick `g4-12b-qat` at roughly half its footprint, and the budget pick `g4-e4b-qat` below the line because it costs 5.4 GiB. They are deliberately not the three highest dots. Both lines are stated thresholds, not statistics: three models clear 0.79 (0.860, 0.799, 0.797), one clears 0.85, and at 0.75 seven do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express" xmlns:xlink="http://www.w3.org/1999/xlink" width="763.2pt" height="338.4pt" viewBox="0 0 763.2 338.4" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and two stated thresholds drawn across — 0.78, the competitive line, and 0.85, the top of the class. The three rings are the shortlist: the quality pick `lfm25-24b-a2b-think`, the value pick `g4-12b-qat` at roughly half its footprint, and the budget pick `g4-e4b-qat` below the line because it costs 5.4 GiB. They are deliberately not the three highest dots. Both lines are stated thresholds, not statistics: three models clear 0.79 (0.860, 0.799, 0.797), one clears 0.85, and at 0.75 seven do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express</title><desc>The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and two stated thresholds drawn across — 0.78, the competitive line, and 0.85, the top of the class. The three rings are the shortlist: the quality pick `lfm25-24b-a2b-think`, the value pick `g4-12b-qat` at roughly half its footprint, and the budget pick `g4-e4b-qat` below the line because it costs 5.4 GiB. They are deliberately not the three highest dots. Both lines are stated thresholds, not statistics: three models clear 0.79 (0.860, 0.799, 0.797), one clears 0.85, and at 0.75 seven do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express — computed from the run archive, not drawn by hand.</desc>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -153,7 +153,7 @@ L 731.6965 13.138945
      </g>
     </g>
     <g id="text_8">
-     <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="402.221055" y="325.436484" transform="rotate(-0 402.221055 325.436484)">footprint at its own context, GiB   (dashed line = 15 GiB usable)</text>
+     <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="402.221055" y="325.436484" transform="rotate(-0 402.221055 325.436484)">footprint at its context, GiB   (dashed line = 15 GiB usable)</text>
     </g>
    </g>
    <g id="matplotlib.axis_2">
@@ -357,10 +357,10 @@ L 753.48 13.138945
     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--warn, #d05c4a)" x="687.040324" y="285.971305" transform="rotate(-0 687.040324 285.971305)">over budget</text>
    </g>
    <g id="text_20">
-    <text style="font-size: 7.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="59.130922" y="94.494745" transform="rotate(-0 59.130922 94.494745)">mean of the three axes &gt;= 0.78</text>
+    <text style="font-size: 7.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="59.130922" y="94.494745" transform="rotate(-0 59.130922 94.494745)">mean of the three axes &gt;= 0.78 (competitive)</text>
    </g>
    <g id="text_21">
-    <text style="font-size: 7.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="59.130922" y="44.539429" transform="rotate(-0 59.130922 44.539429)">&gt;= 0.85</text>
+    <text style="font-size: 7.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="59.130922" y="44.539429" transform="rotate(-0 59.130922 44.539429)">&gt;= 0.85 (top of the class)</text>
    </g>
    <g id="PathCollection_1">
     <defs>
@@ -467,16 +467,16 @@ Q 137.235916 139.751249 148.626303 129.635069
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="651.85792" y="145.148132" transform="rotate(-0 651.85792 145.148132)">mistral-24b-q4</text>
    </g>
    <g id="text_28">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="297.214377" y="107.770548" transform="rotate(-0 297.214377 107.770548)">qwen3-8b-q4</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="657.112852" y="103.845482" transform="rotate(-0 657.112852 103.845482)">g4-26b-a4b-qat</text>
    </g>
    <g id="text_29">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="444.253006" y="81.619223" transform="rotate(-0 444.253006 81.619223)">qwen3-14b-q4</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="662.005631" y="133.379207" transform="rotate(-0 662.005631 133.379207)">qwen3-30b-a3b-q3</text>
    </g>
    <g id="text_30">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="656.112852" y="59.844936" transform="rotate(-0 656.112852 59.844936)">g4-26b-a4b-qat</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="297.214377" y="108.770548" transform="rotate(-0 297.214377 108.770548)">qwen3-8b-q4</text>
    </g>
    <g id="text_31">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="661.005631" y="93.37866" transform="rotate(-0 661.005631 93.37866)">qwen3-30b-a3b-q3</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="444.253006" y="91.619223" transform="rotate(-0 444.253006 91.619223)">qwen3-14b-q4</text>
    </g>
    <g id="PathCollection_11">
     <path d="M 620.736794 48.645069 
