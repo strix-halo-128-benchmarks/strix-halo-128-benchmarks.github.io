@@ -2,7 +2,7 @@
 
 - **Author:** Dom ([github.com/barmynon](https://github.com/barmynon)) · measurements, analysis and writing,
   with Hermes Agent (Nous Research) driven by DeepSeek `deepseek-flash`
-- **Document version:** **1.17** · 10th November 2026 · Minor updates
+- **Document version:** **1.18** · 11th November 2026 · Minor updates
 - **Measured:** 10th November 2026 · 11 weight files, 113.8 GiB · one llama.cpp build, one KV setting, one slot
 - **Axes:** HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3
 - **History of this page:** §16 · **Wider report on this platform:** [index.html](index.html)
@@ -37,8 +37,6 @@ The other thing this table does not claim is that the host is representative of 
 
 
 
-Eleven files, 164-item HumanEval, 120-item MMLU-Pro, 50-prompt IFEval, 113.8 GiB of weights, one build.
-
 > **Also published:** [the main report](index.html) — the wider model matrix on this platform · [leaderboards by axis](leaderboards.html) · [retired models](retired.html) · [change log](changelog.html).
 
 ## 1. The roster
@@ -72,7 +70,7 @@ scores is unreadable without knowing which one a column is.
 | HumanEval | 164 short Python problems: a docstring and a signature, write the function body | the generated code is executed against unit tests; pass@1 is the fraction passing on the first attempt at temperature 0 | 164 items, complete-program prompt, cap 512 (8192 for the thinking arm) | other languages, multi-file work, debugging, or whether it can drive a tool |
 | MMLU-Pro | multiple-choice questions over 14 academic domains, 10 options rather than 4, so guessing pays less than on MMLU | the answer letter is parsed out of a chat completion, 0-shot — no worked examples | 120 items, 0-shot chat probe, cap 512 (4096 for the thinking arm) | reasoning depth, recency or calibration; it is a knowledge quiz, not a task |
 | IFEval | prompts carrying mechanically checkable constraints — "more than 400 words", "exactly 5 bullet points", "in JSON", "end with this phrase" | code checks each constraint: strict is exact text, loose allows whitespace and quote normalisation; prompt level means every constraint met, instruction level is the per-constraint average | 50 prompts at the task's own 1280-token cap (4096 for the thinking arm) | whether the content is right, or whether it obeys constraints nobody spelled out |
-| prefill and decode (pp / tg) | the same server under load: a 2000-token prompt in, then generation out | tokens per second from the server's own counters, one slot | one measurement per model, one context, one build | batch throughput, power, or what a card would do — §4 and §12 cover transfer |
+| prefill and decode (pp / tg) | the same server under load: a 2000-token prompt in, then generation out | tokens per second from the server's own counters, one slot | one measurement per model, one context, one build | batch throughput, power, or what a card would do — §4 and §11 cover transfer |
 | riddles | 14 short arithmetic and logic probes | exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer | 14 probes at temperature 0.2 | anything statistical: it is a smoke test for gross failure, not an axis |
 | **mean quality** *(derived)* | nothing is run — it is the average of the three quality scores | `(HumanEval + MMLU-Pro + IFEval) / 3`, computed from the rows above | every model that has all three axes; the MTP row has none | that a model is good at any one thing. It is a sorting device, not a score, and it hides which axis a model is actually good at |
 | **quality per GiB** *(derived)* | nothing is run either — it is that mean divided by the model's footprint | `mean quality ÷ footprint at its own context`, in GiB | footprint, not weights: the number the card actually spends | that a model is good. A cheap model can top this rank while scoring badly — which is exactly what the budget pick does, at 0.744 mean and 0.138 per GiB |
@@ -136,7 +134,7 @@ axis. Counts are in items, not percentages, because that is what the sample supp
 
 What that table means in practice:
 
-- **lfm25-24b-a2b with deliberation on is the model to run if the card has 14 GiB to spare.** It is the
+- **lfm25-24b-a2b with deliberation on is the model to run if the card can spend 14 GiB of its 15.** It is the
   only row that wins an axis outright (HumanEval, by 11 items), it is joint-first on instruction-following,
   it leads decode and prefill, and it does all of it inside a 32k context. Two costs are real: it
   deliberates before answering, so the throughput lead is decode rate and not time-to-answer; and the same
@@ -156,7 +154,7 @@ What that table means in practice:
 
 ## 4. How to read the numbers
 
-- **Quality does not depend on the GPU.** HumanEval, MMLU-Pro, IFEval, the needle probes and the protocol checks are all hardware-independent. They transfer to a card unchanged.
+- **Quality does not depend on the GPU.** HumanEval, MMLU-Pro, IFEval, the needle probes and the protocol checks are hardware-independent and transfer to a card unchanged (Table 9).
 - **Decode ranks transfer, absolute rates do not.** Decode is bandwidth-bound on bytes read per token on all three architectures this page compares — the unified APU, a discrete card, an Apple SoC — so the ordering survives the hop even though the rates do not: the MS-S1 MAX sits at ~256 GB/s against 288-896 GB/s on a 16 GB card and 546-819 GB/s on Apple silicon.
 - **Prefill does not transfer at all.** It is compute-bound, and an MoE's prefill touches every expert that receives a token, so a discrete card pulls further ahead on exactly the rows where the numbers below look slowest.
 - **Caps and sample sizes are part of the result.** One standard error is ±2.3 points on HumanEval (164 items at a score of 0.90), ±4.5 on MMLU-Pro (120 at 0.61) and ±3.8 on IFEval (50 prompts at 0.92). Twice those — roughly eight points on IFEval, nine on MMLU-Pro — is the smallest difference worth arguing about. The whiskers on Figures 1 and 4 are 95% **confidence intervals** — the range the score would fall in on a fresh sample of the same size, computed as ±1.96 × √(p(1-p)/n) over the item count, which is about double the standard errors quoted here. That is what "95% CI" in those chart titles means: the text quotes one standard error, the charts draw 95% intervals, and both say which they are so a number cannot be read in the wrong units. MMLU-Pro here is a 0-shot chat probe, not the 5-shot loglikelihood protocol the public leaderboards use: the column is internally consistent and sits below published scores by design.
@@ -167,19 +165,17 @@ What that table means in practice:
 
 *Figure 1 — Quality against footprint, with 95% confidence intervals. The shaded band and the dashed line mark a 16 GiB card's 15 GiB budget; the dotted line is the Pareto front (no model above it is both smaller and better). A point's horizontal position is its footprint — weights plus its own KV cache plus the 1 GiB overhead (§2) — so a model with expensive attention sits further right than its file size suggests.*
 
-Three things fall out of that figure.
+Two things fall out of that figure.
 
-**The best model in the class is not the biggest.** `lfm25-24b-a2b` with deliberation left on scores 0.970 / 0.692 / 0.920 at 13.96 GiB — top of the roster on every axis — and decodes at 111 tok/s. The same weights with reasoning disabled collapse to 0.640 / 0.192 / 0.860, a 50-point knowledge loss for the identical file. The arm has to be named whenever the row is quoted.
+**The best model in the class is not the biggest.** The front runs from `g4-e4b-qat` at 5.40 GiB to `lfm25-24b-a2b-think` at 13.96 GiB, and the two largest footprints on the figure — 14.70 and 14.79 GiB — sit below it. The top point is an arm, not a file: its scores are §3's, and the same weights with reasoning disabled lose about 50 points of knowledge.
 
-**Half the memory buys a statistical tie.** `g4-12b-qat` at 7.67 GiB scores 0.896 / 0.575 / 0.920 against the 26B MoE's 0.902 / 0.633 / 0.860. On the mean of the three axes that is 0.797 against 0.799 — and it keeps 32k of context where the 26B fits 16k.
-
-**Two rows are a warning, not a candidate.** `mistral-24b-q4` and `qwen3-30b-a3b-q3` fit only at 4k context. At this footprint, capacity buys parameters at the cost of the context you need to use them.
+**Half the memory buys a statistical tie.** `g4-12b-qat` sits at 7.67 GiB with 32k of context, the 26B MoE at 14.70 GiB with 16k, and their means are 0.797 and 0.799 — two points at the same height, twice the footprint apart, disagreeing by 7 points on knowledge and 3 prompts on instruction-following. §7's controlled pair is the detail.
 
 ## 6. Context is a second budget
 
 Weights are the visible cost. KV cache is the one that decides whether the model is usable, and it is not proportional to model size — it follows the attention layout. On this roster a 14B dense model costs 160 MiB per 1k tokens of context while a 26B MoE costs 20.
 
-| model | KV MiB per 1k tokens | KV at 8k | at 16k | at 32k | at 64k |
+| model | KV MiB per 1k tokens (fp16) | 8k (q8_0) | 16k (q8_0) | 32k (q8_0) | 64k (q8_0) |
 |---|---|---|---|---|---|
 | g4-12b-qat | 16 | 0.06 | 0.12 | 0.25 | 0.50 |
 | g4-26b-a4b-qat | 20 | 0.08 | 0.16 | 0.31 | 0.62 |
@@ -191,7 +187,7 @@ Weights are the visible cost. KV cache is the one that decides whether the model
 | qwen3-14b-q4 | 160 | 0.62 | 1.25 | 2.50 | 5.00 |
 | mistral-24b-q4 | 160 | 0.62 | 1.25 | 2.50 | 5.00 |
 
-*Table 5 — KV cache cost in GiB, measured per model at q8_0 and halved from the fp16 figure by the loader's KV quantisation. This is why a 24B dense model is a 4k-context model on a 16 GiB card and a 26B MoE is a 16k-context model.*
+*Table 5 — KV cache cost. The per-1k column is the fp16 rate each model's attention layout implies; the four context columns are GiB at q8_0 — that fp16 figure halved by the loader's KV quantisation, which is the number the fit arithmetic in Table 2 spends. The two columns are not the same quantity, so a row's 32k value is half of 32 × its per-1k rate, not 32 × it. This is why a 24B dense model is a 4k-context model on a 16 GiB card and a 26B MoE is a 16k-context model.*
 
 {{svg charts/16gb-f2.svg}}
 
@@ -231,7 +227,7 @@ The honest reading is that neither is strictly better:
 
 *Figure 5 — How much of this roster fits at 8k context as the card grows, by pure arithmetic against a budget of (size − 1 GiB).*
 
-| card | usable | models that fit at 8k | best of them by mean quality | what it means |
+| card (GB) | usable (GiB) | models that fit at 8k | best of them by mean quality | what it means |
 |---|---|---|---|---|
 | 8 GB | 7 GiB | 2 of 11 | qwen3-8b-q4 | 4-8B dense only; every MoE in the roster is out |
 | 12 GB | 11 GiB | 4 of 11 | g4-12b-qat | the dense 12B/14B tier arrives; nothing above 10 GiB fits |
@@ -239,7 +235,7 @@ The honest reading is that neither is strictly better:
 | 24 GB | 23 GiB | 11 of 11 | lfm25-24b-a2b-think | everything here fits, at its context, with room for a second model |
 | 32 GB+ | 31 GiB+ | 11 of 11 | lfm25-24b-a2b-think | this roster saturates; the limit is the roster, not the card |
 
-*Table 7 — the ladder. The 32 GB and 48 GB columns are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.* Quality per GiB is deliberately not a column here: at every rung its winner is `g4-e4b-qat`, the smallest file, because the metric divides by footprint — which answers "what is cheapest per gigabyte", not "what is the best that fits". The column is the best that fits.
+*Table 7 — the ladder. The 24 GB and 32 GB+ rows are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model.* Quality per GiB is deliberately not a column here: at every rung its winner is `g4-e4b-qat`, the smallest file, because the metric divides by footprint — which answers "what is cheapest per gigabyte", not "what is the best that fits". The column is the best that fits.
 
 The step from 12 GB to 16 GB is the one that matters. It is not a larger dense model that you gain — it is the MoE tier, and with it the only row in this roster that scores above 0.90 HumanEval while fitting at 32k context.
 
@@ -276,7 +272,7 @@ The MTP row is the useful failure: 15.06 GiB at 8k context, over budget by 0.06 
 4. **Drop quantisation depth.** One step down is roughly 0.5-1 GiB on a 25B model. It is the only lever that changes what the model knows.
 5. **Offload layers.** `-ngl` below the layer count moves layers to CPU, which costs PCIe or system-memory bandwidth on every token — the 5-10x decode collapse that a discrete card shows on spill.
 
-Flags that matter on this class, all used for every row above: `-ngl 99` (all layers on the GPU), `-c` set to the context you measured at rather than the model's maximum, `--flash-attn on`, `--cache-type-k q8_0 --cache-type-v q8_0`, `-np 1` (one slot — concurrency multiplies KV), `-b 4096 -ub 2048` for prefill batching. Nothing here is exotic; the discipline is that each of them changes what fits.
+Every row above ran with the same flags, listed once in Table 1's server-flags row: `-ngl 99` (all layers on the GPU), `-c` at the context measured rather than the model's maximum, `--flash-attn on`, `--cache-type-k q8_0 --cache-type-v q8_0`, `-np 1` (one slot — concurrency multiplies KV), `-b 4096 -ub 2048` for prefill batching. None of them is exotic; the discipline is that each one changes what fits, which is the list above.
 
 ## 11. Three memory architectures
 
@@ -292,7 +288,7 @@ Flags that matter on this class, all used for every row above: `-ngl 99` (all la
 |---|---|---|
 | quality scores | yes, unchanged | depends on weights, quant, cap and prompt protocol only |
 | decode ranking | yes | bandwidth-bound on bytes read per token on all three architectures, so the ordering holds |
-| decode absolute rate | no | scale by bandwidth: 256 GB/s here against 1008-1792 GB/s on a card |
+| decode absolute rate | no | scale by bandwidth: 256 GB/s here against 1008 GB/s on a 24 GB card and 1792 GB/s on a 32 GB one |
 | prefill ranking | partly | dense-to-dense mostly holds; MoE prefill is understated here |
 | prefill absolute rate | no | a card has far more compute per byte of bandwidth |
 | fit | no | arithmetic against the target's own memory ceiling |
@@ -359,7 +355,7 @@ Listed because the gaps are the useful part of a benchmark:
 
 - **Agentic tool use.** Preflight confirms an OpenAI-shaped client can read the reply (3/3 on every row: non-empty content, a JSON object, a one-word answer). A multi-round tool loop was not run, and a model can pass preflight and still fail to drive tools.
 - **Long-context retrieval per model.** The roster's needle probes are at 2k and 8k. A depth curve to 100k+ was run for other models on this platform, not for these.
-- **Energy and thermals per token.** Package power during a batch sat around 96 W with the GPU at 76 °C on the MS-S1 MAX; the monitor records that as a trace at ~2 s, so it is a thermal record rather than a spot sample — but it is still not an energy-per-1k-tokens measurement, which would need the integral.
+- **Energy and thermals per token.** The envelope is measured and quoted with the platform table — 96 W mean package power against a 129 W peak, 69 °C mean GPU temperature against an 88 °C hottest sample — but it is a thermal record sampled every ~2 s, not an energy-per-1k-tokens figure, which would need the integral over a run.
 - **Concurrency.** Every row was measured with one slot. Throughput under `-np 4` is a different measurement with a different KV footprint.
 - **Quant ladders per model.** One quant per model was measured. The claim that QAT holds up better than post-training quant at equal bpw rests on the controlled pair, not on a sweep.
 - **Real spill behaviour.** This host cannot show it. The spill penalty quoted for discrete cards is from the literature and the PCIe arithmetic, not from a measurement on a card.
@@ -431,6 +427,7 @@ link in the document head, and the same CC BY 4.0 statement in the repository's 
 
 | version | date | what changed |
 |---|---|---|
+| 1.18 | 11th November 2026 | Dedup and labels pass; no measured value changed. **Removed:** the one-line roster summary after the platform table (the header already carries the file count, the axes and 113.8 GiB); §5's third paragraph, which restated the 4k-context warning §3 makes, and the score lists in its other two, so the section now reads the figure — the front's two ends, and a tie that sits twice as far right — and points at §3 and §7 for the numbers; §4's first bullet restated Table 9's first row and now cites it; §10's closing paragraph restated Table 1's flag row and now cites it. **Labels:** Table 5's per-1k column is marked (fp16) and its four context columns (q8_0), and the caption states the 32k value is half of 32 × the per-1k rate rather than 32 × it — the unlabelled header allowed the opposite reading; Table 7's header names its units, card (GB) against usable (GiB); Table 9's decode row names the two card sizes behind 1008-1792 GB/s; Table 3's transfer pointer read §12, it is §11. **Corrected:** Table 7's caption said "the 32 GB and 48 GB columns" where the ladder has a 24 GB and a 32 GB+ row; §3's "14 GiB to spare" is now "14 GiB of its 15", because the row's footprint is 13.96 GiB against a 15 GiB budget and it has about 1 GiB left, not 14; §13 quoted 96 W and 76 °C as a batch figure that contradicts the envelope measured and quoted with the platform table (96 W mean against a 129 W peak, 69 °C mean against an 88 °C hottest sample), and now defers to it. |
 | 1.17 | 10th November 2026 | Corrections pass: the 30B's context in §9 read 13k, it is 4k; §12 counted three NVIDIA boards, Table 10 lists four; the 128-bit decode multiplier read 0.9-1.8x, it is 0.75-1.85x, and the 256-bit group 2.0-2.6x, it is 1.3-2.7x; §10's halving claim read 0.3-2.5 GiB against Table 5's q8_0 columns, which give 0.1-1.25; the §3 decode row now names the 110 tok/s arm as next best instead of skipping it; §2's KV bullet no longer says the 14B only fits 4k; the decision-map sentence placed the quality pick top-left, it is the top-right extreme; Figure 1's caption now names the 1 GiB overhead in the footprint. |
 | 1.16 | 10th November 2026 | §4 now says which uncertainty it quotes: the three figures there are one standard error, the paragraph defines the 95% confidence intervals the charts draw and says they are about double these. §11's memory figures move to the host's own units — 128 GiB and a 100 GiB GTT window — replacing a 96 GiB figure that no reading on the box produces. |
 | 1.15 | 10th November 2026 | Corrects the claim that power and temperature were not recorded: the host's monitor logs both at ~2 s throughout, and the platform table now says so with retention. The introduction quotes the campaign's measured envelope — GPU 69 °C mean, 88 °C hottest sample, package power 96 W mean, 129 W peak — so the throughput numbers come with a thermal context instead of an unstated one. |
