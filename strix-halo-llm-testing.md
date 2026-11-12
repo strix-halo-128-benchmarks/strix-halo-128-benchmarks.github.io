@@ -7,8 +7,9 @@
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-08
-- **Roster:** 16 servable model families on disk, 709 GiB, checked 2026-11-08 · **Change log:** §21
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-12
+- **Roster:** 49 `.gguf` files on disk, 807.6 GiB, 29 of them carrying a measured row, checked 2026-11-12
+  · **Change log:** §21
 
 **About this document**
 
@@ -55,7 +56,7 @@ exactly how far that can be pushed.
 
 ### 0.0 In plain terms
 
-This is a test of **30 AI models on one small computer** — a Mini-PC the size of a hardback book, with a
+This is a test of **48 measured models on one small computer** — a Mini-PC the size of a hardback book, with a
 single AMD chip and 128 GB of shared memory. Everything here runs on that machine, offline, with no cloud
 account. The question was simple: which of these models is worth using, and what does each one cost you in
 speed?
@@ -147,7 +148,7 @@ that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (§8 has the full table).
 
 ### 0.3 What exists as a result
 
-A roster of **15 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
+A roster of **29 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
 build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with
 Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured,
 failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against
@@ -980,7 +981,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 37 of the 75 model aliases that have
+One row per model that completed the full suite and reached a verdict — 48 of the 87 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -996,6 +997,7 @@ deleted rows are why the recommendations below have reasons.
 
 | Model | Params | Quant | HumanEval | MMLU-Pro | Riddles | prefill t/s | decode t/s | measured | build | disk |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| lfm25-24b-a2b (thinking) | 24.0B | Q4_0 | 0.9695 (164@8192) | 0.6917 (120@4096) | 14/14 | 3360 | 111.2 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | gemma4-31b | 30.7B | Q4_0 | 0.9634 (164@2048) | 0.8667 (120@2048) | 14/14 | 350 | 17.0 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
 | gemma4-26b-uncen | 25.2B | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 1759 | 56.9 | 2026-10-28 | fork b3-1a33095 | ✓ driver |
 | minicpm-v47-35b | 34.7B | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 1600 | 64.6 | 2026-10-18 | bolt pre-identity | ✓ |
@@ -1004,6 +1006,8 @@ deleted rows are why the recommendations below have reasons.
 | ornith-122b | 124.6B | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 605 | 23.3 | 2026-10-20 | fork pre-identity | ✓ |
 | nemotron-super-120b | 123.6B | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 411 | 27.1 | 2026-10-18 | bolt pre-identity | ✗ 11-05 |
 | Nemotron-Bolt-74B-A9B | 74.0B | IQ2_XXS | 0.9451 (164@2048) | 0.3667 (120@2048) | 13/14 | 577 | 72.8 | 2026-10-16 | bolt pre-identity | ✗ 10-30 |
+| Groot-19B-A3B | 19.0B | Q4_K_M | 0.9390 (164@4096) | 0.7167 (120@4096) | 13/14 | 2176 | 64.8 | 2026-11-11 | fork b3-1a33095 | ✓ |
+| Axion-1.0-35B (IQ3_XXS) | 34.7B | IQ3_XXS | 0.9329 (164@8192) | 0.7583 (120@4096) | 14/14 | 1543 | 93.8 | 2026-11-12 | fork b3-1a33095 | ✓ |
 | qwen3next-q6 | 79.7B | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 1189 | 45.8 | 2026-10-10 | fork pre-identity | ✓ |
 | gptoss | 116.8B | MXFP4 | 0.9268 (164) | 0.5833 (120) | 12/14 | 1045 | 50.1 | 2026-10-12 | fork pre-identity | ✓ |
 | gptoss-abliterated | 116.8B | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 1052 | 50.5 | 2026-10-13 | fork pre-identity | ✓ |
@@ -1014,9 +1018,13 @@ deleted rows are why the recommendations below have reasons.
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
 | mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✗ 11-05 |
 | Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✗ 11-05 |
+| gemma-4-12B-QAT | 11.9B | Q4_0 | 0.8963 (164@512) | 0.5750 (120@512) | 14/14 | 911 | 27.8 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | Laguna-XS-2.1 | 33.4B | Q4_K_M | 0.8667 (60@4096) | 0.7000 (40@8192) | 10/14 | 1321 | 87.7 | 2026-11-06 | fork b3-1a33095 | ✓ |
+| gemma-4-E4B-QAT | 7.5B | Q4_0 | 0.8659 (164@512) | 0.4667 (120@512) | 14/14 | 2243 | 57.8 | 2026-11-10 | fork b3-1a33095 | ✓ |
+| qwen3-14b | 14.8B | Q4_K_M | 0.8537 (164@512) | 0.6083 (120@512) | 14/14 | 743 | 23.5 | 2026-11-10 | fork b3-1a33095 | ✓ |
+| qwen3-30b-a3b | 30.5B | Q3_K_M | 0.8537 (164@512) | 0.6167 (120@512) | 14/14 | 1910 | 79.7 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | Clover-35B-A3B-Preview | 34.7B | Q4_K_M | 0.8598 (164@4096) | 0.4000 (120@4096) | 14/14 | 1461 | 53.7 | 2026-11-03 | clover b1-6b9c0cf | ✗ 11-03 |
 | lfm25-24b-a2b | 24.0B | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 2930 | 106.6 | 2026-10-17 | fork pre-identity | ✓ |
 | Axion-1.0-35B | 34.7B | Q4_K_M | 0.8500 (60@2048) | 0.7750 (40@2048) | 10/14 | 1422 | 76.2 | 2026-11-05 | fork b3-1a33095 | ✓ |
@@ -1025,6 +1033,8 @@ deleted rows are why the recommendations below have reasons.
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | 0.8750 (40@2048) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
 | Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 1633 | 74.1 | 2026-11-01 | fork b3-1a33095 | ✓ |
+| mistral-small-3.1-24b | 23.6B | Q4_K_M | 0.8232 (164@512) | 0.6083 (120@512) | 12/14 | 460 | 14.9 | 2026-11-10 | fork b3-1a33095 | ✓ |
+| qwen3-8b | 8.2B | Q4_K_M | 0.7866 (164@512) | 0.5833 (120@512) | 13/14 | 1300 | 39.0 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | kimi | 49.1B | Q4_K_M | 0.7866 (164@2048) | 0.5500 (120@2048) | 13/14 | 1597 | 67.4 | 2026-10-14 | fork pre-identity | ✗ 10-29 |
 | hy-memory-30b-a3b | 30.1B | Q4_K_M | 0.7805 (164@2048) | 0.7250 (120@2048) | 12/14 | 1515 | 74.7 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
 | graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | fork pre-identity | ✗ |
@@ -1032,7 +1042,23 @@ deleted rows are why the recommendations below have reasons.
 | Ling-3.0-flash | — | Q4_K_M | — | 0.7667 (120@2048) | 11/14 | — | 43.5 | 2026-10-22 | fork pre-identity | ✗ 10-30 |
 | qwen38fn32-prune2 | 32.2B | QMix, 3 banks | — | — | — | 397 | 20.0 | 2026-11-03 | qwen4exp-var b1-1844325 | ✗ 11-03 |
 | ornith35b (uncensored) | 35.5B | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 1762 | 69.9 | 2026-10-31 | fork b3-1a33095 | ✓ boot |
+| gpt-oss-20b-mxfp4 | 20.9B | MXFP4 | 0.5854 (164@512) | 0.5583 (120@512) | 14/14 | 2169 | 74.4 | 2026-11-10 | fork b3-1a33095 | ✓ |
+| gemma-4-26B-A4B-QAT + MTP drafter | 25.2B | Q4_0 | — | — | 14/14 | 1886 | 54.9 | 2026-11-09 | fork b3-1a33095 | ✓ |
 | nemotron-bolt (broken load) | 74.0B | IQ2_XXS | 0.1786 (56@512) | 0.4146 (41@512) | 8/14 | 586 | 22.7 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
+
+**The eleven 16 GiB-card rows are new in this edition.** They are the same box, the same build
+(`b3-1a33095`), the same harness and the same per-item records — measured against a different question: what a
+**16 GiB graphics card** can hold, rather than what this 100 GiB pool can. That changes the caps, and the caps
+change the scores. The seven small non-thinking arms (`gemma-4-12B-QAT`, `gemma-4-E4B-QAT`, `qwen3-14b`,
+`qwen3-30b-a3b`, `qwen3-8b`, `mistral-small-3.1-24b`, `gpt-oss-20b-mxfp4`) were scored at **512 tokens** on both
+capability axes, which is the generation budget a 16 GiB card leaves after its weights and KV cache — so read
+those cells as "what you get on the card", not as the model's ceiling. The three arms that deliberate
+(`lfm25-24b-a2b (thinking)`, `Groot-19B-A3B`, `Axion-1.0-35B (IQ3_XXS)`) were re-run at 4096-8192 because 512
+pins them mid-thought and measures the cap instead of the model; their 512-cap numbers are on the 16 GiB page
+as the cap evidence. `gemma-4-26B-A4B-QAT` and base `lfm25-24b-a2b` already had rows here at wider caps (2048
+and 4096), so those two files appear once: at their better run. The fit arithmetic, the per-card budget tables
+and the 16 GiB verdicts are on the **[16 GiB page](16gb.html)**; this table is the cross-class record.
+
 New in this edition: the `gemma4-26b-uncen` row (measured 2026-10-28, the model that now answers the
 channel) and the `disk` column. **Three rows were wrong in version 1.2 and are corrected.** `qwen3next-q6`
 was published as 0.9207 (164@2048) — no run supports that: its best is 0.9296 over 142 items, and
@@ -1523,21 +1549,29 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | decode | model | status |
 |---|---|---|
 | 111.9 t/s | mellum21-fork | ✓ |
+| 111.2 t/s | lfm25-24b-a2b (thinking) | ✓ |
 | 106.6 t/s | lfm25-24b-a2b | ✓ |
-| 91.8 t/s | mellum | ✗ 10-29 |
 
 ### 11.4 Reasoning traps — models that clear all fourteen
 
 | riddles | model | status |
 |---|---|---|
+| 14/14 | lfm25-24b-a2b (thinking) | ✓ |
 | 14/14 | gemma4-31b | ✗ 10-30 |
 | 14/14 | gemma4-26b-uncen | ✓ driver |
 | 14/14 | gemma4-26b-a4b | ✗ 10-30 |
 | 14/14 | gemma4-26b-qat-q4 | ✓ |
+| 14/14 | Axion-1.0-35B (IQ3_XXS) | ✓ |
 | 14/14 | qwen3next-q6 | ✓ |
 | 14/14 | qwen3next-q4 | ✓ |
+| 14/14 | gemma-4-12B-QAT | ✓ |
 | 14/14 | qwen38-35b | ✓ |
+| 14/14 | gemma-4-E4B-QAT | ✓ |
+| 14/14 | qwen3-14b | ✓ |
+| 14/14 | qwen3-30b-a3b | ✓ |
 | 14/14 | graft-50b-a3b | ✗ |
+| 14/14 | gpt-oss-20b-mxfp4 | ✓ |
+| 14/14 | gemma-4-26B-A4B-QAT + MTP drafter | ✓ |
 
 ---
 
@@ -2405,11 +2439,10 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 155 runs totalling **60.6 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-08. Of the 75 model aliases with at least one
-measurement, 16 model families remain
-servable and every deletion is recorded in the ledger; the two largest deletion passes alone released
-61.6 GiB and 245.1 GiB.
+**The one cost that is measured:** 206 runs totalling **75.2 hours of benchmark execution**, recorded
+run by run in `catalogue.json`, over 2026-10-07 → 2026-11-12. Of the 87 model aliases with at least one
+measurement, 29 servable models carry a row in Table 4 and every deletion is recorded in the ledger; the two
+largest deletion passes alone released 61.6 GiB and 245.1 GiB.
 
 A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive
 one at 20 minutes to 2 hours depending on the model. The benefit is that every decision is a line in
@@ -2768,6 +2801,16 @@ was wrong is not a correction.
 
 The seven most recent entries, in brief:
 
+- **v1.24** — **the 16 GiB-card roster joins the matrix**: eleven rows measured 2026-11-09 → 2026-11-12 on the
+  same box and build (`b3-1a33095`) but against a 16 GiB budget — `lfm25-24b-a2b (thinking)` **0.9695 code
+  (159/164@8192) / 0.6917 knowledge (83/120@4096)** at 111.2 t/s, which is now the best HumanEval cell in
+  Table 4; `Groot-19B-A3B` 0.9390/0.7167; `Axion-1.0-35B IQ3_XXS` 0.9329/0.7583 at 93.8 t/s; seven small arms
+  at a **512-token cap** (`gemma-4-12B-QAT` 0.8963, `gemma-4-E4B-QAT` 0.8659, `qwen3-14b` 0.8537,
+  `qwen3-30b-a3b` 0.8537, `mistral-small-3.1-24b` 0.8232, `qwen3-8b` 0.7866, `gpt-oss-20b-mxfp4` 0.5854) that
+  describe what a card delivers rather than a ceiling, and the `gemma-4-26B-A4B-QAT` MTP arm as a perf-only row
+  at 54.9 t/s. The cap argument is the finding: the same `lfm25` weights read **MMLU 0.1917 at 512 and 0.6917
+  at 4096**. Counts recounted from the archive — 206 runs, 75.2 h, 87 aliases, 48 matrix rows, 29 servable —
+  and §11.3/§11.4 reordered. Clover IQ2_M, the twelfth row, was mid-measurement at publication.
 - **v1.23** — **Lite-Beam M2.7 229B-A10B** (MiniMax-M2.7 shape, A10B) measured at IQ2_XXS — 2.0625 bpw,
   61.36 GiB over two shards, served lazily: **0.8000 code (48/60@4096), 0.6750 knowledge (27/40@4096)**,
   10/14 riddles, preflight 3/3, both needles, 34.1 t/s decode / 261 t/s prefill; IFEval 0.20/0.16 is the
@@ -2809,8 +2852,6 @@ The seven most recent entries, in brief:
   the 32B-A6B "Prune2" export **loads after all** — v1.16's "cannot load" was a tier-0-only read of a
   three-bank expert layout — and was then retired for a split failure: repetition on Vulkan, no factual
   knowledge on CPU.
-- **v1.17** — §0 rewritten in plain language (five findings, no jargon), with the technical claims moved to §0.1
-  and the report's own limits stated as a paragraph rather than a caveat.
 - **v1.16** — Qwen3.8-Flash-Next-32B-A6B "Prune2" cannot load (header says 177 experts, tensors hold 64, the
   router still has 177 rows); recorded as unloadable rather than unmeasured, and deleted. **Superseded by
   v1.18.**

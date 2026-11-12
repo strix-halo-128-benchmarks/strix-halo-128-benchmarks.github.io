@@ -9,6 +9,55 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.24 (2026-11-12)
+
+**The 16 GiB-card roster joins the matrix — eleven rows, same box and build, different cap.**
+
+Between 2026-11-09 and 2026-11-12 the box was re-used to answer a second question: what fits and what scores
+on a **16 GiB graphics card**, with the fit arithmetic done against a 16 GiB budget instead of this host's
+100 GiB pool. That work produced the [16 GiB page](16gb.html); this edition puts its models into Table 4 so the
+main matrix is one record rather than two. Same box, same fork build (`b3-1a33095`), same harness and the same
+per-item records — but a different generation cap, because on a card the cap is what the KV budget leaves you.
+
+| model | HE | MMLU-Pro | riddles | decode | prefill | size | verdict |
+|---|---|---|---|---|---|---|---|
+| lfm25-24b-a2b (thinking) | **0.9695 (159/164 @8192)** | 0.6917 (83/120 @4096) | 14/14 | 111.2 t/s | 3360 t/s | 12.65 GiB | kept |
+| Groot-19B-A3B | 0.9390 (154/164 @4096) | 0.7167 (86/120 @4096) | 13/14 | 64.8 t/s | 2176 t/s | 11.63 GiB | kept |
+| Axion-1.0-35B IQ3_XXS | 0.9329 (153/164 @8192) | 0.7583 (91/120 @4096) | 14/14 | 93.8 t/s | 1543 t/s | 12.69 GiB | kept |
+| gemma-4-12B-QAT | 0.8963 (147/164 @512) | 0.5750 (69/120 @512) | 14/14 | 27.8 t/s | 911 t/s | 6.26 GiB | kept |
+| gemma-4-E4B-QAT | 0.8659 (142/164 @512) | 0.4667 (56/120 @512) | 14/14 | 57.8 t/s | 2243 t/s | 3.93 GiB | kept |
+| qwen3-14b | 0.8537 (140/164 @512) | 0.6083 (73/120 @512) | 14/14 | 23.5 t/s | 743 t/s | 8.38 GiB | kept |
+| qwen3-30b-a3b | 0.8537 (140/164 @512) | 0.6167 (74/120 @512) | 14/14 | 79.7 t/s | 1910 t/s | 13.70 GiB | kept |
+| mistral-small-3.1-24b | 0.8232 (135/164 @512) | 0.6083 (73/120 @512) | 12/14 | 14.9 t/s | 460 t/s | 13.35 GiB | kept |
+| qwen3-8b | 0.7866 (129/164 @512) | 0.5833 (70/120 @512) | 13/14 | 39.0 t/s | 1300 t/s | 4.68 GiB | kept |
+| gpt-oss-20b-mxfp4 | 0.5854 (96/164 @512) | 0.5583 (67/120 @512) | 14/14 | 74.4 t/s | 2169 t/s | 11.28 GiB | kept |
+| gemma-4-26B-A4B-QAT + MTP drafter | — | — | 14/14 | 54.9 t/s | 1886 t/s | 15.06 GiB at 8k | perf arm |
+
+**The cap is the finding, not a footnote.** Seven of the eleven are non-thinking arms and were measured at a
+**512-token generation cap** on both capability axes — the budget a 16 GiB card leaves after weights and KV —
+so their cells describe what the card delivers, not the model's ceiling. The three that deliberate were re-run
+at 4096-8192 for that reason: `lfm25-24b-a2b` reads **MMLU 0.1917 at 512 and 0.6917 at 4096** on the same
+weights, which is a 50-point swing produced entirely by the cap, and it is the clearest single illustration on
+this box of why cap discipline outranks model choice in a benchmark comparison. `gemma-4-26B-A4B-QAT` and base
+`lfm25-24b-a2b` already had rows here at 2048 and 4096, so those files appear once, at their better run; their
+512-cap numbers stay on the 16 GiB page as the cap evidence.
+
+**What moved as a result.** `lfm25-24b-a2b (thinking)` takes the top HumanEval cell in Table 4 at **0.9695
+(159/164)**, ahead of `gemma4-31b` at 0.9634 (retired 2026-10-30) — so the best-coding row on the board is now a
+12.65 GiB file that is also the second-fastest decoder measured here. §11.3 gains it at 111.2 t/s
+(second only to `mellum21-fork` at 111.9) and §11.4 grows from 8 rows with all fourteen riddles to 16. The
+counts are recounted from the archive rather than inherited: **206 runs, 75.2 h, 87 aliases, 48 matrix rows,
+29 rows still servable on disk** — §0.3, §9's preamble and §18.3 now say those numbers, and the roster header
+cites files on disk (49 `.gguf`, 807.6 GiB, checked 2026-11-12) instead of a family count that three different
+readings of the directory could give three different answers for.
+
+**Not in this edition:** Clover-35B-A3B-Preview IQ2_M, the twelfth row of that roster, was mid-measurement when
+this was published — HumanEval 0.9451 (155/164 @8192) was in, MMLU-Pro and IFEval were still running. It gets its
+own paragraph and its own row when the axes land, and it will be measured under the same AR-only caveat as the
+Q4_K_M row it replaces.
+
+---
+
 ### Version 1.23 (2026-11-09)
 
 **One arrival at the far end of the quantisation curve — and a publication gap in the edition before it.**
