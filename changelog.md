@@ -9,6 +9,52 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.25 (2026-11-12)
+
+**Clover-35B-A3B-Preview measured in AR mode: the last gap in the 16 GiB roster closes, and it takes that
+roster's knowledge lead.**
+
+| model | HE | MMLU-Pro | IFEval prompt/inst | decode | prefill | size | verdict |
+|---|---|---|---|---|---|---|---|
+| Clover-35B-A3B-Preview IQ2_M | **0.9451 (155/164 @8192)** | **0.8417 (101/120 @8192)** | 0.8400 / 0.8289 (50@4096) | 67.5 t/s | 1849 t/s | 12.32 GiB | kept |
+
+A block-diffusion MoE — 40 blocks, 256 experts, 10 full-attention and 30 linear-attention layers, 34.7B
+parameters — served by the fork at tree HEAD `19b458b5a` ("models: add Clover (`clover_moe`) support, ported
+from upstream #31306"), whose version string reads `b11581-1a3309516`: build 11581 on the `1a3309516` base,
+which is why the build column in Table 4 names both. Flash attention is on and the KV cache is q8_0 on the ten
+full-attention layers, so the row is comparable with the rest of the matrix at the level that matters — it is
+not a second flag set measured on a second build.
+
+**Measured AR-only, and that is the caveat the row carries everywhere it appears.** llama.cpp runs this
+architecture autoregressively: there is no parallel block decode, so this is the causal-decode arm of weights
+trained for something else. It says what these weights do in this harness. It does not say what the model does
+when decoded the way it was trained.
+
+**What the axes say.** 0.9451 code (155/164) is second on the 16 GiB roster behind `lfm25-24b-a2b (thinking)`
+at 0.970, and inside the same ±3.8-point interval as the rows at 0.933 and 0.939 — a top cluster, not a win.
+0.8417 knowledge (101/120) is a different matter: it leads that roster by 10 items over
+`axion-1.0-35b-iq3` (0.758), and across this whole matrix it is the best 120-item knowledge score of any live
+row except the driver (`gemma4-26b-uncen`, 0.8500). At 12.32 GiB that inverts the page's quantisation
+argument again: a 3.05 bpw diffusion export keeps knowledge that 4.5 bpw dense rows do not.
+
+**The cap is worth 28 points on this model, measured twice.** IFEval read 0.560 prompt-strict / 0.5526
+instruction-strict at the task's own 1280-token pin and 0.8400 / 0.8289 at 4096 — the same class of artefact
+`groot-19b-a3b` (0.220 → 0.740) and `axion-1.0-35b-iq3` (0.300 → 0.780) produced, and the reason those arms
+carry 4096-8192 caps in Table 4.
+
+**Against the Q4_K_M row this replaces, and what is not claimed.** The archive already had a Clover row:
+0.8598 code / 0.4000 knowledge, Q4_K_M at cap 4096, measured 2026-11-03 on the upstream build that trades
+flash attention for the architecture, so its KV cache was f16. The two rows differ in quantisation, build,
+KV cache and cap at once, so this edition does not attribute the 44-point knowledge difference to any one of
+them. What it will say is that cap alone moves this model by 28 points on IFEval, which is enough to make the
+old 0.4000 unquotable as a property of the weights.
+
+**Roster and counts.** 49 measured rows, 30 servable, 207 runs, 76.9 h, 87 aliases. The 16 GiB page gains the
+fourteenth row, its §3 knowledge and overall verdicts move, and its §13 gap bullet for this model is replaced
+by the AR-only caveat above.
+
+---
+
 ### Version 1.24 (2026-11-12)
 
 **The 16 GiB-card roster joins the matrix — eleven rows, same box and build, different cap.**

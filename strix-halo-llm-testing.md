@@ -4,7 +4,7 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.24** · 12th November 2026 · The 16 GiB-card roster joins the measured matrix
+- **Document version:** **1.25** · 12th November 2026 · Clover measured: 0.842 knowledge in AR mode
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
@@ -149,7 +149,7 @@ that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (§8 has the full table).
 
 ### 0.3 What exists as a result
 
-A roster of **29 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
+A roster of **30 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
 build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with
 Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured,
 failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against
@@ -982,7 +982,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 48 of the 87 model aliases that have
+One row per model that completed the full suite and reached a verdict — 49 of the 87 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -1007,6 +1007,7 @@ deleted rows are why the recommendations below have reasons.
 | ornith-122b | 124.6B | Q4_K_M | 0.9512 (164@4096) | 0.7917 (120@4096) | 12/14 | 605 | 23.3 | 2026-10-20 | fork pre-identity | ✓ |
 | nemotron-super-120b | 123.6B | Q3_K_M | 0.9512 (164@4096) | 0.7667 (120@4096) | 11/14 | 411 | 27.1 | 2026-10-18 | bolt pre-identity | ✗ 11-05 |
 | Nemotron-Bolt-74B-A9B | 74.0B | IQ2_XXS | 0.9451 (164@2048) | 0.3667 (120@2048) | 13/14 | 577 | 72.8 | 2026-10-16 | bolt pre-identity | ✗ 10-30 |
+| Clover-35B-A3B-Preview (IQ2_M, AR mode) | 34.7B | IQ2_M | 0.9451 (164@8192) | 0.8417 (120@8192) | 14/14 | 1849 | 67.5 | 2026-11-12 | fork b11581-19b458b | ✓ |
 | Groot-19B-A3B | 19.0B | Q4_K_M | 0.9390 (164@4096) | 0.7167 (120@4096) | 13/14 | 2176 | 64.8 | 2026-11-11 | fork b3-1a33095 | ✓ |
 | Axion-1.0-35B (IQ3_XXS) | 34.7B | IQ3_XXS | 0.9329 (164@8192) | 0.7583 (120@4096) | 14/14 | 1543 | 93.8 | 2026-11-12 | fork b3-1a33095 | ✓ |
 | qwen3next-q6 | 79.7B | Q6_K | 0.9296 (142) | 0.6058 (104) | 14/14 | 1189 | 45.8 | 2026-10-10 | fork pre-identity | ✓ |
@@ -1047,7 +1048,7 @@ deleted rows are why the recommendations below have reasons.
 | gemma-4-26B-A4B-QAT + MTP drafter | 25.2B | Q4_0 | — | — | 14/14 | 1886 | 54.9 | 2026-11-09 | fork b3-1a33095 | ✓ |
 | nemotron-bolt (broken load) | 74.0B | IQ2_XXS | 0.1786 (56@512) | 0.4146 (41@512) | 8/14 | 586 | 22.7 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
 
-**The eleven 16 GiB-card rows are new in this edition.** They are the same box, the same build
+**The twelve 16 GiB-card rows are new in this edition.** They are the same box, the same build
 (`b3-1a33095`), the same harness and the same per-item records — measured against a different question: what a
 **16 GiB graphics card** can hold, rather than what this 100 GiB pool can. That changes the caps, and the caps
 change the scores. The seven small non-thinking arms (`gemma-4-12B-QAT`, `gemma-4-E4B-QAT`, `qwen3-14b`,
@@ -1057,8 +1058,11 @@ those cells as "what you get on the card", not as the model's ceiling. The three
 (`lfm25-24b-a2b (thinking)`, `Groot-19B-A3B`, `Axion-1.0-35B (IQ3_XXS)`) were re-run at 4096-8192 because 512
 pins them mid-thought and measures the cap instead of the model; their 512-cap numbers are on the 16 GiB page
 as the cap evidence. `gemma-4-26B-A4B-QAT` and base `lfm25-24b-a2b` already had rows here at wider caps (2048
-and 4096), so those two files appear once: at their better run. The fit arithmetic, the per-card budget tables
-and the 16 GiB verdicts are on the **[16 GiB page](16gb.html)**; this table is the cross-class record.
+and 4096), so those two files appear once: at their better run. `Clover-35B-A3B-Preview` is the twelfth and the one to read carefully: it is a block-diffusion model that
+llama.cpp runs autoregressively, so its 0.9451/0.8417 is the causal-decode arm of a model trained for
+parallel decode — the flavour of the weights, not the speed of the architecture it was designed for. The fit
+arithmetic, the per-card budget tables and the 16 GiB verdicts are on the **[16 GiB page](16gb.html)**; this
+table is the cross-class record.
 
 New in this edition: the `gemma4-26b-uncen` row (measured 2026-10-28, the model that now answers the
 channel) and the `disk` column. **Three rows were wrong in version 1.2 and are corrected.** `qwen3next-q6`
@@ -1562,6 +1566,7 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | 14/14 | gemma4-26b-uncen | ✓ driver |
 | 14/14 | gemma4-26b-a4b | ✗ 10-30 |
 | 14/14 | gemma4-26b-qat-q4 | ✓ |
+| 14/14 | Clover-35B-A3B-Preview (IQ2_M, AR mode) | ✓ |
 | 14/14 | Axion-1.0-35B (IQ3_XXS) | ✓ |
 | 14/14 | qwen3next-q6 | ✓ |
 | 14/14 | qwen3next-q4 | ✓ |
@@ -2440,9 +2445,9 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 206 runs totalling **75.2 hours of benchmark execution**, recorded
+**The one cost that is measured:** 207 runs totalling **76.9 hours of benchmark execution**, recorded
 run by run in `catalogue.json`, over 2026-10-07 → 2026-11-12. Of the 87 model aliases with at least one
-measurement, 29 servable models carry a row in Table 4 and every deletion is recorded in the ledger; the two
+measurement, 30 servable models carry a row in Table 4 and every deletion is recorded in the ledger; the two
 largest deletion passes alone released 61.6 GiB and 245.1 GiB.
 
 A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive
@@ -2802,6 +2807,16 @@ was wrong is not a correction.
 
 The seven most recent entries, in brief:
 
+- **v1.25** — **Clover-35B-A3B-Preview measured; the 16 GiB roster is complete.** The block-diffusion MoE that
+  had sat in the roster file with no row since v1.18 now has one, from a fork that carries `clover_moe`:
+  **0.9451 code (155/164@8192), 0.8417 knowledge (101/120@8192), 0.8400/0.8289 IFEval (50@4096)**, 14/14
+  riddles, 1849 t/s prefill, 67.5 t/s decode, 12.32 GiB. On the 16 GiB roster it is **second on code** behind
+  `lfm25-24b-a2b (thinking)` at 0.970 and **first on knowledge** by 10 items over `axion-1.0-35b-iq3`, which
+  moves that page's §3 verdicts; across this matrix it is the best 120-item knowledge score of any live row
+  except the driver (0.8500). Measured **AR-only** — llama.cpp runs the model autoregressively, so this is the
+  causal-decode arm, not the parallel decode the weights were trained for. IFEval also settles the cap
+  question on this model: 0.560/0.553 at the 1280 pin, 0.840/0.829 at 4096. Roster now 49 measured rows,
+  30 servable, 207 runs.
 - **v1.24** — **the 16 GiB-card roster joins the matrix**: eleven rows measured 2026-11-09 → 2026-11-12 on the
   same box and build (`b3-1a33095`) but against a 16 GiB budget — `lfm25-24b-a2b (thinking)` **0.9695 code
   (159/164@8192) / 0.6917 knowledge (83/120@4096)** at 111.2 t/s, which is now the best HumanEval cell in
@@ -2853,9 +2868,6 @@ The seven most recent entries, in brief:
   the 32B-A6B "Prune2" export **loads after all** — v1.16's "cannot load" was a tier-0-only read of a
   three-bank expert layout — and was then retired for a split failure: repetition on Vulkan, no factual
   knowledge on CPU.
-- **v1.16** — Qwen3.8-Flash-Next-32B-A6B "Prune2" cannot load (header says 177 experts, tensors hold 64, the
-  router still has 177 rows); recorded as unloadable rather than unmeasured, and deleted. **Superseded by
-  v1.18.**
 
 ## 22. Credits and tooling
 

@@ -68,13 +68,13 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 </style></head>
 <body><main>
 <h1>16 GiB of VRAM: which local LLMs fit, and what they score</h1>
-<p class="docver"><strong>Document version:</strong> <strong>1.21</strong> · 12th November 2026 · Two hybrid-attention MoE rows</p>
+<p class="docver"><strong>Document version:</strong> <strong>1.22</strong> · 12th November 2026 · Clover measured, in AR mode only</p>
 <nav><strong>Contents</strong><ol><li><a href="#s1">1. The roster</a></li><li><a href="#s2">2. What the axes measure, and what the budget is spent on</a></li><li><a href="#s3">3. What wins, on each axis and overall</a></li><li><a href="#s4">4. How to read the numbers</a></li><li><a href="#s5">5. Quality against what the card has to hold</a></li><li><a href="#s6">6. Context is a second budget</a></li><li><a href="#s7">7. Dense or MoE</a></li><li><a href="#s8">8. What a 16 GiB card can actually run</a></li><li><a href="#s9">9. Quantisation on a fixed budget</a></li><li><a href="#s10">10. When it does not fit</a></li><li><a href="#s11">11. Three memory architectures</a></li><li><a href="#s12">12. Which 16 GiB card, and what it implies</a></li><li><a href="#s13">13. What this page does not measure</a></li><li><a href="#s14">14. Reproduce any row</a></li><li><a href="#s15">15. Licence</a></li><li><a href="#s16">16. Document history</a></li></ol></nav>
 
 <ul>
 <li><strong>Author:</strong> Dom (<a href="https://github.com/barmynon">github.com/barmynon</a>) · measurements, analysis and writing, with Hermes Agent (Nous Research) driven by DeepSeek <code>deepseek-flash</code></li>
 
-<li><strong>Measured:</strong> 10th-12th November 2026 · 13 weight files, 138.1 GiB · one llama.cpp build, one KV setting, one slot</li>
+<li><strong>Measured:</strong> 10th-12th November 2026 · 14 weight files, 150.4 GiB · one llama.cpp build per row, one KV setting, one slot</li>
 <li><strong>Axes:</strong> HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3</li>
 <li><strong>History of this page:</strong> <a class="sref" href="#s16">&#167;16</a> · <strong>Wider report on this platform:</strong> <a href="index.html">index.html</a></li>
 </ul>
@@ -82,18 +82,18 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <p>Every number here was measured on a machine that does <strong>not</strong> have the constraint being studied. The reference host is a Minisforum MS-S1 MAX with no VRAM ceiling — a 100 GiB GTT window means nothing is truncated or spilled while it is being benchmarked. That is deliberate: the scores describe the model, the arithmetic describes the card, and the two are never confounded. Where a figure is arithmetic rather than measurement, it says so.</p>
 <h3>What it ran on</h3>
 <p>Three of the numbers on this page — decode, prefill, and every footprint the fit arithmetic produces — are properties of the stack below as much as of the models, so the stack is stated rather than assumed.</p>
-<table><thead><tr><th>component</th><th>this host</th><th>why it is in the table</th></tr></thead><tbody><tr><td>CPU</td><td>AMD Ryzen AI Max+ 395 (Zen 5), 16 cores / 32 threads, 625 MHz – 5.19 GHz, 64 MiB L3</td><td>prompt handling and sampling run beside the GPU, so prefill is not a pure GPU rate</td></tr><tr><td>GPU</td><td>Radeon 8060S, RDNA 3.5 (<code>gfx1151</code>), 40 CUs</td><td>the only compute device; weights and ALUs share one memory, so there is no PCIe hop for a token to cross</td></tr><tr><td>memory</td><td>128 GiB LPDDR5X-8000, 256-bit, unified: an 8 GiB UMA carve-out reported as VRAM, plus a 100 GiB GTT window (<code>ttm.pages_limit</code> 26,214,400 pages)</td><td>sets the ~256 GB/s decode ceiling (<a class="sref" href="#s11">&#167;11</a>) and is the memory a footprint is held against; a 13.4 GiB file is resident in it, not paged from disk</td></tr><tr><td>storage</td><td>BIWIN X570 PRO 4TB NVMe, btrfs, <code>/home</code>: 771 GiB of weight files</td><td>weights are mmap'd once at load and then sit in the GTT window, so the disk sets load time and nothing else — direct reads measured 0.5-1.9 GB/s on this drive, about 10 s for the largest roster file. A slower disk would move no score on this page</td></tr><tr><td>OS</td><td>CachyOS (Arch-based, rolling), systemd 262, glibc 2.44</td><td>it fixes the kernel build, the Mesa version and the CPU governor below; the same silicon on a stock distribution would be a different stack</td></tr><tr><td>kernel</td><td>7.3.3 (CachyOS), <code>amdgpu</code>, <code>amd-pstate-epp</code> active, governor <code>powersave</code> with EPP <code>balance_performance</code></td><td>the 100 GiB GTT window comes from a module option in <code>/etc/modprobe.d/ttm.conf</code>, not from a default, and its size decides whether a file stays resident; the pstate mode decides how far the 5.19 GHz boost is held under sustained load</td></tr><tr><td>graphics stack</td><td>Mesa 26.2.6, <code>vulkan-radeon</code> 26.2.6, Vulkan 1.4, RADV (<code>STRIX_HALO</code>)</td><td>llama.cpp's Vulkan backend is what executes, so a driver change moves every rate here</td></tr><tr><td>inference build</td><td>llama.cpp fork, build <code>b3-1a33095</code> (0.5.0-dev, commit 1a33095), <code>ggml-vulkan</code> ABI 0.25.3, clean tree</td><td>one program for all thirteen files: no row is a different build</td></tr><tr><td>server flags</td><td><code>-ngl 99</code>, <code>-c</code> per model, <code>--flash-attn on</code>, <code>--jinja</code>, KV cache <code>q8_0</code> on both K and V, <code>-b 4096 -ub 2048</code>, one slot (<code>-np 1</code>); speculative decoding off except on the MTP row; reasoning off with a zero budget on <code>lfm25-24b-a2b</code>, and left at the template default on the three arms whose templates open a think block (<code>lfm25-24b-a2b-think</code>, <code>groot-19b-a3b</code>, <code>axion-1.0-35b-iq3</code>) — which is why those rows carry larger caps</td><td>one context and batching policy for every row, and the <code>q8_0</code> KV is why <a class="sref" href="#s6">&#167;6</a> halves the fp16 figure</td></tr><tr><td>telemetry</td><td>the host's own monitor: CPU <code>Tctl/Tdie</code> to 0.1 °C, GPU temperature in 1 °C steps, CPU package power and GPU PPT, sampled every ~2 s, raw kept 72 h and 1-minute rollups for 90 days</td><td>every run can be re-read against its temperatures and power draw; the ranges quoted under this table come from it, not from a spot check</td></tr></tbody></table>
+<table><thead><tr><th>component</th><th>this host</th><th>why it is in the table</th></tr></thead><tbody><tr><td>CPU</td><td>AMD Ryzen AI Max+ 395 (Zen 5), 16 cores / 32 threads, 625 MHz – 5.19 GHz, 64 MiB L3</td><td>prompt handling and sampling run beside the GPU, so prefill is not a pure GPU rate</td></tr><tr><td>GPU</td><td>Radeon 8060S, RDNA 3.5 (<code>gfx1151</code>), 40 CUs</td><td>the only compute device; weights and ALUs share one memory, so there is no PCIe hop for a token to cross</td></tr><tr><td>memory</td><td>128 GiB LPDDR5X-8000, 256-bit, unified: an 8 GiB UMA carve-out reported as VRAM, plus a 100 GiB GTT window (<code>ttm.pages_limit</code> 26,214,400 pages)</td><td>sets the ~256 GB/s decode ceiling (<a class="sref" href="#s11">&#167;11</a>) and is the memory a footprint is held against; a 13.4 GiB file is resident in it, not paged from disk</td></tr><tr><td>storage</td><td>BIWIN X570 PRO 4TB NVMe, btrfs, <code>/home</code>: 771 GiB of weight files</td><td>weights are mmap'd once at load and then sit in the GTT window, so the disk sets load time and nothing else — direct reads measured 0.5-1.9 GB/s on this drive, about 10 s for the largest roster file. A slower disk would move no score on this page</td></tr><tr><td>OS</td><td>CachyOS (Arch-based, rolling), systemd 262, glibc 2.44</td><td>it fixes the kernel build, the Mesa version and the CPU governor below; the same silicon on a stock distribution would be a different stack</td></tr><tr><td>kernel</td><td>7.3.3 (CachyOS), <code>amdgpu</code>, <code>amd-pstate-epp</code> active, governor <code>powersave</code> with EPP <code>balance_performance</code></td><td>the 100 GiB GTT window comes from a module option in <code>/etc/modprobe.d/ttm.conf</code>, not from a default, and its size decides whether a file stays resident; the pstate mode decides how far the 5.19 GHz boost is held under sustained load</td></tr><tr><td>graphics stack</td><td>Mesa 26.2.6, <code>vulkan-radeon</code> 26.2.6, Vulkan 1.4, RADV (<code>STRIX_HALO</code>)</td><td>llama.cpp's Vulkan backend is what executes, so a driver change moves every rate here</td></tr><tr><td>inference build</td><td>llama.cpp fork, <code>b3-1a33095</code> (0.5.0-dev, commit 1a33095) for thirteen rows; <code>b11581</code> at tree HEAD <code>19b458b5a</code>, which adds <code>clover_moe</code>, for the fourteenth. <code>ggml-vulkan</code> ABI 0.25.3, clean trees</td><td>one program for fourteen files: the clover row needed an architecture the base build does not carry, and that is the only reason it is a second binary</td></tr><tr><td>server flags</td><td><code>-ngl 99</code>, <code>-c</code> per model, <code>--flash-attn on</code>, <code>--jinja</code>, KV cache <code>q8_0</code> on both K and V, <code>-b 4096 -ub 2048</code>, one slot (<code>-np 1</code>); speculative decoding off except on the MTP row; reasoning off with a zero budget on <code>lfm25-24b-a2b</code>, and left at the template default on the three arms whose templates open a think block (<code>lfm25-24b-a2b-think</code>, <code>groot-19b-a3b</code>, <code>axion-1.0-35b-iq3</code>) — which is why those rows carry larger caps</td><td>one context and batching policy for every row, and the <code>q8_0</code> KV is why <a class="sref" href="#s6">&#167;6</a> halves the fp16 figure</td></tr><tr><td>telemetry</td><td>the host's own monitor: CPU <code>Tctl/Tdie</code> to 0.1 °C, GPU temperature in 1 °C steps, CPU package power and GPU PPT, sampled every ~2 s, raw kept 72 h and 1-minute rollups for 90 days</td><td>every run can be re-read against its temperatures and power draw; the ranges quoted under this table come from it, not from a spot check</td></tr></tbody></table>
 <p><em>Table 1 — the platform. Every number on this page comes off this stack; the right-hand column says which measurements would move if a part of it changed, and which are properties of the models alone.</em></p>
 <p>Power and temperature are logged, not assumed: the host's own monitor samples CPU and GPU temperature and package power every couple of seconds, so every run can be read back against its thermals. Across the 24 runs long enough to have a measured window, GPU temperature averaged 69 °C against a hottest run average of 79 °C and a hottest single sample of 88 °C, and package power averaged 96 W with a peak of 129 W. No run applied a power cap — the SoC pulls what its firmware allows — so the throughput columns are this box's behaviour rather than a ceiling for the silicon.</p>
 <p>The other thing this table does not claim is that the host is representative of the class it measures. It has no 16 GiB wall at all: the card being studied here is a budget applied in arithmetic, not a device, which is exactly why the measurements were taken on it.</p>
 <blockquote><strong>Also published:</strong> <a href="index.html">the main report</a> — the wider model matrix on this platform · <a href="leaderboards.html">leaderboards by axis</a> · <a href="retired.html">retired models</a> · <a href="changelog.html">change log</a>.</blockquote>
 <h2 id="s1">1. The roster</h2>
-<table class="wide"><thead><tr><th>model</th><th>class</th><th>weights GiB (bpw)</th><th>footprint at its context</th><th>context</th><th>pp / tg t/s</th><th>HumanEval</th><th>MMLU-Pro</th><th>IFEval</th><th>mean quality</th><th>quality per GiB</th><th>riddles</th></tr></thead><tbody><tr><td>g4-e4b-qat</td><td>dense</td><td>3.93 (4.52)</td><td>5.40 ok</td><td>32k</td><td>2243 / 58</td><td>0.866</td><td>0.467</td><td>0.900</td><td>0.744</td><td>0.138</td><td>14/14</td></tr><tr><td>g4-12b-qat</td><td>dense</td><td>6.26 (4.52)</td><td>7.67 ok</td><td>32k</td><td>911 / 28</td><td>0.896</td><td>0.575</td><td>0.920</td><td>0.797</td><td>0.104</td><td>14/14</td></tr><tr><td>qwen3-8b-q4</td><td>dense</td><td>4.68 (4.91)</td><td>7.93 ok</td><td>32k</td><td>1300 / 39</td><td>0.787</td><td>0.583</td><td>0.900</td><td>0.757</td><td>0.095</td><td>13/14</td></tr><tr><td>qwen3-14b-q4</td><td>dense</td><td>8.38 (4.87)</td><td>10.63 ok</td><td>16k</td><td>743 / 24</td><td>0.854</td><td>0.608</td><td>0.880</td><td>0.781</td><td>0.073</td><td>14/14</td></tr><tr><td>gpt-oss-20b-mxfp4</td><td>MoE</td><td>11.28 (4.63)</td><td>12.65 ok</td><td>32k</td><td>2169 / 74</td><td>0.585</td><td>0.558</td><td>0.480</td><td>0.541</td><td>0.043</td><td>14/14</td></tr><tr><td>groot-19b-a3b</td><td>MoE hybrid</td><td>11.63 (5.26)</td><td>13.76 ok</td><td>64k</td><td>2176 / 65</td><td>0.939 †</td><td>0.717</td><td>0.740</td><td>0.799</td><td>0.058</td><td>13/14</td></tr><tr><td>lfm25-24b-a2b</td><td>MoE</td><td>12.65 (4.53)</td><td>13.96 ok</td><td>32k</td><td>3345 / 110</td><td>0.640</td><td>0.192</td><td>0.860</td><td>0.564</td><td>0.040</td><td>13/14</td></tr><tr><td>lfm25-24b-a2b-think</td><td>MoE</td><td>12.65 (4.53)</td><td>13.96 ok</td><td>32k</td><td>3360 / 111</td><td>0.970</td><td>0.692</td><td>0.920</td><td>0.860</td><td>0.062</td><td>14/14</td></tr><tr><td>mistral-24b-q4</td><td>dense</td><td>13.35 (4.86)</td><td>14.66 tight</td><td>4k</td><td>460 / 15</td><td>0.823</td><td>0.608</td><td>0.820</td><td>0.751</td><td>0.051</td><td>12/14</td></tr><tr><td>g4-26b-a4b-qat</td><td>MoE</td><td>13.45 (4.58)</td><td>14.70 tight</td><td>16k</td><td>1893 / 59</td><td>0.902</td><td>0.633</td><td>0.860</td><td>0.799</td><td>0.054</td><td>14/14</td></tr><tr><td>qwen3-30b-a3b-q3</td><td>MoE</td><td>13.70 (3.85)</td><td>14.79 tight</td><td>4k</td><td>1910 / 80</td><td>0.854</td><td>0.617</td><td>0.860</td><td>0.777</td><td>0.053</td><td>14/14</td></tr><tr><td>axion-1.0-35b-iq3</td><td>MoE hybrid</td><td>12.69 (3.14)</td><td>14.81 tight</td><td>64k</td><td>1543 / 94</td><td>0.933</td><td>0.758</td><td>0.780</td><td>0.824</td><td>0.056</td><td>14/14</td></tr><tr><td>g4-26b-a4b-qat-mtp</td><td>MoE</td><td>13.45 (4.58)</td><td>15.06 <strong>NO</strong></td><td>8k</td><td>1886 / 55</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>14/14</td></tr></tbody></table>
+<table class="wide"><thead><tr><th>model</th><th>class</th><th>weights GiB (bpw)</th><th>footprint at its context</th><th>context</th><th>pp / tg t/s</th><th>HumanEval</th><th>MMLU-Pro</th><th>IFEval</th><th>mean quality</th><th>quality per GiB</th><th>riddles</th></tr></thead><tbody><tr><td>g4-e4b-qat</td><td>dense</td><td>3.93 (4.52)</td><td>5.40 ok</td><td>32k</td><td>2243 / 58</td><td>0.866</td><td>0.467</td><td>0.900</td><td>0.744</td><td>0.138</td><td>14/14</td></tr><tr><td>g4-12b-qat</td><td>dense</td><td>6.26 (4.52)</td><td>7.67 ok</td><td>32k</td><td>911 / 28</td><td>0.896</td><td>0.575</td><td>0.920</td><td>0.797</td><td>0.104</td><td>14/14</td></tr><tr><td>qwen3-8b-q4</td><td>dense</td><td>4.68 (4.91)</td><td>7.93 ok</td><td>32k</td><td>1300 / 39</td><td>0.787</td><td>0.583</td><td>0.900</td><td>0.757</td><td>0.095</td><td>13/14</td></tr><tr><td>qwen3-14b-q4</td><td>dense</td><td>8.38 (4.87)</td><td>10.63 ok</td><td>16k</td><td>743 / 24</td><td>0.854</td><td>0.608</td><td>0.880</td><td>0.781</td><td>0.073</td><td>14/14</td></tr><tr><td>gpt-oss-20b-mxfp4</td><td>MoE</td><td>11.28 (4.63)</td><td>12.65 ok</td><td>32k</td><td>2169 / 74</td><td>0.585</td><td>0.558</td><td>0.480</td><td>0.541</td><td>0.043</td><td>14/14</td></tr><tr><td>groot-19b-a3b</td><td>MoE hybrid</td><td>11.63 (5.26)</td><td>13.76 ok</td><td>64k</td><td>2176 / 65</td><td>0.939 †</td><td>0.717</td><td>0.740</td><td>0.799</td><td>0.058</td><td>13/14</td></tr><tr><td>lfm25-24b-a2b</td><td>MoE</td><td>12.65 (4.53)</td><td>13.96 ok</td><td>32k</td><td>3345 / 110</td><td>0.640</td><td>0.192</td><td>0.860</td><td>0.564</td><td>0.040</td><td>13/14</td></tr><tr><td>lfm25-24b-a2b-think</td><td>MoE</td><td>12.65 (4.53)</td><td>13.96 ok</td><td>32k</td><td>3360 / 111</td><td>0.970</td><td>0.692</td><td>0.920</td><td>0.860</td><td>0.062</td><td>14/14</td></tr><tr><td>clover-35b-a3b-iq2</td><td>MoE diffusion (AR)</td><td>12.32 (3.05)</td><td>14.45 tight</td><td>64k</td><td>1849 / 68</td><td>0.945</td><td>0.842</td><td>0.840</td><td>0.876</td><td>0.061</td><td>14/14</td></tr><tr><td>mistral-24b-q4</td><td>dense</td><td>13.35 (4.86)</td><td>14.66 tight</td><td>4k</td><td>460 / 15</td><td>0.823</td><td>0.608</td><td>0.820</td><td>0.751</td><td>0.051</td><td>12/14</td></tr><tr><td>g4-26b-a4b-qat</td><td>MoE</td><td>13.45 (4.58)</td><td>14.70 tight</td><td>16k</td><td>1893 / 59</td><td>0.902</td><td>0.633</td><td>0.860</td><td>0.799</td><td>0.054</td><td>14/14</td></tr><tr><td>qwen3-30b-a3b-q3</td><td>MoE</td><td>13.70 (3.85)</td><td>14.79 tight</td><td>4k</td><td>1910 / 80</td><td>0.854</td><td>0.617</td><td>0.860</td><td>0.777</td><td>0.053</td><td>14/14</td></tr><tr><td>axion-1.0-35b-iq3</td><td>MoE hybrid</td><td>12.69 (3.14)</td><td>14.81 tight</td><td>64k</td><td>1543 / 94</td><td>0.933</td><td>0.758</td><td>0.780</td><td>0.824</td><td>0.056</td><td>14/14</td></tr><tr><td>g4-26b-a4b-qat-mtp</td><td>MoE</td><td>13.45 (4.58)</td><td>15.06 <strong>NO</strong></td><td>8k</td><td>1886 / 55</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>14/14</td></tr></tbody></table>
 <p><em>Table 2 — the roster, sorted by footprint. <code>ok</code> = at least 1 GiB of headroom against a 15 GiB budget, <code>tight</code> = fits with less, <code>NO</code> = over budget. Effective bpw is computed from the file size and the parameter count the server reports, not from the file name. Caps, because three rows are thinking arms and the cap is part of the result: HumanEval at cap 512, except 8192 on <code>lfm25-24b-a2b-think</code> and <code>axion-1.0-35b-iq3</code> and 4096 on <code>groot-19b-a3b</code>; MMLU-Pro at cap 512, except 4096 on all three of those; IFEval at n=50 and the task's own 1280 cap, except 4096 on all three, because a reasoning block spends 1280 before it answers. <strong>†  <code>groot-19b-a3b</code>'s HumanEval is a floor, not a measurement:</strong> 7 of its 10 failures were cut off at the 4096 cap, so 0.939 understates it; the 8192 re-run was dropped to publish this revision, and re-running it is the first thing the next one should do. Mean quality and quality per GiB are the two derived rows of <a class="sref" href="#s2">&#167;2</a>: the first is the average of the three scores to its left, the second divides that average by the footprint column — not by the weights, which is the error that makes a big-context model look cheap. Neither is a measurement, and neither carries a cap of its own. The MTP row has no quality axes: it is the same weights as <code>g4-26b-a4b-qat</code> plus a 0.43 GiB draft head, measured for speed and fit only. What each column measures, and what it cannot tell you, is <a class="sref" href="#s2">&#167;2</a>.</em></p>
 <p>The rule that makes any of this a comparison: <strong>matched family, matched quant family, one cap, one context policy, one build</strong>. The controlled pair is <code>g4-12b-qat</code> (dense) against <code>g4-26b-a4b-qat</code> (MoE) — same tokenizer, same training recipe, both quantisation-aware at ~4.5 effective bpw. A Q4_K_M row against a QAT Q4_0 row would be a quantisation comparison wearing an architecture label. The two rows added in v1.21 are a third family: qwen3.5moe-derived hybrid attention, 10 full-attention blocks against 30 linear ones, which is why they hold 64k where the 26B MoE stops at 16k.</p>
 <h2 id="s2">2. What the axes measure, and what the budget is spent on</h2>
 <p>Every quality number on this page comes from one of seven probes, run here at a stated sample size and a stated token cap. They measure different things and they fail in different ways, so a table of scores is unreadable without knowing which one a column is.</p>
-<table><thead><tr><th>axis</th><th>what the model is asked to do</th><th>how it is scored</th><th>what was run here</th><th>what it does not tell you</th></tr></thead><tbody><tr><td>HumanEval</td><td>164 short Python problems: a docstring and a signature, write the function body</td><td>the generated code is executed against unit tests; pass@1 is the fraction passing on the first attempt at temperature 0</td><td>164 items, complete-program prompt, cap 512 — 8192 on the two thinking arms measured at that cap, 4096 on <code>groot-19b-a3b</code>, where 7 of the 10 failures were cut off (†)</td><td>other languages, multi-file work, debugging, or whether it can drive a tool</td></tr><tr><td>MMLU-Pro</td><td>multiple-choice questions over 14 academic domains, 10 options rather than 4, so guessing pays less than on MMLU</td><td>the answer letter is parsed out of a chat completion, 0-shot — no worked examples</td><td>120 items, 0-shot chat probe, cap 512 (4096 on the three thinking arms)</td><td>reasoning depth, recency or calibration; it is a knowledge quiz, not a task</td></tr><tr><td>IFEval</td><td>prompts carrying mechanically checkable constraints — "more than 400 words", "exactly 5 bullet points", "in JSON", "end with this phrase"</td><td>code checks each constraint: strict is exact text, loose allows whitespace and quote normalisation; prompt level means every constraint met, instruction level is the per-constraint average</td><td>50 prompts at the task's own 1280-token cap (4096 on the three thinking arms, whose reasoning block spends 1280 before it answers)</td><td>whether the content is right, or whether it obeys constraints nobody spelled out</td></tr><tr><td>prefill and decode (pp / tg)</td><td>the same server under load: a 2000-token prompt in, then generation out</td><td>tokens per second from the server's own counters, one slot</td><td>one measurement per model, one context, one build</td><td>batch throughput, power, or what a card would do — <a class="sref" href="#s4">&#167;4</a> and <a class="sref" href="#s11">&#167;11</a> cover transfer</td></tr><tr><td>riddles</td><td>14 short arithmetic and logic probes</td><td>exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer</td><td>14 probes at temperature 0.2</td><td>anything statistical: it is a smoke test for gross failure, not an axis</td></tr><tr><td>needle 2k / 8k</td><td>one fact is planted in a filler passage and asked for at the end</td><td>exact match: the fact is either returned or it is not</td><td>2k on all thirteen rows; 8k on the eleven rows measured at 8k context or more</td><td>retrieval past 8k, and a depth curve — the two 4k-context rows are not given the 8k probe at all</td></tr><tr><td>protocol 3</td><td>three checks that an OpenAI-shaped client can read the reply: non-empty content, a JSON object with one key, a one-word answer</td><td>every one of the three must pass</td><td>3/3 on every row</td><td>tool loops, multi-turn state, or anything past a single request</td></tr><tr><td><strong>mean quality</strong> <em>(derived)</em></td><td>nothing is run — it is the average of the three quality scores</td><td><code>(HumanEval + MMLU-Pro + IFEval) / 3</code>, computed from the rows above</td><td>every model that has all three axes; the MTP row has none</td><td>that a model is good at any one thing. It is a sorting device, not a score, and it hides which axis a model is actually good at</td></tr><tr><td><strong>quality per GiB</strong> <em>(derived)</em></td><td>nothing is run either — it is that mean divided by the model's footprint</td><td><code>mean quality ÷ footprint at its context</code>, in GiB</td><td>footprint, not weights: the number the card actually spends</td><td>that a model is good. A cheap model can top this rank while scoring badly — which is exactly what the budget pick, <code>g4-e4b-qat</code>, does at 0.744 mean and 0.138 per GiB</td></tr></tbody></table>
+<table><thead><tr><th>axis</th><th>what the model is asked to do</th><th>how it is scored</th><th>what was run here</th><th>what it does not tell you</th></tr></thead><tbody><tr><td>HumanEval</td><td>164 short Python problems: a docstring and a signature, write the function body</td><td>the generated code is executed against unit tests; pass@1 is the fraction passing on the first attempt at temperature 0</td><td>164 items, complete-program prompt, cap 512 — 8192 on the two thinking arms measured at that cap, 4096 on <code>groot-19b-a3b</code>, where 7 of the 10 failures were cut off (†)</td><td>other languages, multi-file work, debugging, or whether it can drive a tool</td></tr><tr><td>MMLU-Pro</td><td>multiple-choice questions over 14 academic domains, 10 options rather than 4, so guessing pays less than on MMLU</td><td>the answer letter is parsed out of a chat completion, 0-shot — no worked examples</td><td>120 items, 0-shot chat probe, cap 512 (4096 on the three thinking arms)</td><td>reasoning depth, recency or calibration; it is a knowledge quiz, not a task</td></tr><tr><td>IFEval</td><td>prompts carrying mechanically checkable constraints — "more than 400 words", "exactly 5 bullet points", "in JSON", "end with this phrase"</td><td>code checks each constraint: strict is exact text, loose allows whitespace and quote normalisation; prompt level means every constraint met, instruction level is the per-constraint average</td><td>50 prompts at the task's own 1280-token cap (4096 on the three thinking arms, whose reasoning block spends 1280 before it answers)</td><td>whether the content is right, or whether it obeys constraints nobody spelled out</td></tr><tr><td>prefill and decode (pp / tg)</td><td>the same server under load: a 2000-token prompt in, then generation out</td><td>tokens per second from the server's own counters, one slot</td><td>one measurement per model, one context, one build</td><td>batch throughput, power, or what a card would do — <a class="sref" href="#s4">&#167;4</a> and <a class="sref" href="#s11">&#167;11</a> cover transfer</td></tr><tr><td>riddles</td><td>14 short arithmetic and logic probes</td><td>exact match, with a retry at four times the cap when the model ran out mid-answer, so the cap is not scored as a wrong answer</td><td>14 probes at temperature 0.2</td><td>anything statistical: it is a smoke test for gross failure, not an axis</td></tr><tr><td>needle 2k / 8k</td><td>one fact is planted in a filler passage and asked for at the end</td><td>exact match: the fact is either returned or it is not</td><td>2k on all fourteen rows; 8k on the twelve rows measured at 8k context or more</td><td>retrieval past 8k, and a depth curve — the two 4k-context rows are not given the 8k probe at all</td></tr><tr><td>protocol 3</td><td>three checks that an OpenAI-shaped client can read the reply: non-empty content, a JSON object with one key, a one-word answer</td><td>every one of the three must pass</td><td>3/3 on every row</td><td>tool loops, multi-turn state, or anything past a single request</td></tr><tr><td><strong>mean quality</strong> <em>(derived)</em></td><td>nothing is run — it is the average of the three quality scores</td><td><code>(HumanEval + MMLU-Pro + IFEval) / 3</code>, computed from the rows above</td><td>every model that has all three axes; the MTP row has none</td><td>that a model is good at any one thing. It is a sorting device, not a score, and it hides which axis a model is actually good at</td></tr><tr><td><strong>quality per GiB</strong> <em>(derived)</em></td><td>nothing is run either — it is that mean divided by the model's footprint</td><td><code>mean quality ÷ footprint at its context</code>, in GiB</td><td>footprint, not weights: the number the card actually spends</td><td>that a model is good. A cheap model can top this rank while scoring badly — which is exactly what the budget pick, <code>g4-e4b-qat</code>, does at 0.744 mean and 0.138 per GiB</td></tr></tbody></table>
 <p><em>Table 3 — the axes, as they were actually run, plus the two derived numbers the tables lean on. The derived rows have no cap of their own and inherit the caps of what they average; <a class="sref" href="#s4">&#167;4</a> says what a sample of this size is worth.</em></p>
 <h3>Cap, budget, and what the budget is spent on</h3>
 <p>Every number on this page is qualified by one of these, so they are worth fixing before the scores.</p>
@@ -113,12 +113,13 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <p>That is why the winners differ by axis (<a class="sref" href="#s3">&#167;3</a>), and why the mean of the three is only a way to order a shortlist — read the column that matches your workload.</p>
 <h2 id="s3">3. What wins, on each axis and overall</h2>
 <p>Each axis has a different winner, and the model that wins overall is not the one that wins the cheap axis. Counts are in items, not percentages, because that is what the sample supports.</p>
-<table><thead><tr><th>axis</th><th>winner</th><th>result</th><th>next best</th><th>reading</th></tr></thead><tbody><tr><td>HumanEval pass@1</td><td>lfm25-24b-a2b-think</td><td>0.970 (159/164)</td><td>axion-1.0-35b-iq3 0.933 (153/164)</td><td>6 problems — 3.7 points inside a ±3.8-point 95% interval: a top pair, not a winner</td></tr><tr><td>MMLU-Pro</td><td>axion-1.0-35b-iq3</td><td>0.758 (91/120)</td><td>groot-19b-a3b 0.717 (86/120)</td><td>5 items — 4.1 points inside a ±7.7-point interval: two rows share the top, and the previous leader is 13 items back</td></tr><tr><td>IFEval strict</td><td>g4-12b-qat and lfm25-24b-a2b-think</td><td>0.920 (46/50)</td><td>g4-e4b-qat and qwen3-8b-q4 at 0.900 (45/50)</td><td>exact tie; the next pair is one prompt behind</td></tr><tr><td>decode</td><td>lfm25-24b-a2b-think</td><td>111 tok/s</td><td>axion-1.0-35b-iq3 94 tok/s</td><td>the budget-0 arm of the same file is at 110; the 35B is next on a file a third smaller</td></tr><tr><td>prefill</td><td>lfm25-24b-a2b-think</td><td>3360 tok/s</td><td>g4-e4b-qat 2243 tok/s</td><td>fastest here, and the least portable number on the page; the two hybrid MoEs follow at 2176 and 1543</td></tr><tr><td>riddles</td><td>nine models tied</td><td>14/14</td><td>qwen3-8b-q4 and lfm25-24b-a2b at 13/14</td><td>mistral-24b alone at 12/14</td></tr><tr><td>quality per GiB <em>(derived, <a class="sref" href="#s2">&#167;2</a>)</em></td><td>g4-e4b-qat</td><td>0.138 mean/GiB</td><td>g4-12b-qat 0.104</td><td>both beat every row of 12 GiB or more on this measure; the next is 0.062</td></tr><tr><td><strong>overall</strong></td><td><strong>lfm25-24b-a2b-think</strong></td><td><strong>0.860 mean</strong></td><td>axion-1.0-35b-iq3 0.824</td><td>first on HumanEval and joint-first on IFEval, third on knowledge — the mean flatters it exactly where the card is spent on context instead</td></tr></tbody></table>
+<table><thead><tr><th>axis</th><th>winner</th><th>result</th><th>next best</th><th>reading</th></tr></thead><tbody><tr><td>HumanEval pass@1</td><td>lfm25-24b-a2b-think</td><td>0.970 (159/164)</td><td>clover-35b-a3b-iq2 0.945 (155/164)</td><td>4 problems — 2.5 points inside a ±3.8-point 95% interval: a top cluster, not a winner</td></tr><tr><td>MMLU-Pro</td><td>clover-35b-a3b-iq2</td><td>0.842 (101/120)</td><td>axion-1.0-35b-iq3 0.758 (91/120)</td><td>10 items — 8.4 points, outside the ±7.7-point interval: the first decisive knowledge win on this page, and it belongs to a diffusion model run causally</td></tr><tr><td>IFEval strict</td><td>g4-12b-qat and lfm25-24b-a2b-think</td><td>0.920 (46/50)</td><td>g4-e4b-qat and qwen3-8b-q4 at 0.900 (45/50)</td><td>exact tie; the next pair is one prompt behind</td></tr><tr><td>decode</td><td>lfm25-24b-a2b-think</td><td>111 tok/s</td><td>axion-1.0-35b-iq3 94 tok/s</td><td>the budget-0 arm of the same file is at 110; the 35B is next on a file a third smaller</td></tr><tr><td>prefill</td><td>lfm25-24b-a2b-think</td><td>3360 tok/s</td><td>g4-e4b-qat 2243 tok/s</td><td>fastest here, and the least portable number on the page; the two hybrid MoEs follow at 2176 and 1543</td></tr><tr><td>riddles</td><td>ten models tied</td><td>14/14</td><td>qwen3-8b-q4 and lfm25-24b-a2b at 13/14</td><td>mistral-24b alone at 12/14</td></tr><tr><td>quality per GiB <em>(derived, <a class="sref" href="#s2">&#167;2</a>)</em></td><td>g4-e4b-qat</td><td>0.138 mean/GiB</td><td>g4-12b-qat 0.104</td><td>both beat every row of 12 GiB or more on this measure; the next is 0.062</td></tr><tr><td><strong>overall</strong></td><td><strong>clover-35b-a3b-iq2</strong></td><td><strong>0.876 mean</strong></td><td>lfm25-24b-a2b-think 0.860</td><td>the mean belongs to the diffusion model, in AR mode: second on code, first on knowledge, and only its IFEval of 0.840 is mid-table</td></tr></tbody></table>
 <p><em>Table 4 — the winners. "Overall" is the mean of HumanEval, MMLU-Pro and IFEval, which is a convenience, not a protocol: a coding workload should read the first row and ignore the last, and a knowledge workload the second.</em></p>
 <p>What that table means in practice:</p>
 <ul>
-<li><strong>lfm25-24b-a2b with deliberation on is still the model to run if the card can spend 14 GiB of its 15.</strong> It tops HumanEval, ties instruction-following, and takes decode and prefill inside a 32k context. What v1.21 changes is the size of that lead: 6 items over <code>axion-1.0-35b-iq3</code>, not 11, and inside one interval — so it is first, not decisive. Two costs are real: it deliberates before answering, so the throughput lead is decode rate and not time-to-answer; and the same weight file with reasoning disabled (<code>lfm25-24b-a2b</code>) is the worst knowledge row in the roster at 0.192. Never quote the file without naming the arm.</li>
-<li><strong>axion-1.0-35b-iq3 is the knowledge pick, and the surprise of this revision.</strong> 34.7B parameters at 3.14 bpw — the shallowest quant here — takes MMLU-Pro outright at 0.758, sits second on HumanEval at 0.933, and holds 64k of context in a 14.81 GiB footprint, which is <code>tight</code> but real. The counter-intuitive part is in <a class="sref" href="#s9">&#167;9</a>: a 3.14 bpw file beats every ~4.5 bpw row on knowledge, so on this card the parameter count buys more than quantisation depth does, until the file stops fitting. Its IFEval of 0.780 is the weakest of the big rows.</li>
+<li><strong>clover-35b-a3b-iq2 is the knowledge leader, the mean leader, and the least quotable row on the page.</strong> A block-diffusion MoE — 40 blocks, 256 experts, 34.7B parameters at 3.05 bpw, 12.32 GiB — run by llama.cpp autoregressively, so its 0.945 HumanEval, 0.842 MMLU-Pro and 0.840 IFEval are the causal-decode arm of weights trained for parallel block decode. That is not a hedge: the row describes what these weights do in this harness, not what the architecture is for (<a class="sref" href="#s13">&#167;13</a>). On the numbers it leads knowledge by 10 items over <code>axion-1.0-35b-iq3</code> and takes the mean at 0.876, in a 14.45 GiB footprint that still holds 64k of context — <code>tight</code> against the 15 GiB wall, like the three rows above it.</li>
+<li><strong>lfm25-24b-a2b with deliberation on is still the model to run for code if the card can spend 14 GiB of its 15.</strong> It tops HumanEval, ties instruction-following, and takes decode and prefill inside a 32k context. What v1.22 changes is who it leads: 4 items over <code>clover-35b-a3b-iq2</code> (0.945), still inside one interval — so it is first, not decisive, and no longer the highest mean on the page. Two costs are real: it deliberates before answering, so the throughput lead is decode rate and not time-to-answer; and the same weight file with reasoning disabled (<code>lfm25-24b-a2b</code>) is the worst knowledge row in the roster at 0.192. Never quote the file without naming the arm.</li>
+<li><strong>axion-1.0-35b-iq3 was the knowledge pick for one revision, and it is now second by 10 items.</strong> 34.7B parameters at 3.14 bpw — the shallowest quant here until clover — took MMLU-Pro outright at 0.758 in v1.21, sits fourth on HumanEval at 0.933, and holds 64k of context in a 14.81 GiB footprint, which is <code>tight</code> but real. The counter-intuitive part is in <a class="sref" href="#s9">&#167;9</a>: a 3.14 bpw file beats every ~4.5 bpw row on knowledge, so on this card the parameter count buys more than quantisation depth does, until the file stops fitting. Its IFEval of 0.780 is the weakest of the big rows.</li>
 <li><strong>groot-19b-a3b is the context pick.</strong> 11.63 GiB of weights, a 13.76 GiB footprint and 64k of context — four times what the 26B MoE holds, for 0.06 GiB less. Its 0.939 HumanEval is a floor rather than a measurement (†, 7 of 10 failures cut off at the cap) and its IFEval of 0.740 is what a thinking arm costs on a constraint-following task. 13/14 riddles, 2176 tok/s prefill, 65 tok/s decode.</li>
 <li><strong>g4-12b-qat is the model to run if half the memory matters.</strong> It is joint-first on IFEval, first among the dense rows on HumanEval (0.896, ahead of 0.866 and 0.854), and its mean quality is a statistical tie with the 26B MoE (0.797 against 0.799) at 52% of the footprint and twice the context.</li>
 <li><strong>g4-26b-a4b-qat is no longer the knowledge choice, and v1.21 is what displaced it.</strong> Both new rows beat its 0.633 MMLU-Pro — <code>axion-1.0-35b-iq3</code> by 15 items, <code>groot-19b-a3b</code> by 10 — while fitting four times the context and decoding 1.1-1.6x faster. What it keeps is narrower: a 0.799 mean that ties <code>groot-19b-a3b</code> for third, and the joint-best IFEval of the rows at 12 GiB or more that were not measured with a reasoning block open (0.860, level with <code>qwen3-30b-a3b-q3</code> and <code>lfm25-24b-a2b</code>). It remains the only QAT 4.58 bpw file at that size.</li>
@@ -987,7 +988,7 @@ L 356.438504 119.632454
 L 360.140292 117.232032 
 L 398.035382 110.001843 
 L 441.895439 78.651744 
-L 456.77277 66.62071 
+L 451.579739 42.5008 
 " clip-path="url(#pd7bdeba30a)" style="fill: none; stroke-dasharray: 0.9,1.485; stroke-dashoffset: 0; stroke: #7a828e; stroke-width: 0.9"/>
    </g>
    <g id="line2d_99">
@@ -1195,6 +1196,21 @@ L 456.77277 44.46764
      <use xlink:href="#m4008b662be" x="456.77277" y="44.46764" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
+   <g id="LineCollection_26">
+    <path d="M 451.579739 61.389158 
+L 451.579739 23.612443 
+" clip-path="url(#pd7bdeba30a)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
+   </g>
+   <g id="line2d_124">
+    <g clip-path="url(#pd7bdeba30a)">
+     <use xlink:href="#m4008b662be" x="451.579739" y="61.389158" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+    </g>
+   </g>
+   <g id="line2d_125">
+    <g clip-path="url(#pd7bdeba30a)">
+     <use xlink:href="#m4008b662be" x="451.579739" y="23.612443" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+    </g>
+   </g>
    <g id="patch_15">
     <path d="M 315.711498 42.40891 
 Q 320.069901 95.185668 324.428305 147.962425 
@@ -1204,7 +1220,7 @@ Q 320.069901 95.185668 324.428305 147.962425
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="295.858993" y="37.726363" transform="rotate(-0 295.858993 37.726363)">g4-e4b-qat</text>
    </g>
    <g id="text_37">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="450.77277" y="45.93907" transform="rotate(-0 450.77277 45.93907)">axion-1.0-35b-iq3</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="445.579739" y="34.81916" transform="rotate(-0 445.579739 34.81916)">clover-35b-a3b-iq2</text>
    </g>
    <g id="text_38">
     <text style="font-size: 7.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--warn, #d05c4a)" x="462.457033" y="38.106285" transform="rotate(-0 462.457033 38.106285)">over budget</text>
@@ -1212,64 +1228,69 @@ Q 320.069901 95.185668 324.428305 147.962425
    <g id="text_39">
     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="386.386151" y="17.64" transform="rotate(-0 386.386151 17.64)">MMLU-Pro, 0-shot chat probe</text>
    </g>
-   <g id="line2d_124">
+   <g id="line2d_126">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="455.213545" y="102.771654" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_125">
+   <g id="line2d_127">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#m23f1cbca53" x="356.438504" y="119.632454" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_126">
+   <g id="line2d_128">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#m23f1cbca53" x="398.035382" y="110.001843" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_127">
+   <g id="line2d_129">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#m23f1cbca53" x="360.140292" y="117.232032" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_128">
+   <g id="line2d_130">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="426.456699" y="124.462221" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_129">
+   <g id="line2d_131">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="444.807746" y="230.485709" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_130">
+   <g id="line2d_132">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="444.807746" y="85.881933" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_131">
+   <g id="line2d_133">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#m23f1cbca53" x="324.675325" y="150.953632" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_132">
+   <g id="line2d_134">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#m23f1cbca53" x="454.632399" y="110.001843" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_133">
+   <g id="line2d_135">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="456.474521" y="107.5725" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_134">
+   <g id="line2d_136">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="441.895439" y="78.651744" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_135">
+   <g id="line2d_137">
     <g clip-path="url(#pd7bdeba30a)">
      <use xlink:href="#ma6308338b8" x="456.77277" y="66.62071" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
+    </g>
+   </g>
+   <g id="line2d_138">
+    <g clip-path="url(#pd7bdeba30a)">
+     <use xlink:href="#ma6308338b8" x="451.579739" y="42.5008" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
   </g>
@@ -1284,12 +1305,12 @@ z
    </g>
    <g id="matplotlib.axis_5">
     <g id="xtick_15">
-     <g id="line2d_136">
+     <g id="line2d_139">
       <path d="M 551.808552 251.221891 
 L 551.808552 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_137">
+     <g id="line2d_140">
       <g>
        <use xlink:href="#m4284beab1e" x="551.808552" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1299,12 +1320,12 @@ L 551.808552 25.64
      </g>
     </g>
     <g id="xtick_16">
-     <g id="line2d_138">
+     <g id="line2d_141">
       <path d="M 579.878988 251.221891 
 L 579.878988 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_139">
+     <g id="line2d_142">
       <g>
        <use xlink:href="#m4284beab1e" x="579.878988" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1314,12 +1335,12 @@ L 579.878988 25.64
      </g>
     </g>
     <g id="xtick_17">
-     <g id="line2d_140">
+     <g id="line2d_143">
       <path d="M 607.949424 251.221891 
 L 607.949424 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_141">
+     <g id="line2d_144">
       <g>
        <use xlink:href="#m4284beab1e" x="607.949424" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1329,12 +1350,12 @@ L 607.949424 25.64
      </g>
     </g>
     <g id="xtick_18">
-     <g id="line2d_142">
+     <g id="line2d_145">
       <path d="M 636.019861 251.221891 
 L 636.019861 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_143">
+     <g id="line2d_146">
       <g>
        <use xlink:href="#m4284beab1e" x="636.019861" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1344,12 +1365,12 @@ L 636.019861 25.64
      </g>
     </g>
     <g id="xtick_19">
-     <g id="line2d_144">
+     <g id="line2d_147">
       <path d="M 664.090297 251.221891 
 L 664.090297 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_145">
+     <g id="line2d_148">
       <g>
        <use xlink:href="#m4284beab1e" x="664.090297" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1359,12 +1380,12 @@ L 664.090297 25.64
      </g>
     </g>
     <g id="xtick_20">
-     <g id="line2d_146">
+     <g id="line2d_149">
       <path d="M 692.160734 251.221891 
 L 692.160734 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_147">
+     <g id="line2d_150">
       <g>
        <use xlink:href="#m4284beab1e" x="692.160734" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1374,12 +1395,12 @@ L 692.160734 25.64
      </g>
     </g>
     <g id="xtick_21">
-     <g id="line2d_148">
+     <g id="line2d_151">
       <path d="M 720.23117 251.221891 
 L 720.23117 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_149">
+     <g id="line2d_152">
       <g>
        <use xlink:href="#m4284beab1e" x="720.23117" y="251.221891" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1394,12 +1415,12 @@ L 720.23117 25.64
    </g>
    <g id="matplotlib.axis_6">
     <g id="ytick_15">
-     <g id="line2d_150">
+     <g id="line2d_153">
       <path d="M 537.773333 233.869437 
 L 728.652301 233.869437 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_151">
+     <g id="line2d_154">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="233.869437" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1409,12 +1430,12 @@ L 728.652301 233.869437
      </g>
     </g>
     <g id="ytick_16">
-     <g id="line2d_152">
+     <g id="line2d_155">
       <path d="M 537.773333 199.164531 
 L 728.652301 199.164531 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_153">
+     <g id="line2d_156">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="199.164531" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1424,12 +1445,12 @@ L 728.652301 199.164531
      </g>
     </g>
     <g id="ytick_17">
-     <g id="line2d_154">
+     <g id="line2d_157">
       <path d="M 537.773333 164.459625 
 L 728.652301 164.459625 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_155">
+     <g id="line2d_158">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="164.459625" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1439,12 +1460,12 @@ L 728.652301 164.459625
      </g>
     </g>
     <g id="ytick_18">
-     <g id="line2d_156">
+     <g id="line2d_159">
       <path d="M 537.773333 129.754719 
 L 728.652301 129.754719 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_157">
+     <g id="line2d_160">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="129.754719" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1454,12 +1475,12 @@ L 728.652301 129.754719
      </g>
     </g>
     <g id="ytick_19">
-     <g id="line2d_158">
+     <g id="line2d_161">
       <path d="M 537.773333 95.049812 
 L 728.652301 95.049812 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_159">
+     <g id="line2d_162">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="95.049812" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1469,12 +1490,12 @@ L 728.652301 95.049812
      </g>
     </g>
     <g id="ytick_20">
-     <g id="line2d_160">
+     <g id="line2d_163">
       <path d="M 537.773333 60.344906 
 L 728.652301 60.344906 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_161">
+     <g id="line2d_164">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="60.344906" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1484,12 +1505,12 @@ L 728.652301 60.344906
      </g>
     </g>
     <g id="ytick_21">
-     <g id="line2d_162">
+     <g id="line2d_165">
       <path d="M 537.773333 25.64 
 L 728.652301 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: var(--line); stroke-width: 0.6; stroke-linecap: square"/>
      </g>
-     <g id="line2d_163">
+     <g id="line2d_166">
       <g>
        <use xlink:href="#m248ca47fed" x="537.773333" y="25.64" style="fill: var(--dim); stroke: var(--dim); stroke-width: 0.8"/>
       </g>
@@ -1507,12 +1528,12 @@ L 706.195952 25.64
 z
 " clip-path="url(#p30a6f71aaf)" style="fill: #7a828e; opacity: 0.14"/>
    </g>
-   <g id="line2d_164">
+   <g id="line2d_167">
     <path d="M 571.501991 95.049812 
 L 603.26517 88.108831 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke-dasharray: 0.9,1.485; stroke-dashoffset: 0; stroke: #7a828e; stroke-width: 0.9"/>
    </g>
-   <g id="line2d_165">
+   <g id="line2d_168">
     <path d="M 706.195952 251.221891 
 L 706.195952 25.64 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: var(--warn, #d05c4a)"/>
@@ -1537,184 +1558,199 @@ L 728.652301 251.221891
 L 728.652301 25.64 
 " style="fill: none; stroke: var(--line); stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="LineCollection_26">
+   <g id="LineCollection_27">
     <path d="M 702.040212 142.310918 
 L 702.040212 75.552632 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_166">
+   <g id="line2d_169">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="702.040212" y="142.310918" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_167">
+   <g id="line2d_170">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="702.040212" y="75.552632" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_27">
+   <g id="LineCollection_28">
     <path d="M 603.26517 114.206448 
 L 603.26517 62.011214 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #0072b2; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_168">
+   <g id="line2d_171">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="603.26517" y="114.206448" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_169">
+   <g id="line2d_172">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="603.26517" y="62.011214" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_28">
+   <g id="LineCollection_29">
     <path d="M 644.862048 133.251149 
 L 644.862048 70.730439 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #0072b2; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_170">
+   <g id="line2d_173">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="644.862048" y="133.251149" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_171">
+   <g id="line2d_174">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="644.862048" y="70.730439" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_29">
+   <g id="LineCollection_30">
     <path d="M 606.966959 123.90894 
 L 606.966959 66.190685 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #0072b2; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_172">
+   <g id="line2d_175">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="606.966959" y="123.90894" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_173">
+   <g id="line2d_176">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="606.966959" y="66.190685" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_30">
+   <g id="LineCollection_31">
     <path d="M 673.283365 288.870471 
 L 673.283365 192.750367 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_174">
+   <g id="line2d_177">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="673.283365" y="288.870471" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_175">
+   <g id="line2d_178">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="673.283365" y="192.750367" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_31">
+   <g id="LineCollection_32">
     <path d="M 691.634413 142.310918 
 L 691.634413 75.552632 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_176">
+   <g id="line2d_179">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="691.634413" y="142.310918" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_177">
+   <g id="line2d_180">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="691.634413" y="75.552632" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_32">
+   <g id="LineCollection_33">
     <path d="M 691.634413 114.206448 
 L 691.634413 62.011214 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_178">
+   <g id="line2d_181">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="691.634413" y="114.206448" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_179">
+   <g id="line2d_182">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="691.634413" y="62.011214" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_33">
+   <g id="LineCollection_34">
     <path d="M 571.501991 123.90894 
 L 571.501991 66.190685 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #0072b2; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_180">
+   <g id="line2d_183">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="571.501991" y="123.90894" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_181">
+   <g id="line2d_184">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="571.501991" y="66.190685" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_34">
+   <g id="LineCollection_35">
     <path d="M 701.459066 159.771453 
 L 701.459066 85.856022 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #0072b2; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_182">
+   <g id="line2d_185">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="701.459066" y="159.771453" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_183">
+   <g id="line2d_186">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma9d12f6664" x="701.459066" y="85.856022" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_35">
+   <g id="LineCollection_36">
     <path d="M 703.301188 142.310918 
 L 703.301188 75.552632 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_184">
+   <g id="line2d_187">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="703.301188" y="142.310918" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_185">
+   <g id="line2d_188">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="703.301188" y="75.552632" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_36">
+   <g id="LineCollection_37">
     <path d="M 688.722105 192.773001 
 L 688.722105 108.382324 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_186">
+   <g id="line2d_189">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="688.722105" y="192.773001" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_187">
+   <g id="line2d_190">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="688.722105" y="108.382324" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="LineCollection_37">
+   <g id="LineCollection_38">
     <path d="M 703.599437 176.54499 
 L 703.599437 96.84641 
 " clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
    </g>
-   <g id="line2d_188">
+   <g id="line2d_191">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="703.599437" y="176.54499" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_189">
+   <g id="line2d_192">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m4008b662be" x="703.599437" y="96.84641" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+    </g>
+   </g>
+   <g id="LineCollection_39">
+    <path d="M 698.406406 151.139193 
+L 698.406406 80.60632 
+" clip-path="url(#p30a6f71aaf)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95"/>
+   </g>
+   <g id="line2d_193">
+    <g clip-path="url(#p30a6f71aaf)">
+     <use xlink:href="#m4008b662be" x="698.406406" y="151.139193" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+    </g>
+   </g>
+   <g id="line2d_194">
+    <g clip-path="url(#p30a6f71aaf)">
+     <use xlink:href="#m4008b662be" x="698.406406" y="80.60632" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
    <g id="patch_22">
@@ -1734,69 +1770,74 @@ Q 567.034612 67.240292 571.026469 92.089677
    <g id="text_58">
     <text style="font-size: 10px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="633.212817" y="17.64" transform="rotate(-0 633.212817 17.64)">IFEval strict, n=50</text>
    </g>
-   <g id="line2d_190">
+   <g id="line2d_195">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="702.040212" y="108.931775" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_191">
+   <g id="line2d_196">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m23f1cbca53" x="603.26517" y="88.108831" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_192">
+   <g id="line2d_197">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m23f1cbca53" x="644.862048" y="101.990794" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_193">
+   <g id="line2d_198">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m23f1cbca53" x="606.966959" y="95.049812" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_194">
+   <g id="line2d_199">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="673.283365" y="240.810419" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_195">
+   <g id="line2d_200">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="691.634413" y="108.931775" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_196">
+   <g id="line2d_201">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="691.634413" y="88.108831" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_197">
+   <g id="line2d_202">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m23f1cbca53" x="571.501991" y="95.049812" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_198">
+   <g id="line2d_203">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#m23f1cbca53" x="701.459066" y="122.813738" style="fill: #0072b2; fill-opacity: 0.95; stroke: #0072b2; stroke-opacity: 0.95"/>
     </g>
    </g>
-   <g id="line2d_199">
+   <g id="line2d_204">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="703.301188" y="108.931775" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_200">
+   <g id="line2d_205">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="688.722105" y="150.577662" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
-   <g id="line2d_201">
+   <g id="line2d_206">
     <g clip-path="url(#p30a6f71aaf)">
      <use xlink:href="#ma6308338b8" x="703.599437" y="136.6957" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
+   <g id="line2d_207">
+    <g clip-path="url(#p30a6f71aaf)">
+     <use xlink:href="#ma6308338b8" x="698.406406" y="115.872756" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
+    </g>
+   </g>
   </g>
   <g id="legend_1">
-   <g id="line2d_202">
+   <g id="line2d_208">
     <defs>
      <path id="m8cce8d5036" d="M 0 3 
 C 0.795609 3 1.55874 2.683901 2.12132 2.12132 
@@ -1817,7 +1858,7 @@ z
    <g id="text_59">
     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="214.471875" y="306.670125" transform="rotate(-0 214.471875 306.670125)">dense</text>
    </g>
-   <g id="line2d_203">
+   <g id="line2d_209">
     <defs>
      <path id="m1cee478229" d="M -3 3 
 L 3 3 
@@ -1833,7 +1874,7 @@ z
    <g id="text_60">
     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="277.033125" y="306.670125" transform="rotate(-0 277.033125 306.670125)">MoE</text>
    </g>
-   <g id="line2d_204">
+   <g id="line2d_210">
     <path d="M 309.885625 303.870125 
 L 317.885625 303.870125 
 L 325.885625 303.870125 
@@ -1842,7 +1883,7 @@ L 325.885625 303.870125
    <g id="text_61">
     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="332.285625" y="306.670125" transform="rotate(-0 332.285625 306.670125)">15 GiB budget</text>
    </g>
-   <g id="line2d_205">
+   <g id="line2d_211">
     <path d="M 405.825625 303.870125 
 L 413.825625 303.870125 
 L 421.825625 303.870125 
@@ -1851,7 +1892,7 @@ L 421.825625 303.870125
    <g id="text_62">
     <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="428.225625" y="306.670125" transform="rotate(-0 428.225625 306.670125)">Pareto front</text>
    </g>
-   <g id="line2d_206">
+   <g id="line2d_212">
     <path d="M 491.231875 303.870125 
 L 499.231875 303.870125 
 L 507.231875 303.870125 
@@ -4064,7 +4105,7 @@ L 753.48 9.72
 </svg>
 </figure>
 <p><em>Figure 5 — How much of this roster fits at 8k context as the card grows: the count of roster rows whose footprint at 8k is inside (card size − 1 GiB), by pure arithmetic. The five rungs are Table 7's five rows, and the shaded band is the 16 GB class this page is about.</em></p>
-<table><thead><tr><th>card (GB)</th><th>usable (GiB)</th><th>models that fit at 8k</th><th>best of them by mean quality</th><th>what it means</th></tr></thead><tbody><tr><td>8 GB</td><td>7 GiB</td><td>2 of 13</td><td>qwen3-8b-q4</td><td>4-8B dense only; every MoE in the roster is out</td></tr><tr><td>12 GB</td><td>11 GiB</td><td>4 of 13</td><td>g4-12b-qat</td><td>the dense 12B/14B tier arrives; nothing above 10 GiB fits</td></tr><tr><td>16 GB</td><td>15 GiB</td><td>12 of 13</td><td>lfm25-24b-a2b-think</td><td>the MoE tier arrives, and with it three rows above 0.90 HumanEval; the MTP arm is the one casualty</td></tr><tr><td>24 GB</td><td>23 GiB</td><td>13 of 13</td><td>lfm25-24b-a2b-think</td><td>everything here fits, at its context, with room for a second model</td></tr><tr><td>32 GB+</td><td>31 GiB+</td><td>13 of 13</td><td>lfm25-24b-a2b-think</td><td>this roster saturates; the limit is the roster, not the card</td></tr></tbody></table>
+<table><thead><tr><th>card (GB)</th><th>usable (GiB)</th><th>models that fit at 8k</th><th>best of them by mean quality</th><th>what it means</th></tr></thead><tbody><tr><td>8 GB</td><td>7 GiB</td><td>2 of 14</td><td>qwen3-8b-q4</td><td>4-8B dense only; every MoE in the roster is out</td></tr><tr><td>12 GB</td><td>11 GiB</td><td>4 of 14</td><td>g4-12b-qat</td><td>the dense 12B/14B tier arrives; nothing above 10 GiB fits</td></tr><tr><td>16 GB</td><td>15 GiB</td><td>13 of 14</td><td>clover-35b-a3b-iq2</td><td>the MoE tier arrives; the mean lead moves to clover-35b-a3b-iq2, in AR mode only, and the MTP arm is the one casualty</td></tr><tr><td>24 GB</td><td>23 GiB</td><td>14 of 14</td><td>clover-35b-a3b-iq2</td><td>everything here fits, at its context, with room for a second model</td></tr><tr><td>32 GB+</td><td>31 GiB+</td><td>14 of 14</td><td>clover-35b-a3b-iq2</td><td>this roster saturates; the limit is the roster, not the card</td></tr></tbody></table>
 <p><em>Table 7 — the ladder. The 24 GB and 32 GB+ rows are roster-limited, not card-limited: nothing here is larger than 13.9 GiB, so they say nothing about how a 32 GB card behaves with a 30 GiB model. There is no quality-per-GiB column because that metric answers "what is cheapest per gigabyte" rather than "what is the best that fits" — at every rung it elects <code>g4-e4b-qat</code>, the smallest file, since it divides by footprint. "Best of them by mean quality" is the column that answers the question asked.</em></p>
 <p>The step from 12 GB to 16 GB is the one that matters. It is not a larger dense model that you gain — it is the MoE tier, and with it the three rows that score above 0.90 HumanEval, two of them at 64k context where the 12 GB card tops out at 0.896 on a 6.26 GiB file.</p>
 <figure class="fig"><svg role="img" aria-label="The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and two stated thresholds drawn across — 0.78, the competitive line, and 0.85, the top of the class. The three rings are the shortlist: the quality pick `lfm25-24b-a2b-think`, the value pick `g4-12b-qat` at roughly half its footprint, and the budget pick `g4-e4b-qat` below the line because it costs 5.4 GiB. They are deliberately not the three highest dots. Both lines are stated thresholds, not statistics: five models clear 0.79 (0.860, 0.824, 0.799, 0.799, 0.797), one clears 0.85, and at 0.75 nine do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express" xmlns:xlink="http://www.w3.org/1999/xlink" width="763.2pt" height="338.4pt" viewBox="0 0 763.2 338.4" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and two stated thresholds drawn across — 0.78, the competitive line, and 0.85, the top of the class. The three rings are the shortlist: the quality pick `lfm25-24b-a2b-think`, the value pick `g4-12b-qat` at roughly half its footprint, and the budget pick `g4-e4b-qat` below the line because it costs 5.4 GiB. They are deliberately not the three highest dots. Both lines are stated thresholds, not statistics: five models clear 0.79 (0.860, 0.824, 0.799, 0.799, 0.797), one clears 0.85, and at 0.75 nine do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express</title><desc>The decision map: mean of the three quality axes against footprint, with the 15 GiB budget drawn as a wall and two stated thresholds drawn across — 0.78, the competitive line, and 0.85, the top of the class. The three rings are the shortlist: the quality pick `lfm25-24b-a2b-think`, the value pick `g4-12b-qat` at roughly half its footprint, and the budget pick `g4-e4b-qat` below the line because it costs 5.4 GiB. They are deliberately not the three highest dots. Both lines are stated thresholds, not statistics: five models clear 0.79 (0.860, 0.824, 0.799, 0.799, 0.797), one clears 0.85, and at 0.75 nine do. There is no median crosshair and no upper-right &quot;leader&quot; corner, because here smaller footprint and higher score are both good, which a quadrant cannot express — computed from the run archive, not drawn by hand.</desc>
@@ -4513,7 +4554,9 @@ z
     </g>
    </g>
    <g id="PathCollection_13">
-    <g clip-path="url(#pa518740a4a)"/>
+    <g clip-path="url(#pa518740a4a)">
+     <use xlink:href="#mbd4876be8c" x="596.285394" y="30.551941" style="fill: #d55e00; stroke: var(--code); stroke-width: 0.8"/>
+    </g>
    </g>
    <g id="patch_10">
     <path d="M 537.221134 34.83947 
@@ -4546,49 +4589,57 @@ Q 131.85943 140.094223 140.489692 130.321017
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="572.245331" y="269.267154" transform="rotate(-0 572.245331 269.267154)">lfm25-24b-a2b</text>
    </g>
    <g id="patch_13">
+    <path d="M 678.590301 37.250363 
+Q 639.430918 34.063359 600.271536 30.876355 
+" style="fill: none; stroke: var(--dim); stroke-width: 0.5; stroke-linecap: round"/>
+   </g>
+   <g id="text_27">
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="748.497604" y="42.076178" transform="rotate(-0 748.497604 42.076178)">clover-35b-a3b-iq2</text>
+   </g>
+   <g id="patch_14">
     <path d="M 682.50115 63.205156 
 Q 650.606816 65.257366 618.712482 67.309575 
 " style="fill: none; stroke: var(--dim); stroke-width: 0.5; stroke-linecap: round"/>
    </g>
-   <g id="text_27">
+   <g id="text_28">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="748.497604" y="62.771951" transform="rotate(-0 748.497604 62.771951)">axion-1.0-35b-iq3</text>
    </g>
-   <g id="patch_14">
+   <g id="patch_15">
     <path d="M 690.008426 82.730119 
 Q 651.597135 84.059136 613.185843 85.388153 
 " style="fill: none; stroke: var(--dim); stroke-width: 0.5; stroke-linecap: round"/>
    </g>
-   <g id="text_28">
+   <g id="text_29">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="748.497604" y="83.467725" transform="rotate(-0 748.497604 83.467725)">g4-26b-a4b-qat</text>
    </g>
-   <g id="patch_15">
+   <g id="patch_16">
     <path d="M 694.439771 99.323422 
 Q 630.161228 92.631943 565.882684 85.940465 
 " style="fill: none; stroke: var(--dim); stroke-width: 0.5; stroke-linecap: round"/>
    </g>
-   <g id="text_29">
+   <g id="text_30">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="748.497604" y="104.163499" transform="rotate(-0 748.497604 104.163499)">groot-19b-a3b</text>
    </g>
-   <g id="patch_16">
+   <g id="patch_17">
     <path d="M 687.916527 117.117378 
 Q 652.744644 109.511729 617.572762 101.90608 
 " style="fill: none; stroke: var(--dim); stroke-width: 0.5; stroke-linecap: round"/>
    </g>
-   <g id="text_30">
+   <g id="text_31">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="748.497604" y="124.859272" transform="rotate(-0 748.497604 124.859272)">qwen3-30b-a3b-q3</text>
    </g>
-   <g id="patch_17">
+   <g id="patch_18">
     <path d="M 694.161791 137.83103 
 Q 652.600926 129.235289 611.040061 120.639549 
 " style="fill: none; stroke: var(--dim); stroke-width: 0.5; stroke-linecap: round"/>
    </g>
-   <g id="text_31">
+   <g id="text_32">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="748.497604" y="145.555046" transform="rotate(-0 748.497604 145.555046)">mistral-24b-q4</text>
    </g>
-   <g id="text_32">
+   <g id="text_33">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="276.682269" y="108.770548" transform="rotate(-0 276.682269 108.770548)">qwen3-8b-q4</text>
    </g>
-   <g id="text_33">
+   <g id="text_34">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="411.206972" y="91.619223" transform="rotate(-0 411.206972 91.619223)">qwen3-14b-q4</text>
    </g>
    <g id="PathCollection_14">
@@ -4652,7 +4703,7 @@ z
       <use xlink:href="#m8cce8d5036" x="66.162109" y="262.674766" style="fill: #0072b2; stroke: #0072b2"/>
      </g>
     </g>
-    <g id="text_34">
+    <g id="text_35">
      <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="80.562109" y="265.474766" transform="rotate(-0 80.562109 265.474766)">dense</text>
     </g>
     <g id="line2d_37">
@@ -4668,7 +4719,7 @@ z
       <use xlink:href="#m1cee478229" x="66.162109" y="274.675391" style="fill: #d55e00; stroke: #d55e00; stroke-linejoin: miter"/>
      </g>
     </g>
-    <g id="text_35">
+    <g id="text_36">
      <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="80.562109" y="277.475391" transform="rotate(-0 80.562109 277.475391)">MoE</text>
     </g>
     <g id="line2d_38">
@@ -4689,7 +4740,7 @@ z
       <use xlink:href="#m2d221b3279" x="66.162109" y="286.676016" style="fill-opacity: 0; stroke: #009e73"/>
      </g>
     </g>
-    <g id="text_36">
+    <g id="text_37">
      <text style="font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="80.562109" y="289.476016" transform="rotate(-0 80.562109 289.476016)">one of the three picks</text>
     </g>
    </g>
@@ -6441,7 +6492,7 @@ L 682.055 236.276016
 <li><strong>Energy and thermals per token.</strong> The envelope is measured and quoted with the platform table — 96 W mean package power against a 129 W peak, 69 °C mean GPU temperature against an 88 °C hottest sample — but it is a thermal record sampled every ~2 s, not an energy-per-1k-tokens figure, which would need the integral over a run.</li>
 <li><strong>Concurrency.</strong> Every row was measured with one slot. Throughput under <code>-np 4</code> is a different measurement with a different KV footprint.</li>
 <li><strong>Quant ladders per model.</strong> One quant per model was measured. The claim that QAT holds up better than post-training quant at equal bpw rests on the controlled pair, not on a sweep.</li>
-<li><strong>Non-autoregressive MoEs.</strong> A block-diffusion MoE (<code>Diffuspace_Clover-35B-A3B-Preview</code>, IQ2_M, 12.32 GiB) sits in the roster file with no row. The build that served this roster does not implement its architecture (<code>clover_moe</code> walks into <code>unknown model architecture</code> at load), and the upstream build that does implement it disables flash attention on this GPU — so its KV cache would be f16 rather than the q8_0 cache every other row was measured with, and its footprint would not be comparable. It is left for a revision on a build that carries both, rather than measured on a second one and footnoted into a page whose first claim is one build.</li>
+<li><strong>Non-autoregressive decoding.</strong> <code>clover-35b-a3b-iq2</code> is measured, but only in the mode llama.cpp can run: causal decode, one token at a time. The model was trained for parallel block diffusion, and nothing here measures that — so the arithmetic that makes the architecture interesting (a whole block decoded at once) is outside this page's evidence entirely. The row is an accurate measurement of the causal arm and no statement at all about the parallel one. It is worth naming as a gap even though the row exists, because the row's numbers are good enough that they will be quoted without the caveat.</li>
 <li><strong>Real spill behaviour.</strong> This host cannot show it. The spill penalty quoted for discrete cards is from the literature and the PCIe arithmetic, not from a measurement on a card.</li>
 </ul>
 <h2 id="s14">14. Reproduce any row</h2>
@@ -6476,7 +6527,7 @@ CC BY 4.0, https://strix-halo-128-benchmarks.github.io/16gb.html</code></pre>
 <p>The copyright holder is Dom (<a href="https://github.com/barmynon">github.com/barmynon</a>); the repository's <code>CITATION.cff</code> carries the citable form of that attribution.</p>
 <p>The machine-readable form is alongside the page: a <code>license</code> field in the page's JSON-LD, a <code>rel="license"</code> link in the document head, and the same CC BY 4.0 statement in the repository's <code>LICENSE</code> file.</p>
 <h2 id="s16">16. Document history</h2>
-<table><thead><tr><th>version</th><th>date</th><th>what changed</th></tr></thead><tbody><tr><td>1.21</td><td>12th November 2026</td><td>Two rows added, both qwen3.5moe hybrid-attention MoEs measured on the same build and flag set as the other eleven: <code>groot-19b-a3b</code> (11.63 GiB, 64k context, 13.76 GiB footprint) and <code>axion-1.0-35b-iq3</code> (34.7B at 3.14 bpw, 64k context, 14.81 GiB). Roster 13 rows, 138.1 GiB. <strong>New numbers:</strong> MMLU-Pro has a new leader — <code>axion-1.0-35b-iq3</code> 0.758 (91/120), ahead of <code>groot-19b-a3b</code> 0.717 and 13 items ahead of the previous leader <code>lfm25-24b-a2b-think</code> 0.692 — so <a class="sref" href="#s3">&#167;3</a>'s knowledge pick moves from <code>g4-26b-a4b-qat</code> to it, and the 26B's bullet now says what it still is rather than what it was. HumanEval's lead narrows from 11 items to 6 (<code>axion-1.0-35b-iq3</code> 0.933 against <code>lfm25-24b-a2b-think</code> 0.970), which is inside one standard interval, so "the only decisive win in the roster" is withdrawn. Overall mean: 0.860, 0.824, then 0.799 twice. <strong>Caps:</strong> the new arms think, so their caps differ and Table 2 now states them per row — HumanEval 4096 on <code>groot-19b-a3b</code> (cap-bound: 7 of its 10 failures at the cap, marked † as a floor) and 8192 on <code>axion-1.0-35b-iq3</code>; MMLU-Pro and IFEval 4096 on both, because the IFEval task's own 1280 is spent inside a reasoning block, which is why <code>groot-19b-a3b</code>'s first IFEval pass read 0.220 before it was re-run at 4096 (0.740). <strong>Also changed:</strong> Table 2 is now sorted by footprint as its caption always claimed — the 7.93 GiB <code>qwen3-8b-q4</code> row had been sitting above the 7.67 GiB <code>g4-12b-qat</code>; Table 5 gains the two 36 MiB/1k hybrid rows; Table 7's denominators are 13 and its 8k ladder 2 / 4 / 12 / 13; <a class="sref" href="#s9">&#167;9</a> gains the measured counterexample (a 3.14 bpw 35B keeps the best MMLU-Pro in the roster, so parameter count buys what quantisation depth does not take away); <a class="sref" href="#s5">&#167;5</a>, <a class="sref" href="#s8">&#167;8</a> and Figure 6's threshold counts are recomputed for twelve quality rows. <strong>Figures:</strong> labels for the 13.7-14.8 GiB cluster now sit in a leader-lined gutter in Figure 6 and a stacked gutter in Figure 3, front ends are placed by collision test in Figure 1, and <code>charts16.py</code> no longer draws a bar or counts a rung for a roster entry with no measured run. <strong>Not published:</strong> <code>clover-35b-a3b-iq2</code>, an architecture the serving build does not implement — <a class="sref" href="#s13">&#167;13</a> and <a class="sref" href="#s14">&#167;14</a> say why, and what would fix it.</td></tr><tr><td>1.20</td><td>11th November 2026</td><td>One word in Table 4. Its quality-per-GiB row said the next of the rows at 12 GiB or more is 0.054; it is 0.062 — <code>lfm25-24b-a2b-think</code> at 0.860 mean over a 13.96 GiB footprint. 0.054 is <code>g4-26b-a4b-qat</code>, one place behind it. No other value changed.</td></tr><tr><td>1.19</td><td>11th November 2026</td><td>Read-through pass; no measured value changed. <strong>Renderer:</strong> section numbers were being dropped from the headings, so all 38 <code>§N</code> references in the prose pointed at headings the reader could not number — they now render, the contents list carries them too, and every <code>§N</code> where the section exists is a link to it. This is one fix in <code>md2html.py</code> and it applies to every page built from it. <strong>Axes:</strong> Table 3 gains the two probes the header and <a class="sref" href="#s4">&#167;4</a> had always promised but no table showed — needle 2k/8k and the three protocol checks — so the page no longer says four quality axes and describe three. <strong>Corrected:</strong> <a class="sref" href="#s3">&#167;3</a>'s "the 4k rows fit only at 4k" and <a class="sref" href="#s9">&#167;9</a>'s "the 30B affords 4k" both contradicted Table 7 (10 of 11 fit at 8k) and Figure 2 (the 30B's ceiling is ~13k); both now say the two rows were <em>run</em> at 4k because that is where they keep headroom, with the arithmetic ceiling named. <a class="sref" href="#s2">&#167;2</a> now defines the three different senses of "fits" that produced that contradiction. <a class="sref" href="#s3">&#167;3</a>'s "second among dense models on HumanEval" was first (0.896 against 0.866 and 0.854); "the only row that wins an axis outright" ignored its own prefill and decode rows, so it says quality axis; <a class="sref" href="#s8">&#167;8</a>'s "everything else is under the line, over the wall, or both" was false for <code>qwen3-14b-q4</code> and <code>g4-26b-a4b-qat</code>, and "a third of it" is 39%; Table 4's "±8 confidence band" mixed items with points and is now 7 items, 5.8 points, inside a ±8.7-point interval; Table 8's header said 15 − 1 GiB and its cells said 13.6, its 5.0 bpw row printed GB as GiB (15.6 becomes 14.7), and its 3.9 bpw row claimed 2 GiB of KV room for a file that leaves 0.30 — the table is rebuilt in GiB at the 25.2B parameters the file implies. <a class="sref" href="#s10">&#167;10</a>'s drafter item now shows the arithmetic (14.63 → 15.06). <strong>Captions:</strong> Figure 1 said "the Pareto front" where each of its three panels has its own, and did not say the whiskers are 95% intervals; Figure 3 omitted the budget line and the front it draws, and did not say which axis is log; Figure 4 described only its left panel; Figure 6 said two models clear 0.79 where three do, and never accounted for its second line; Figure 8's "the only measurements on the page" meant in that figure; Figure 2's axis said "KV still fits 15 GiB" where the bar subtracts weights and overhead too. <strong>Figures:</strong> Figure 5 drew a 48 GB rung Table 7 has no row for, so it draws five; Figure 3's budget line moves from 15 GiB of weights to 14, since the overhead is inside the same 15; Figure 7's host is named as Figure 8 names it. <strong>Duplication:</strong> <a class="sref" href="#s6">&#167;6</a>'s opening sentence restated <a class="sref" href="#s2">&#167;2</a>'s KV bullet word for word and now points at it; <a class="sref" href="#s5">&#167;5</a> and Table 6 both recounted the 7-points/3-prompts split, so <a class="sref" href="#s5">&#167;5</a> reads the figure and Table 6 keeps the numbers; <a class="sref" href="#s2">&#167;2</a>'s closing paragraph, Table 3's caption and Table 7's caption each restated a claim already made once. <strong>Clarity:</strong> the three picks are now named where they first appear (<code>g4-e4b-qat</code> in Table 3, all three in Figure 6 and <a class="sref" href="#s8">&#167;8</a>), because "the budget pick" was used five pages before the figure that defines it; <a class="sref" href="#s2">&#167;2</a>'s title covers its second half; Table 5 says why two roster rows are absent; <a class="sref" href="#s14">&#167;14</a>'s reproduce block showed only the thinking arm's 8192 cap under a claim about controlled caps, and now shows both.</td></tr><tr><td>1.18</td><td>11th November 2026</td><td>Dedup and labels pass; no measured value changed. <strong>Removed:</strong> the one-line roster summary after the platform table (the header already carries the file count, the axes and 113.8 GiB); <a class="sref" href="#s5">&#167;5</a>'s third paragraph, which restated the 4k-context warning <a class="sref" href="#s3">&#167;3</a> makes, and the score lists in its other two, so the section now reads the figure — the front's two ends, and a tie that sits twice as far right — and points at <a class="sref" href="#s3">&#167;3</a> and <a class="sref" href="#s7">&#167;7</a> for the numbers; <a class="sref" href="#s4">&#167;4</a>'s first bullet restated Table 9's first row and now cites it; <a class="sref" href="#s10">&#167;10</a>'s closing paragraph restated Table 1's flag row and now cites it. <strong>Labels:</strong> Table 5's per-1k column is marked (fp16) and its four context columns (q8_0), and the caption states the 32k value is half of 32 × the per-1k rate rather than 32 × it — the unlabelled header allowed the opposite reading; Table 7's header names its units, card (GB) against usable (GiB); Table 9's decode row names the two card sizes behind 1008-1792 GB/s; Table 3's transfer pointer read <a class="sref" href="#s12">&#167;12</a>, it is <a class="sref" href="#s11">&#167;11</a>. <strong>Corrected:</strong> Table 7's caption said "the 32 GB and 48 GB columns" where the ladder has a 24 GB and a 32 GB+ row; <a class="sref" href="#s3">&#167;3</a>'s "14 GiB to spare" is now "14 GiB of its 15", because the row's footprint is 13.96 GiB against a 15 GiB budget and it has about 1 GiB left, not 14; <a class="sref" href="#s13">&#167;13</a> quoted 96 W and 76 °C as a batch figure that contradicts the envelope measured and quoted with the platform table (96 W mean against a 129 W peak, 69 °C mean against an 88 °C hottest sample), and now defers to it.</td></tr><tr><td>1.17</td><td>10th November 2026</td><td>Corrections pass: the 30B's context in <a class="sref" href="#s9">&#167;9</a> read 13k, it is 4k; <a class="sref" href="#s12">&#167;12</a> counted three NVIDIA boards, Table 10 lists four; the 128-bit decode multiplier read 0.9-1.8x, it is 0.75-1.85x, and the 256-bit group 2.0-2.6x, it is 1.3-2.7x; <a class="sref" href="#s10">&#167;10</a>'s halving claim read 0.3-2.5 GiB against Table 5's q8_0 columns, which give 0.1-1.25; the <a class="sref" href="#s3">&#167;3</a> decode row now names the 110 tok/s arm as next best instead of skipping it; <a class="sref" href="#s2">&#167;2</a>'s KV bullet no longer says the 14B only fits 4k; the decision-map sentence placed the quality pick top-left, it is the top-right extreme; Figure 1's caption now names the 1 GiB overhead in the footprint.</td></tr><tr><td>1.16</td><td>10th November 2026</td><td><a class="sref" href="#s4">&#167;4</a> now says which uncertainty it quotes: the three figures there are one standard error, the paragraph defines the 95% confidence intervals the charts draw and says they are about double these. <a class="sref" href="#s11">&#167;11</a>'s memory figures move to the host's own units — 128 GiB and a 100 GiB GTT window — replacing a 96 GiB figure that no reading on the box produces.</td></tr><tr><td>1.15</td><td>10th November 2026</td><td>Corrects the claim that power and temperature were not recorded: the host's monitor logs both at ~2 s throughout, and the platform table now says so with retention. The introduction quotes the campaign's measured envelope — GPU 69 °C mean, 88 °C hottest sample, package power 96 W mean, 129 W peak — so the throughput numbers come with a thermal context instead of an unstated one.</td></tr><tr><td>1.14</td><td>10th November 2026</td><td>The platform table gains the OS: distribution, init, C library, and on the kernel row the pstate mode and EPP hint, because on this host the governor is what decides how long the boost is held.</td></tr><tr><td>1.13</td><td>10th November 2026</td><td>The platform table gains storage: the NVMe drive and filesystem the weight files live on, with measured direct-read rates. It is in the table to say what it does not affect — weights are read once at load, so storage sets load time, not decode.</td></tr><tr><td>1.12</td><td>10th November 2026</td><td>The introduction gains a platform table: CPU, GPU, unified memory and the GTT window, kernel, graphics stack, inference build and server flags, each with the reason it is stated. Power and temperature are named as unrecorded rather than implied to be controlled. The spec list that used to sit in the prose is folded into the table instead of being repeated above it. It is Table 1, so every later table is numbered one higher than before.</td></tr><tr><td>1.11</td><td>10th November 2026</td><td>Mean quality and quality per GiB now appear in every table that lists per-model scores: two columns in the roster (<a class="sref" href="#s1">&#167;1</a>) and two rows in the controlled pair (<a class="sref" href="#s7">&#167;7</a>). Both are marked derived, and both state the divisor is the footprint at the model's context. The ladder (<a class="sref" href="#s8">&#167;8</a>) says why it has no per-GiB column.</td></tr><tr><td>1.10</td><td>10th November 2026</td><td>Fixes "both platforms" in <a class="sref" href="#s4">&#167;4</a> and in the transferability table: that phrase dates from when the page compared only this box and a discrete card. It now names the three architectures the page actually compares and gives each one's bandwidth range.</td></tr><tr><td>1.9</td><td>10th November 2026</td><td>Removes duplication in <a class="sref" href="#s2">&#167;2</a>: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope.</td></tr><tr><td>1.8</td><td>10th November 2026</td><td>The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you.</td></tr><tr><td>1.7</td><td>10th November 2026</td><td>Defines cap, budget, footprint and KV cache in <a class="sref" href="#s2">&#167;2</a> alongside the axes — the four terms every number on the page is qualified by, none of which was explained where it was first used.</td></tr><tr><td>1.6</td><td>10th November 2026</td><td>Adds <a class="sref" href="#s2">&#167;2</a>: what HumanEval, MMLU-Pro, IFEval, prefill/decode and the riddle probes actually measure, how each is scored, what was run here, and what each one cannot tell you — before any table of scores. Sections and tables renumbered.</td></tr><tr><td>1.5</td><td>10th November 2026</td><td>Names the author and copyright holder (Dom, github.com/barmynon) instead of leaving the person behind the measurements anonymous, and adds a <code>CITATION.cff</code> so the work can be cited.</td></tr><tr><td>1.4</td><td>10th November 2026</td><td>Title now says local LLMs. Adds the licence section: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line.</td></tr><tr><td>1.3</td><td>10th November 2026</td><td>Adds a decision map (Figure 6): mean quality against footprint with the 15 GiB wall, a stated 0.78 competitive line and the three picks ringed, so "where is good" is visible without reading a table. Deliberately not a quadrant — no median crosshair, because the good direction here is up and to the left. Figures renumbered; the decode figure now marks the region that fits the card.</td></tr><tr><td>1.2</td><td>10th November 2026</td><td>the card comparison extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box".</td></tr><tr><td>1.1</td><td>10th November 2026</td><td>Adds the 16 GB card section: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it.</td></tr><tr><td>1.0</td><td>10th November 2026</td><td>First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison.</td></tr></tbody></table>
+<table><thead><tr><th>version</th><th>date</th><th>what changed</th></tr></thead><tbody><tr><td>1.22</td><td>12th November 2026</td><td><strong>Clover measured: the fourteenth row, and the page's first decisive knowledge win.</strong> <code>clover-35b-a3b-iq2</code> (block-diffusion MoE, 34.7B, IQ2_M at 3.05 bpw, 12.32 GiB) scores <strong>0.945 HumanEval (155/164), 0.842 MMLU-Pro (101/120), 0.840/0.829 IFEval (50@4096)</strong> at 1849/68 t/s, in a 14.45 GiB footprint at 64k context — <code>tight</code>, but inside the wall. It is measured <strong>AR-only</strong>: llama.cpp runs the architecture autoregressively, so this is the causal arm of weights trained for parallel block decode, and the row and its verdicts say so. <strong>New leaders:</strong> knowledge moves from <code>axion-1.0-35b-iq3</code> (0.758) to clover by 10 items — 8.4 points, outside the ±7.7-point interval, the first decisive win on this page — and the overall mean moves from <code>lfm25-24b-a2b-think</code> (0.860) to 0.876. HumanEval's second place changes hands to clover at 0.945, 4 items behind the leader and inside one interval, so the top is a cluster rather than a pair. <strong>IFEval</strong> settles the cap question on this model: 0.560/0.553 at the task's own 1280-token pin, 0.840/0.829 at 4096 — the same artefact <code>groot-19b-a3b</code> (0.220 → 0.740) and <code>axion-1.0-35b-iq3</code> (0.300 → 0.780) produced. <strong>Build:</strong> the row comes from a second binary — fork tree HEAD <code>19b458b5a</code>, which adds <code>clover_moe</code> — so the header row now names both and Table 1's build cell says which rows used which; every other flag is unchanged, including q8_0 KV and flash attention. <strong>Also:</strong> roster 14 rows, 150.4 GiB; Table 7's denominators 13 → 14, its 16 GB row 12 → 13 of 14 and its 24 GB/32 GB+ rows 13 → 14, all three with clover as the mean leader; the needle row's 8k count 11 → 12; the riddles row 9 → 10 models tied; <a class="sref" href="#s13">&#167;13</a>'s "no row" gap for this model is replaced by the AR-only caveat, because what remains unmeasured is parallel decode, not the model.</td></tr><tr><td>1.21</td><td>12th November 2026</td><td>Two rows added, both qwen3.5moe hybrid-attention MoEs measured on the same build and flag set as the other eleven: <code>groot-19b-a3b</code> (11.63 GiB, 64k context, 13.76 GiB footprint) and <code>axion-1.0-35b-iq3</code> (34.7B at 3.14 bpw, 64k context, 14.81 GiB). Roster 13 rows, 138.1 GiB. <strong>New numbers:</strong> MMLU-Pro has a new leader — <code>axion-1.0-35b-iq3</code> 0.758 (91/120), ahead of <code>groot-19b-a3b</code> 0.717 and 13 items ahead of the previous leader <code>lfm25-24b-a2b-think</code> 0.692 — so <a class="sref" href="#s3">&#167;3</a>'s knowledge pick moves from <code>g4-26b-a4b-qat</code> to it, and the 26B's bullet now says what it still is rather than what it was. HumanEval's lead narrows from 11 items to 6 (<code>axion-1.0-35b-iq3</code> 0.933 against <code>lfm25-24b-a2b-think</code> 0.970), which is inside one standard interval, so "the only decisive win in the roster" is withdrawn. Overall mean: 0.860, 0.824, then 0.799 twice. <strong>Caps:</strong> the new arms think, so their caps differ and Table 2 now states them per row — HumanEval 4096 on <code>groot-19b-a3b</code> (cap-bound: 7 of its 10 failures at the cap, marked † as a floor) and 8192 on <code>axion-1.0-35b-iq3</code>; MMLU-Pro and IFEval 4096 on both, because the IFEval task's own 1280 is spent inside a reasoning block, which is why <code>groot-19b-a3b</code>'s first IFEval pass read 0.220 before it was re-run at 4096 (0.740). <strong>Also changed:</strong> Table 2 is now sorted by footprint as its caption always claimed — the 7.93 GiB <code>qwen3-8b-q4</code> row had been sitting above the 7.67 GiB <code>g4-12b-qat</code>; Table 5 gains the two 36 MiB/1k hybrid rows; Table 7's denominators are 13 and its 8k ladder 2 / 4 / 12 / 13; <a class="sref" href="#s9">&#167;9</a> gains the measured counterexample (a 3.14 bpw 35B keeps the best MMLU-Pro in the roster, so parameter count buys what quantisation depth does not take away); <a class="sref" href="#s5">&#167;5</a>, <a class="sref" href="#s8">&#167;8</a> and Figure 6's threshold counts are recomputed for twelve quality rows. <strong>Figures:</strong> labels for the 13.7-14.8 GiB cluster now sit in a leader-lined gutter in Figure 6 and a stacked gutter in Figure 3, front ends are placed by collision test in Figure 1, and <code>charts16.py</code> no longer draws a bar or counts a rung for a roster entry with no measured run. <strong>Not published:</strong> <code>clover-35b-a3b-iq2</code>, an architecture the serving build does not implement — <a class="sref" href="#s13">&#167;13</a> and <a class="sref" href="#s14">&#167;14</a> say why, and what would fix it.</td></tr><tr><td>1.20</td><td>11th November 2026</td><td>One word in Table 4. Its quality-per-GiB row said the next of the rows at 12 GiB or more is 0.054; it is 0.062 — <code>lfm25-24b-a2b-think</code> at 0.860 mean over a 13.96 GiB footprint. 0.054 is <code>g4-26b-a4b-qat</code>, one place behind it. No other value changed.</td></tr><tr><td>1.19</td><td>11th November 2026</td><td>Read-through pass; no measured value changed. <strong>Renderer:</strong> section numbers were being dropped from the headings, so all 38 <code>§N</code> references in the prose pointed at headings the reader could not number — they now render, the contents list carries them too, and every <code>§N</code> where the section exists is a link to it. This is one fix in <code>md2html.py</code> and it applies to every page built from it. <strong>Axes:</strong> Table 3 gains the two probes the header and <a class="sref" href="#s4">&#167;4</a> had always promised but no table showed — needle 2k/8k and the three protocol checks — so the page no longer says four quality axes and describe three. <strong>Corrected:</strong> <a class="sref" href="#s3">&#167;3</a>'s "the 4k rows fit only at 4k" and <a class="sref" href="#s9">&#167;9</a>'s "the 30B affords 4k" both contradicted Table 7 (10 of 11 fit at 8k) and Figure 2 (the 30B's ceiling is ~13k); both now say the two rows were <em>run</em> at 4k because that is where they keep headroom, with the arithmetic ceiling named. <a class="sref" href="#s2">&#167;2</a> now defines the three different senses of "fits" that produced that contradiction. <a class="sref" href="#s3">&#167;3</a>'s "second among dense models on HumanEval" was first (0.896 against 0.866 and 0.854); "the only row that wins an axis outright" ignored its own prefill and decode rows, so it says quality axis; <a class="sref" href="#s8">&#167;8</a>'s "everything else is under the line, over the wall, or both" was false for <code>qwen3-14b-q4</code> and <code>g4-26b-a4b-qat</code>, and "a third of it" is 39%; Table 4's "±8 confidence band" mixed items with points and is now 7 items, 5.8 points, inside a ±8.7-point interval; Table 8's header said 15 − 1 GiB and its cells said 13.6, its 5.0 bpw row printed GB as GiB (15.6 becomes 14.7), and its 3.9 bpw row claimed 2 GiB of KV room for a file that leaves 0.30 — the table is rebuilt in GiB at the 25.2B parameters the file implies. <a class="sref" href="#s10">&#167;10</a>'s drafter item now shows the arithmetic (14.63 → 15.06). <strong>Captions:</strong> Figure 1 said "the Pareto front" where each of its three panels has its own, and did not say the whiskers are 95% intervals; Figure 3 omitted the budget line and the front it draws, and did not say which axis is log; Figure 4 described only its left panel; Figure 6 said two models clear 0.79 where three do, and never accounted for its second line; Figure 8's "the only measurements on the page" meant in that figure; Figure 2's axis said "KV still fits 15 GiB" where the bar subtracts weights and overhead too. <strong>Figures:</strong> Figure 5 drew a 48 GB rung Table 7 has no row for, so it draws five; Figure 3's budget line moves from 15 GiB of weights to 14, since the overhead is inside the same 15; Figure 7's host is named as Figure 8 names it. <strong>Duplication:</strong> <a class="sref" href="#s6">&#167;6</a>'s opening sentence restated <a class="sref" href="#s2">&#167;2</a>'s KV bullet word for word and now points at it; <a class="sref" href="#s5">&#167;5</a> and Table 6 both recounted the 7-points/3-prompts split, so <a class="sref" href="#s5">&#167;5</a> reads the figure and Table 6 keeps the numbers; <a class="sref" href="#s2">&#167;2</a>'s closing paragraph, Table 3's caption and Table 7's caption each restated a claim already made once. <strong>Clarity:</strong> the three picks are now named where they first appear (<code>g4-e4b-qat</code> in Table 3, all three in Figure 6 and <a class="sref" href="#s8">&#167;8</a>), because "the budget pick" was used five pages before the figure that defines it; <a class="sref" href="#s2">&#167;2</a>'s title covers its second half; Table 5 says why two roster rows are absent; <a class="sref" href="#s14">&#167;14</a>'s reproduce block showed only the thinking arm's 8192 cap under a claim about controlled caps, and now shows both.</td></tr><tr><td>1.18</td><td>11th November 2026</td><td>Dedup and labels pass; no measured value changed. <strong>Removed:</strong> the one-line roster summary after the platform table (the header already carries the file count, the axes and 113.8 GiB); <a class="sref" href="#s5">&#167;5</a>'s third paragraph, which restated the 4k-context warning <a class="sref" href="#s3">&#167;3</a> makes, and the score lists in its other two, so the section now reads the figure — the front's two ends, and a tie that sits twice as far right — and points at <a class="sref" href="#s3">&#167;3</a> and <a class="sref" href="#s7">&#167;7</a> for the numbers; <a class="sref" href="#s4">&#167;4</a>'s first bullet restated Table 9's first row and now cites it; <a class="sref" href="#s10">&#167;10</a>'s closing paragraph restated Table 1's flag row and now cites it. <strong>Labels:</strong> Table 5's per-1k column is marked (fp16) and its four context columns (q8_0), and the caption states the 32k value is half of 32 × the per-1k rate rather than 32 × it — the unlabelled header allowed the opposite reading; Table 7's header names its units, card (GB) against usable (GiB); Table 9's decode row names the two card sizes behind 1008-1792 GB/s; Table 3's transfer pointer read <a class="sref" href="#s12">&#167;12</a>, it is <a class="sref" href="#s11">&#167;11</a>. <strong>Corrected:</strong> Table 7's caption said "the 32 GB and 48 GB columns" where the ladder has a 24 GB and a 32 GB+ row; <a class="sref" href="#s3">&#167;3</a>'s "14 GiB to spare" is now "14 GiB of its 15", because the row's footprint is 13.96 GiB against a 15 GiB budget and it has about 1 GiB left, not 14; <a class="sref" href="#s13">&#167;13</a> quoted 96 W and 76 °C as a batch figure that contradicts the envelope measured and quoted with the platform table (96 W mean against a 129 W peak, 69 °C mean against an 88 °C hottest sample), and now defers to it.</td></tr><tr><td>1.17</td><td>10th November 2026</td><td>Corrections pass: the 30B's context in <a class="sref" href="#s9">&#167;9</a> read 13k, it is 4k; <a class="sref" href="#s12">&#167;12</a> counted three NVIDIA boards, Table 10 lists four; the 128-bit decode multiplier read 0.9-1.8x, it is 0.75-1.85x, and the 256-bit group 2.0-2.6x, it is 1.3-2.7x; <a class="sref" href="#s10">&#167;10</a>'s halving claim read 0.3-2.5 GiB against Table 5's q8_0 columns, which give 0.1-1.25; the <a class="sref" href="#s3">&#167;3</a> decode row now names the 110 tok/s arm as next best instead of skipping it; <a class="sref" href="#s2">&#167;2</a>'s KV bullet no longer says the 14B only fits 4k; the decision-map sentence placed the quality pick top-left, it is the top-right extreme; Figure 1's caption now names the 1 GiB overhead in the footprint.</td></tr><tr><td>1.16</td><td>10th November 2026</td><td><a class="sref" href="#s4">&#167;4</a> now says which uncertainty it quotes: the three figures there are one standard error, the paragraph defines the 95% confidence intervals the charts draw and says they are about double these. <a class="sref" href="#s11">&#167;11</a>'s memory figures move to the host's own units — 128 GiB and a 100 GiB GTT window — replacing a 96 GiB figure that no reading on the box produces.</td></tr><tr><td>1.15</td><td>10th November 2026</td><td>Corrects the claim that power and temperature were not recorded: the host's monitor logs both at ~2 s throughout, and the platform table now says so with retention. The introduction quotes the campaign's measured envelope — GPU 69 °C mean, 88 °C hottest sample, package power 96 W mean, 129 W peak — so the throughput numbers come with a thermal context instead of an unstated one.</td></tr><tr><td>1.14</td><td>10th November 2026</td><td>The platform table gains the OS: distribution, init, C library, and on the kernel row the pstate mode and EPP hint, because on this host the governor is what decides how long the boost is held.</td></tr><tr><td>1.13</td><td>10th November 2026</td><td>The platform table gains storage: the NVMe drive and filesystem the weight files live on, with measured direct-read rates. It is in the table to say what it does not affect — weights are read once at load, so storage sets load time, not decode.</td></tr><tr><td>1.12</td><td>10th November 2026</td><td>The introduction gains a platform table: CPU, GPU, unified memory and the GTT window, kernel, graphics stack, inference build and server flags, each with the reason it is stated. Power and temperature are named as unrecorded rather than implied to be controlled. The spec list that used to sit in the prose is folded into the table instead of being repeated above it. It is Table 1, so every later table is numbered one higher than before.</td></tr><tr><td>1.11</td><td>10th November 2026</td><td>Mean quality and quality per GiB now appear in every table that lists per-model scores: two columns in the roster (<a class="sref" href="#s1">&#167;1</a>) and two rows in the controlled pair (<a class="sref" href="#s7">&#167;7</a>). Both are marked derived, and both state the divisor is the footprint at the model's context. The ladder (<a class="sref" href="#s8">&#167;8</a>) says why it has no per-GiB column.</td></tr><tr><td>1.10</td><td>10th November 2026</td><td>Fixes "both platforms" in <a class="sref" href="#s4">&#167;4</a> and in the transferability table: that phrase dates from when the page compared only this box and a discrete card. It now names the three architectures the page actually compares and gives each one's bandwidth range.</td></tr><tr><td>1.9</td><td>10th November 2026</td><td>Removes duplication in <a class="sref" href="#s2">&#167;2</a>: the axis bullets restated the table's 'what it does not tell you' column and the mean-quality row a third time. The bullets now carry only the incentive each axis creates, and the table keeps scope.</td></tr><tr><td>1.8</td><td>10th November 2026</td><td>The axis table gains the two derived metrics the rest of the page ranks on — mean quality and quality per GiB — marked as arithmetic rather than benchmarks, with what each can and cannot tell you.</td></tr><tr><td>1.7</td><td>10th November 2026</td><td>Defines cap, budget, footprint and KV cache in <a class="sref" href="#s2">&#167;2</a> alongside the axes — the four terms every number on the page is qualified by, none of which was explained where it was first used.</td></tr><tr><td>1.6</td><td>10th November 2026</td><td>Adds <a class="sref" href="#s2">&#167;2</a>: what HumanEval, MMLU-Pro, IFEval, prefill/decode and the riddle probes actually measure, how each is scored, what was run here, and what each one cannot tell you — before any table of scores. Sections and tables renumbered.</td></tr><tr><td>1.5</td><td>10th November 2026</td><td>Names the author and copyright holder (Dom, github.com/barmynon) instead of leaving the person behind the measurements anonymous, and adds a <code>CITATION.cff</code> so the work can be cited.</td></tr><tr><td>1.4</td><td>10th November 2026</td><td>Title now says local LLMs. Adds the licence section: what CC BY 4.0 covers here (expression, figures, compilation and the sui generis database right), what it cannot cover (the facts, the weights, the benchmarks), and the attribution line.</td></tr><tr><td>1.3</td><td>10th November 2026</td><td>Adds a decision map (Figure 6): mean quality against footprint with the 15 GiB wall, a stated 0.78 competitive line and the three picks ringed, so "where is good" is visible without reading a table. Deliberately not a quadrant — no median crosshair, because the good direction here is up and to the left. Figures renumbered; the decode figure now marks the region that fits the card.</td></tr><tr><td>1.2</td><td>10th November 2026</td><td>the card comparison extended to thirteen cards across four vendors: five AMD boards added (RX 7600 XT, 9060 XT, 6800, 6950 XT, 7900 GRE), so the class can be compared within and across vendors, and the reference machine named as the Minisforum MS-S1 MAX instead of "this box".</td></tr><tr><td>1.1</td><td>10th November 2026</td><td>Adds the 16 GB card section: the 16 GB cards actually on the market, their vendor bandwidth, and the decode range each implies for the roster's two reference models. Predicted, not measured — the method and its calibration are stated with it.</td></tr><tr><td>1.0</td><td>10th November 2026</td><td>First release. Eleven files measured for the 16 GiB class on a host with no VRAM ceiling, three axes at stated caps, fit and KV arithmetic from the same roster file the runs used, six computed figures, the three-platform bandwidth comparison.</td></tr></tbody></table>
 <p><em>The version number belongs to this page. The wider report on this platform has its own history in <a href="changelog.html">the change log</a>; a correction to a number here bumps the version above and states what the previous value was, on the same rule the main report follows.</em></p>
 <hr>
 <p><em>Source, data and build scripts: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Text, figures and data: CC BY 4.0.</em></p>
