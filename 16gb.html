@@ -56,6 +56,8 @@ blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc
 blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
+p.docver { margin:.1em 0 1.1em; font-size:.92em; color:var(--dim); letter-spacing:.01em; }
+p.docver strong { color:var(--fg); }
 nav ol { margin:.4em 0 0; padding-left:.2em; list-style:none; }
 a { color:var(--acc); }
 a.sref { color:inherit; text-decoration:none; border-bottom:1px dotted var(--dim); }
@@ -66,11 +68,12 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 </style></head>
 <body><main>
 <h1>16 GiB of VRAM: which local LLMs fit, and what they score</h1>
+<p class="docver"><strong>Document version:</strong> <strong>1.21</strong> · 12th November 2026 · Two hybrid-attention MoE rows</p>
 <nav><strong>Contents</strong><ol><li><a href="#s1">1. The roster</a></li><li><a href="#s2">2. What the axes measure, and what the budget is spent on</a></li><li><a href="#s3">3. What wins, on each axis and overall</a></li><li><a href="#s4">4. How to read the numbers</a></li><li><a href="#s5">5. Quality against what the card has to hold</a></li><li><a href="#s6">6. Context is a second budget</a></li><li><a href="#s7">7. Dense or MoE</a></li><li><a href="#s8">8. What a 16 GiB card can actually run</a></li><li><a href="#s9">9. Quantisation on a fixed budget</a></li><li><a href="#s10">10. When it does not fit</a></li><li><a href="#s11">11. Three memory architectures</a></li><li><a href="#s12">12. Which 16 GiB card, and what it implies</a></li><li><a href="#s13">13. What this page does not measure</a></li><li><a href="#s14">14. Reproduce any row</a></li><li><a href="#s15">15. Licence</a></li><li><a href="#s16">16. Document history</a></li></ol></nav>
 
 <ul>
 <li><strong>Author:</strong> Dom (<a href="https://github.com/barmynon">github.com/barmynon</a>) · measurements, analysis and writing, with Hermes Agent (Nous Research) driven by DeepSeek <code>deepseek-flash</code></li>
-<li><strong>Document version:</strong> <strong>1.21</strong> · 12th November 2026 · Two hybrid-attention MoE rows</li>
+
 <li><strong>Measured:</strong> 10th-12th November 2026 · 13 weight files, 138.1 GiB · one llama.cpp build, one KV setting, one slot</li>
 <li><strong>Axes:</strong> HumanEval 164 items · MMLU-Pro 120 · IFEval 50 prompts · needle 2k/8k · riddles 14 · protocol 3</li>
 <li><strong>History of this page:</strong> <a class="sref" href="#s16">&#167;16</a> · <strong>Wider report on this platform:</strong> <a href="index.html">index.html</a></li>

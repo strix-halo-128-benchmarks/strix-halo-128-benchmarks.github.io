@@ -56,6 +56,8 @@ blockquote { margin:1.1em 0; padding:.7em 1.1em; border-left:3px solid var(--acc
 blockquote strong { color:var(--fg); }
 nav a { color:var(--acc); text-decoration:none; }
 nav a:hover { text-decoration:underline; }
+p.docver { margin:.1em 0 1.1em; font-size:.92em; color:var(--dim); letter-spacing:.01em; }
+p.docver strong { color:var(--fg); }
 nav ol { margin:.4em 0 0; padding-left:.2em; list-style:none; }
 a { color:var(--acc); }
 a.sref { color:inherit; text-decoration:none; border-bottom:1px dotted var(--dim); }
@@ -66,11 +68,13 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 </style></head>
 <body><main>
 <h1>Testing Local LLMs on AMD Strix Halo</h1>
+<p class="docver"><strong>Document version:</strong> <strong>1.24</strong> · 12th November 2026 · The 16 GiB-card roster joins the measured matrix</p>
 <nav><strong>Contents</strong><ol><li><a href="#s0">0. Executive summary</a></li><li><a href="#s1">1. Why test at all — the problem this solves</a></li><li><a href="#s2">2. The platform: what Strix Halo actually is</a></li><li><a href="#s3">3. The OS and driver stack</a></li><li><a href="#s4">4. The runtime: three llama.cpp trees and why</a></li><li><a href="#s5">5. Memory accounting and quantisation</a></li><li><a href="#s6">6. The serving architecture</a></li><li><a href="#s7">7. The harness</a></li><li><a href="#s8">8. How to read the results that follow</a></li><li><a href="#s9">9. Results — the measured matrix</a></li><li><a href="#s10">10. Can you extrapolate from one model to another in the same family?</a></li><li><a href="#s11">11. The leaders, in one screen</a></li><li><a href="#s12">12. Which model for which job</a></li><li><a href="#s13">13. Strix Halo against Nvidia and Apple</a></li><li><a href="#s14">14. Hosted frontier models as a reference point</a></li><li><a href="#s15">15. What a local run costs in power, heat and money</a></li><li><a href="#s16">16. Uncensored and abliterated models: what the removal actually costs</a></li><li><a href="#s17">17. Why the hosted DeepSeek numbers look the way they do</a></li><li><a href="#s18">18. For newcomers: what to expect, and what to avoid</a></li><li><a href="#s19">19. The same data, plotted</a></li><li><a href="#s20">20. Appendix</a></li><li><a href="#s21">21. Change log</a></li><li><a href="#s22">22. Credits and tooling</a></li><li><a href="#s23">23. Prior art — what exists already, and which question each source answers</a></li></ol></nav>
 
 <blockquote><strong>Also published:</strong> <a href="leaderboards.html">Leaderboards by axis</a> — code, knowledge, reasoning, decode and prefill, each row with its cap and build · <a href="retired-models.html">Retired models — what was deleted, why, with hashes and restore recipes</a> · <a href="changelog.html">Change log</a> — every correction and the numbers that forced it · <a href="16gb.html">16 GiB of VRAM — local LLMs</a> — what fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.</blockquote>
 <p><strong>Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what</strong></p>
 <ul>
+
 <li><strong>Host:</strong> Minisforum <strong>MS-S1 MAX</strong> (product_family <code>MINISFORUM</code>, board <code>SHWSA</code>, BIOS 1.06, EC 0.15) · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)</li>
 <li><strong>Runtime:</strong> llama.cpp on Vulkan · <strong>Harness:</strong> <code>~/bench</code> (<code>t20</code>)</li>
 <li><strong>Archive:</strong> <code>~/runs/catalogue.json</code> · <strong>Measurements:</strong> 2026-10-07 → 2026-11-12</li>

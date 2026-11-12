@@ -4,6 +4,7 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
+- **Document version:** **1.24** · 12th November 2026 · The 16 GiB-card roster joins the measured matrix
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)

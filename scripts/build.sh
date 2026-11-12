@@ -206,6 +206,15 @@ grep -q 'index.html'          "$REPO/leaderboards.html" || { echo "FAIL: leaderb
 grep -q 'retired-models.html' "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the ledger"; exit 1; }
 test "$(grep -c '<table' "$REPO/leaderboards.html")" -ge 6 || { echo "FAIL: expected 6 leaderboard tables"; exit 1; }
 for f in "$REPO"/*.md "$REPO"/*.html "$REPO"/tools/*.py "$REPO"/tools/*.md; do leakcheck "$f"; done
+# The report now carries its own version line, so it can be quoted without the change log. Keep the two
+# from drifting: the header version must be the newest changelog entry, and both pages must state one.
+VER_REPORT=$(grep -oE '^\s*-\s*\*\*Document version:\*\* \*\*[0-9]+\.[0-9]+\*\*' "$REPO/strix-halo-llm-testing.md" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+VER_CHANGELOG=$(grep -oE '^### Version [0-9]+\.[0-9]+' "$DOCS/strix-halo-changelog.md" | head -1 | grep -oE '[0-9]+\.[0-9]+' || true)
+[ -n "$VER_REPORT" ] || { echo "FAIL: report header has no 'Document version' line"; exit 1; }
+[ "$VER_REPORT" = "$VER_CHANGELOG" ] || { echo "FAIL: report says v$VER_REPORT, newest changelog entry is v$VER_CHANGELOG"; exit 1; }
+VER_16=$(grep -oE '^\s*-\s*\*\*Document version:\*\* \*\*[0-9]+\.[0-9]+\*\*' "$REPO/16gb-vram.md" | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
+[ -n "$VER_16" ] || { echo "FAIL: 16 GiB page has no 'Document version' line"; exit 1; }
+echo "   ok: versions — report v$VER_REPORT (== newest changelog entry), 16 GiB page v$VER_16"
 echo "   ok: report $(stat -c%s "$REPO/index.html") B / $(grep -c '<svg' "$REPO/index.html") figures," \
      "ledger $(stat -c%s "$REPO/retired.html") B, cross-linked"
 echo "== done — review 'git diff', then commit"
