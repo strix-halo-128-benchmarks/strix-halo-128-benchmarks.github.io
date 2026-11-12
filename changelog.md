@@ -9,6 +9,65 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.26 (2026-11-12)
+
+**Read-through of the whole document: no measurement changed, nine statements about them did.**
+
+A full pass over the published text against its own Table 4, the archive and the other page on this site. Every
+item below was a contradiction with something already in the document, not a new measurement.
+
+| what was wrong | what it said | what is true |
+|---|---|---|
+| models tested | 48 (§0.0) | 49 rows in Table 4 |
+| measured rows on disk | 29 (header) | 30 (§0.3 and the table agree) |
+| Figure 15 / 16 captions | "30 models" | 40 and 38 rows carry both axes |
+| Figure 17 caption | six models at two caps | nine |
+| retired files plotted (§19) | ten | nineteen |
+| switcher / units (appendix) | 24 | 30 |
+| MMLU-Pro | "four-option" | ten-option |
+| IFEval | "30 prompts" | 50 since 2026-11-09 |
+
+**The superlatives were the substantive error.** "It is the best HumanEval and the best MMLU-Pro on disk" (§9.1)
+and "first on knowledge among everything on disk" (§0.0, §7.2, §11) were asserted in four places and were wrong in
+two ways at once: `lfm25-24b-a2b (thinking)` is on disk and scores 0.9695 on code, and `qwen38fn-abl`'s 0.8750
+knowledge is a live row — measured on 40 items rather than 120, which the table records and the prose ignored. All
+four now read "the best knowledge score among the full 120-item rows still on disk", and the 40-item row is named
+wherever the claim is made. The same pass replaced two recommendations in §0.0 that pointed at deleted files: "a
+12B model at 111 tokens/second" was `mellum21-fork` (retired 2026-11-05) and "a million-token document:
+Kimi-Linear" was `Kimi-Linear-48B-A3B-abl` (retired the same day). Long context is now stated as what it is —
+64k, held by three live rows — rather than as a capability nothing on disk has.
+
+**Cross-references.** §0.2 sent a reader to §6.2 for the MMLU-Pro protocol; §6.2 is the availability guard and the
+protocol is §7.2. The pointer is fixed. Every other §N reference resolves correctly, which is worth recording
+because the document has over a hundred of them.
+
+**Tables.** The lettered Table 4b is now Table 5 and everything after it shifts by one, so the table of contents
+line "Tables 1-13" is true instead of counting a lettered table as a thirteenth. The snapshot table keeps its
+purpose — it is Table 4 restricted to what was servable on 2026-10-31, with an endpoint column a ranking cannot
+carry — and its closing note no longer claims a 37-file inventory that lives in §20.3, which is a file map.
+
+**Figures.** None of the 24 figures was referenced from the prose: each existed only as a caption. All 24 now have
+a lead-in sentence naming them. Figures 1-14 also carried their captions above the artwork while 15-24 carried
+theirs below; every caption now sits under its figure. §19 states the chart encoding once — bubble area is
+parameter count, hollow markers are floor estimates — instead of leaving it under §19.1 for ten figures to share.
+
+**Coverage.** §4.1's build register gains the row it was missing: fork HEAD `19b458b5a`, server string
+`b11581-1a33095`, the build that produced the clover row, which §9's preamble had promised was tabulated there.
+§9.1 gains a block covering the eleven 16 GiB-roster rows, which had no per-model analysis at all, and its clover
+paragraph now covers the IQ2_M fork row rather than only the retired Q4_K_M experiment.
+
+**Appendix.** Three port-map defects: 8094 named twice under two different names, 8182 and 8185 each listing a
+live and a retired model with no marker, and the 8090 line that the privacy pass had turned into "the hardware
+monitor (hardware monitor, private network only)". §20.1's example commands all targeted :8099, which the same
+appendix calls script-only with its unit disabled; they now use :8082 and say so. The malformed `~/.hermes/.env &&
+set -a && . ~/.hermes/.env` line is fixed.
+
+**Also:** riddles were described as "five classic riddles and arithmetic traps" beside a row that says 14 probes —
+five riddles and nine arithmetic traps; §0.0's "2 bits lose the facts" claim now names the 3.05 bpw counterexample
+that keeps 0.8417; and §21 now says where the full history lives.
+
+---
+
 ### Version 1.25 (2026-11-12)
 
 **Clover-35B-A3B-Preview measured in AR mode: the last gap in the 16 GiB roster closes, and it takes that

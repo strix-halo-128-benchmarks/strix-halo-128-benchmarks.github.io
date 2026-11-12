@@ -4,12 +4,12 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.25** · 12th November 2026 · Clover measured: 0.842 knowledge in AR mode
+- **Document version:** **1.26** · 12th November 2026 · Read-through: counts, superlatives and references corrected
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-12
-- **Roster:** 49 `.gguf` files on disk, 807.6 GiB, 29 of them carrying a measured row, checked 2026-11-12
+- **Roster:** 49 `.gguf` files on disk, 807.6 GiB, 30 of them carrying a measured row, checked 2026-11-12
   · **Change log:** §21
 
 **About this document**
@@ -57,16 +57,18 @@ exactly how far that can be pushed.
 
 ### 0.0 In plain terms
 
-This is a test of **48 measured models on one small computer** — a Mini-PC the size of a hardback book, with a
+This is a test of **49 measured models on one small computer** — a Mini-PC the size of a hardback book, with a
 single AMD chip and 128 GB of shared memory. Everything here runs on that machine, offline, with no cloud
 account. The question was simple: which of these models is worth using, and what does each one cost you in
 speed?
 
 **Five things came out of it.**
 
-1. **The best model on this machine is a small one.** A 26-billion-parameter model in 15.6 GB is the best
-   all-round model I tested — first on knowledge among everything on disk, joint-first on code — and it is what
-   answers my messages. The 35B and 120B files beside it beat it on neither axis.
+1. **The best all-round model on this machine is a small one.** A 26-billion-parameter model in 15.6 GB has
+   the best knowledge score among the full 120-item rows still on disk and comes within two problems of the best
+   code score, and it is what answers my messages. Everything above it on either axis is a specialist: a 24B
+   thinking arm on code, a vision model level with it, and one knowledge row measured on 40 items. No 35B or
+   120B file beats it on both axes.
 
 2. **Bigger is not better, because speed comes from how much of a model runs per word.** Most modern models are
    *mixtures*: for each word they activate only a few of their many parts. A 120B model that wakes 5B parts per
@@ -84,7 +86,9 @@ speed?
 4. **Squeezing a model smaller costs knowledge before it costs skill.** Compressed to 2 bits per weight, a model
    still writes code at 0.9451 but drops to 0.3667 on knowledge — the facts go first. On the other end, an 8-bit
    version of a model was no better than its 4-bit sibling and ran 8 tokens/second slower, for 10.5 GB more
-   disk. Four bits is the sweet spot here.
+   disk. Four bits is the sweet spot here. That is a tendency rather than a law: the 3.05 bpw block-diffusion
+   row added in v1.25 keeps 0.8417 knowledge at 12.32 GiB, so depth costs facts only where the quantiser was
+   trained badly — §9 and the 16 GiB page carry the counterexample.
 
 5. **Uncensoring is usually free — but only when it is done properly.** Where a well-made uncensored build
    existed, it scored within a couple of points of the original. Where a model looked badly damaged after
@@ -94,8 +98,10 @@ speed?
 6 watts, about £13 a year. The expensive part is the time, not the electricity.
 
 **What to use, in one line each.** Chat and general work: the 26B driver on port 8100. Bulk classification or
-summarising: a 12B model at 111 tokens/second. A million-token document: Kimi-Linear. Images: MiniCPM-V. Every
-one of those is on disk and measured; anything that lost its slot has been deleted, and the ledger says why.
+summarising: `qwen3-30b-a3b` at 79.7 tokens/second, or `gpt-oss-20b` at 74.4. Long context: 64k, which
+`groot-19b-a3b`, `axion-1.0-35b-iq3` and `clover-35b-a3b-iq2` each hold — the million-token Kimi-Linear that
+used to take this slot was retired on 2026-11-05. Images: MiniCPM-V. Every one of those is on disk and
+measured; anything that lost its slot has been deleted, and the ledger says why.
 
 **What this cannot tell you.** Each score is 164 code problems and 120 knowledge questions, so a gap under about
 5 points is noise, not a finding. One machine, one version of the software, one set of settings — another box,
@@ -140,7 +146,7 @@ Seven claims carry the rest of the document.
 
 ### 0.2 Conventions used throughout
 
-**`MMLU` in a compact score or table cell means MMLU-Pro** (the 120-item chat 0-shot probe described in §6.2),
+**`MMLU` in a compact score or table cell means MMLU-Pro** (the 120-item chat 0-shot probe described in §7.2),
 never the original 14,000-item MMLU; the full name is written out wherever the distinction matters. **GTT** is
 the Graphics Translation Table — the GPU-addressable window into system RAM, which on this machine is the
 100 GiB pool that actually matters (§2.1), not the 8 GiB reported as VRAM. **SE** is the standard error of a
@@ -205,7 +211,7 @@ GPU-addressable memory, and roughly 256 GB/s of bandwidth shared between CPU and
 
 ### 2.1 Silicon and memory
 
-Figure 1 — The memory topology: one pool, two address spaces.
+Figure 1 draws that topology — one physical pool, two address spaces.
 
 ```
    ┌─────────────────────────────────────────────────────────────────────┐
@@ -230,6 +236,8 @@ Figure 1 — The memory topology: one pool, two address spaces.
    │   └───────────────────────────────────────────────────────────────┘ │
    └─────────────────────────────────────────────────────────────────────┘
 ```
+
+Figure 1 — The memory topology: one pool, two address spaces.
 Two numbers explain everything about this machine's behaviour:
 
 - **GTT = 100 GiB.** This is the address space the GPU can map. It is not separate memory; it is the
@@ -241,7 +249,7 @@ Two numbers explain everything about this machine's behaviour:
 
 ### 2.2 Why this makes active parameters the key number
 
-Figure 2 — Why active parameters, not parameter count, set decode speed.
+Figure 2 works the arithmetic: the same file at different active-parameter counts on one bandwidth.
 
 ```
    DENSE 31B at Q4 (~16.4 GiB)              MoE 26B with 4B active at Q4 (~13.4 GiB)
@@ -251,6 +259,8 @@ Figure 2 — Why active parameters, not parameter count, set decode speed.
    │      17 t/s  (measured)      │         │      49-60 t/s (measured)    │
    └──────────────────────────────┘         └──────────────────────────────┘
 ```
+
+Figure 2 — Why active parameters, not parameter count, set decode speed.
 The dense model is smarter on knowledge (MMLU 0.8667 vs 0.8417) and 3x slower. That trade-off, not
 raw parameter count, is the central decision on this box: **you are almost always choosing between
 "reads 16 GB per token" and "reads 3 GB per token"**.
@@ -329,7 +339,7 @@ component you cannot be behind on. Older Mesa produces wrong output or outright 
 
 ### 3.2 Why Vulkan rather than ROCm or CUDA
 
-Figure 3 — The software stack: Vulkan and RADV, with no CUDA anywhere.
+Figure 3 places Vulkan and RADV in that stack, with no CUDA anywhere.
 
 ```
    ┌──────────────────────────────────────────────────────────────┐
@@ -344,6 +354,8 @@ Figure 3 — The software stack: Vulkan and RADV, with no CUDA anywhere.
    │  no CUDA, no cuBLAS, no tensor cores, no vendor lock-in      │
    └──────────────────────────────────────────────────────────────┘
 ```
+
+Figure 3 — The software stack: Vulkan and RADV, with no CUDA anywhere.
 Every number in this document was produced on the Vulkan backend. That is a deliberate choice:
 
 - **ROCm/HIP for gfx1151 is workable but not the mature path.** Support has improved through 2026,
@@ -362,7 +374,7 @@ Every number in this document was produced on the Vulkan backend. That is a deli
 Three trees exist because architecture support is not uniform across llama.cpp builds, and what each
 one is permitted to load is a deliberate boundary rather than an accident of history.
 
-Figure 4 — The three llama.cpp trees and what each is permitted to do.
+Figure 4 shows the three trees and what each is permitted to load.
 
 ```
    ~/llama-local/
@@ -378,6 +390,8 @@ Figure 4 — The three llama.cpp trees and what each is permitted to do.
    ├── krafton-llama.cpp          ◄── LLM_ARCH_RAON1 only exists here
    └── sensenova-llama.cpp        ◄── has LLM_ARCH_SENSENOVA_U1, no converter
 ```
+
+Figure 4 — The three llama.cpp trees and what each is permitted to do.
 Three trees exist because **architecture support is not uniform**. `ggml-org/llama.cpp` is the
 reference, but a model can be released against a vendor fork months before upstream support lands;
 and a quantisation can require a loader patch that upstream does not carry. Keeping the trees
@@ -412,6 +426,7 @@ the serving build into every run.
    halo-box-strix (fork)       4b2561e48   pre-identity: version not recorded  0.25.3  10-07 → 10-14
    halo-box-strix (fork)       065cd14f8   window: binary rebuilt 10-16 09:33  0.25.3  10-15 → 10-16
    halo-box-strix (fork)       1a3309516   0.5.0-dev (b3, commit 1a33095)      0.25.3  10-16 → 11-08
+   halo-box-strix (fork)       19b458b5a   0.5.0-dev (b11581, commit 1a33095)  0.25.3  11-12 (clover only)
    upstream-llama.cpp          69f201a     0.6.0-dev (b1, commit 69f201a)      0.26.0  10-12
    upstream-master-bolt        a30fb49     0.7.0-dev (b1, commit a30fb49)      0.27.0  10-16 → 10-19
    kolibri-halo                bfce064     0.5.0-dev (b3, commit bfce064)      0.25.3  10-14
@@ -424,12 +439,16 @@ the serving build into every run.
    ───────────────────────────────────────────────────────────────────────────────────────────
    b = the server's build number; ggml = the libggml-vulkan ABI version it links.
 ```
-Four things the register settles, and one it refuses to:
+Five things the register settles, and one it refuses to:
 
 - **The "0.5.0-dev" version belongs to the fork, not to the project.** Rows measured on the same day
   on `upstream-master-bolt` ran 0.7.0-dev, two minor versions ahead, because the trees are
   independent checkouts rather than branches of one repository. A score is not portable across
   flavours, and the ggml ABI moves with the flavour: 0.21 to 0.27 across this roster.
+- **One row is on a fifth fork build.** `Clover-35B-A3B-Preview (IQ2_M)` was measured at tree HEAD
+  `19b458b5a`, which adds `clover_moe` to the fork; the server still reports the `1a3309516` base with
+  build number 11581, which is why its `build` cell in Table 4 names both. Nothing else about the
+  invocation changed — same flags, same q8_0 KV, flash attention on.
 - **2026-10-16 is a discontinuity inside a single flavour.** 38 fork rows were measured on
   `4b2561e48` and 24 on `1a3309516` — the Bolt/Nemotron-VL cherry-pick and its follow-up revert.
   Rows either side of that rebuild are not the same binary, whatever the path says.
@@ -560,7 +579,7 @@ Decode is bandwidth-bound: each generated token requires reading the active weig
 bytes per weight therefore means more tokens per second, near-linearly, until some other limit
 bites. **On this box, quantising is a performance decision first and a capacity decision second.**
 
-Figure 5 — Bytes read per token determine decode speed.
+Figure 5 plots bytes read per token against measured decode for every quantisation pair.
 
 ```
    same 12.1B model, two quantisations            same 30.1B model, two quantisations
@@ -570,6 +589,8 @@ Figure 5 — Bytes read per token determine decode speed.
             ▲                                              ▲
             └── also 2.6 GiB smaller                       └── also half the memory
 ```
+
+Figure 5 — Bytes read per token determine decode speed.
 The consequence is a genuinely different optimum from the CUDA world. There, Q4 is the common
 default because it fits; here it is the default because it is *faster as well as smaller*, and the
 only reason to climb the ladder is a measurable quality gain that you can justify on an axis you
@@ -713,7 +734,7 @@ Four failure modes were observed, all of them avoidable with one minute of inspe
 ```
 Choosing a quantisation, in order:
 
-Figure 6 — Choosing a quantisation.
+Figure 6 reduces that choice to a decision path.
 
 ```
    ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -727,6 +748,8 @@ Figure 6 — Choosing a quantisation.
    Never: pick a quant below Q4 because the file is smaller, without measuring the
    axis you intend to use. One MMLU run costs 20 minutes and catches the 0.0083 case.
 ```
+
+Figure 6 — Choosing a quantisation.
 ## 6. The serving architecture
 
 One model is resident at a time, enforced by systemd rather than by convention — and that
@@ -735,7 +758,7 @@ guard has to manage.
 
 ### 6.1 One model at a time, fourteen ways
 
-Figure 7 — Fourteen mutually exclusive user units plus one system unit, one resident model.
+Figure 7 shows the fourteen mutually exclusive units and the one resident model.
 
 ```
                       ┌───────────────────────────┐
@@ -761,6 +784,8 @@ Figure 7 — Fourteen mutually exclusive user units plus one system unit, one re
                       │  127.0.0.1:<port>/v1      │  OpenAI-compatible
                       └───────────────────────────┘
 ```
+
+Figure 7 — Fourteen mutually exclusive user units plus one system unit, one resident model.
 Why this shape rather than one server with dynamic loading: `Conflicts=` gives an atomic guarantee
 that exactly one model owns the GPU, which is what this machine's memory budget requires, and it
 survives crashes. Why it is dangerous: **every switch kills the model serving WhatsApp.** That risk
@@ -771,7 +796,7 @@ is what the guard exists to manage.
 Because the daily driver also serves the WhatsApp channel, an accidental swap is a silent outage —
 the phone shows no error, messages simply stop being answered.
 
-Figure 8 — The availability guard: intent, deliberate-switch test, restart budget.
+Figure 8 traces the guard's decision, including the deliberate-switch test and the restart budget.
 
 ```
    every 60s (timer)                       llama-model-guard.sh
@@ -787,6 +812,8 @@ Figure 8 — The availability guard: intent, deliberate-switch test, restart bud
    │ 4. escape hatch: GUARD_SKIP_BRIDGE=1 for maintenance              │
    └──────────────────────────────────────────────────────────────────┘
 ```
+
+Figure 8 — The availability guard: intent, deliberate-switch test, restart budget.
 The rule that makes this safe is step 2's "deliberate switch" test: if you intentionally started
 another model, the guard must not fight you by dragging the driver back. Only an *unexplained*
 absence of the intended model triggers a restart.
@@ -838,7 +865,7 @@ individual test:
    │ riddles      │ 14 reasoning + arithmetic traps      │ minutes  │ exact match        │
    │ HumanEval    │ 164 coding problems, unit-tested     │ 20 min-2h│ pytest execution  │
    │ MMLU-Pro     │ 120 knowledge MCQs                   │ 20-50 min│ exact letter       │
-   │ IFEval       │ 30 instruction-following constraints │ 10 min   │ lm-eval strict acc │
+   │ IFEval       │ 50 instruction-following prompts     │ 10 min   │ lm-eval strict acc │
    └──────────────┴──────────────────────────────────────┴──────────┴────────────────────┘
 ```
 **perf** — warms up, then sends a ~2000-token prompt and asks for a fixed 128-token reply with
@@ -869,7 +896,7 @@ Deliberately generous on budget (256 tokens, retried at 4x if the model ran out 
 that "cannot retrieve" is not confused with "ran out of room to think". This is a floor test:
 failing it disqualifies a long-context model, passing it does not prove long-context quality.
 
-**riddles + arithmetic (14 probes)** — five classic riddles and arithmetic traps. The traps are the
+**riddles + arithmetic (14 probes)** — five classic riddles and nine arithmetic traps. The traps are the
 valuable part: `9.11 vs 9.9` catches lexicographic float comparison, and the bat-and-ball problem
 catches the intuitive-but-wrong 10-cent answer. Tested with exact-match on a substring list, so a
 correct answer inside a verbose explanation still passes.
@@ -879,19 +906,20 @@ construction: candidate function bodies are executed against unit tests. A model
 passing implementation. This is the most expensive axis (20 minutes to 2 hours) and the one most
 worth running only after preflight.
 
-**MMLU-Pro (120 questions)** — four-option knowledge questions, scored on the exact option letter.
+**MMLU-Pro (120 questions)** — ten-option knowledge questions, scored on the exact option letter.
 Separates "knows things" from "can code", which are frequently different models here: the fastest
 model on this machine (mellum21, 111.9 t/s) is mid-pack on knowledge, and the best knowledge model on
-record (gemma4-31b, retired 2026-10-30) was the second slowest; the best one still on disk
-(gemma4-26b-uncen, 0.8500) runs at 56.9 t/s.
+record (gemma4-31b, retired 2026-10-30) was the second slowest; the best one still on disk measured on the full
+120-item sample (gemma4-26b-uncen, 0.8500) runs at 56.9 t/s, and the one row above it on disk, `qwen38fn-abl`
+at 0.8750, is a 40-item re-run marked as such in Table 4.
 
-**IFEval (30 prompts)** — instruction-following constraints (lowercase only, exactly N paragraphs,
+**IFEval (50 prompts)** — instruction-following constraints (lowercase only, exactly N paragraphs,
 JSON with specific keys). Run through `lm-eval`'s `local-chat-completions` task. This axis carries
 the harness's biggest known trap, described next.
 
 ### 7.3 The cap — the knob that changes scores more than the model does
 
-Figure 9 — The cap spectrum, and the same weights at two budgets.
+Figure 9 lays out the cap spectrum, with the same weights measured at two budgets.
 
 ```
    CAP = maximum tokens a model may generate for ONE test item.
@@ -908,6 +936,8 @@ Figure 9 — The cap spectrum, and the same weights at two budgets.
      lfm25 IFEval via lm-eval (pinned 1280)  ->  0.3333
      lfm25 IFEval standalone @4096           ->  0.9333
 ```
+
+Figure 9 — The cap spectrum, and the same weights at two budgets.
 Two rules follow, and they are the ones most often violated when reading these tables:
 
 - **Compare within a cap band.** A score at cap 512 is a lower bound, not a measurement: `qwen38-35b`
@@ -1075,9 +1105,11 @@ shared across the Q8_0 and QAT files, which is how a table comes to compare a fi
 Q8_0 row now carries its own file's numbers.
 
 
-**Table 4b — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. Full inventory (16 model families across 37 .gguf files — 7 projectors and 2 drafters
-included — 647 GiB) is in §20.3.
+**Table 5 — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
+capability row. The inventory it counts from is the roster header at the top of this page — 49 `.gguf` files,
+807.6 GiB on disk including projectors and drafters, checked 2026-11-12 — and §20.3 is the file map, not a
+listing. Table 5 is deliberately a duplicate of Table 4 restricted to what was servable on that date: the
+endpoint column is a roster record, not a ranking, and a snapshot that silently shrinks is not a snapshot.
 
 | Model | Quant | HumanEval | MMLU-Pro | Riddles | decode t/s | measured | build | endpoint |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1101,7 +1133,7 @@ included — 647 GiB) is in §20.3.
 
 *Retired since this snapshot (2026-11-05): `mellum21-fork`, `Groot-65B-A6B`, `nemotron-super-120b` and
 `Kimi-Linear-48B-A3B-abl`; added since it: `Lite-Beam-M2.7-229B` (2026-11-08, :8182 lazily, no unit). The
-`:8189` and `:8086` endpoints above are no longer bound and the roster stands at 16 model families. The rows
+`:8189` and `:8086` endpoints above are no longer bound, and the roster stood at 16 model families on 2026-11-05. The rows
 stay: a snapshot that silently shrinks is not a snapshot.*
 
 The last blank cell was filled on 2026-10-31: `Qwen3-Next-80B UD-Q4_K_XL` now has a full row
@@ -1124,8 +1156,10 @@ the letter), `qwen38` (27.3B Q6_K, 8.8 t/s),
 **gemma4-26b-uncen — the deployed driver, and the current ceiling.** 0.9573 code, 0.8500 MMLU, 14/14
 riddles, 3/3 preflight, both needles, 56.9 t/s decode at 1759 t/s prefill, 15.6 GiB resident, 131k
 context. Measured 2026-10-28 and serving since: `llama-gemma4-26b-uncen.service` on :8100 is the only
-enabled model unit and it is what answers WhatsApp. It is the best HumanEval and the best MMLU-Pro on
-disk, and the uncensoring costs nothing measurable — same architecture, same quant rung, same speed
+enabled model unit and it is what answers WhatsApp. It is the best knowledge score among the full 120-item
+rows on disk and the second-best code row on disk — `lfm25-24b-a2b (thinking)` beats it on code, and
+`qwen38fn-abl`'s 0.8750 is a 40-item re-run — and the uncensoring costs nothing measurable: same architecture,
+same quant rung, same speed
 class as the QAT file below.
 
 **gemma4-26b-qat-q4 — the non-uncensored alternative.** One weight file, two runs: 0.9512 (156/164)
@@ -1247,15 +1281,9 @@ HumanEval: a code score alone would have made this look like a 177B keeper.
 **graft-50b-a3b — perfect riddles, ordinary code.** 14/14 when almost nothing else scores 14/14, but
 0.7805 code and 0.6583 knowledge. A curiosity rather than a pick.
 
-**Clover-35B-A3B-Preview — diffusion pretraining, AR-mode prices.** The box's first diffusion-language
-model: a Qwen3.6-35B-A3B finetune under arch `clover_moe`, 34.7B at Q4_K_M, served from its own upstream
-tree because no local tree registers the arch. Code lands at **0.8598 (141/164) at cap 4096** with zero
-items at the cap — one standard error above its base family's 0.8354 — and knowledge at **0.4000
-(48/120)**, base-family level, while the driver reads 0.9512 / 0.8417 at 48.9 t/s against this file's
-53.7. Its riddles print 14/14, but three of those returned exactly 4096 tokens on the zebra puzzles and
-matched their own restatement, so the committed rate is 11/14. The one thing that would have made it
-interesting — parallel, self-speculative diffusion decode — is an unmerged upstream PR, so what was
-measured is the AR fallback at AR prices. Deleted 2026-11-03.
+**Clover-35B-A3B-Preview — diffusion pretraining, AR-mode prices, and one revision later the best knowledge row on the page.** Two rows, two builds, one architecture. The first, in v1.18, was 34.7B at Q4_K_M served from its own upstream tree: **0.8598 (141/164) at cap 4096** with zero items at the cap — one standard error above its base family's 0.8354 — and knowledge at **0.4000 (48/120)**, while the driver read 0.9512 / 0.8417. Its riddles printed 14/14, but three returned exactly 4096 tokens on the zebra puzzles and matched their own restatement, so the committed rate was 11/14. Deleted 2026-11-03; that row stays in Table 4.
+
+The second, in v1.25, is the same architecture at **IQ2_M (3.05 bpw, 12.32 GiB)** served by the fork at tree HEAD `19b458b5a`, which registers `clover_moe` and keeps flash attention on with a q8_0 KV cache: **0.9451 code (155/164 @8192), 0.8417 knowledge (101/120 @8192), 0.8400/0.8289 IFEval (50 @4096)**, 14/14 riddles, 1849 t/s prefill, 67.5 t/s decode. It leads the 16 GiB roster's knowledge axis by 10 items and is the best 120-item knowledge score of any live row but the driver. Both rows are the AR fallback — the thing that would make the weights interesting, parallel block decode, is an unmerged upstream PR — so read the numbers as what these weights do under causal decode, not as what the architecture is for; the 44-point knowledge gap between the two rows spans quant, build, KV cache and cap at once, and §13 of the 16 GiB page says why it is not attributable to any one of them.
 
 **Groot-65B-A6B — a 116.5B model that is honest about its size.** The name says 65B; the header says
 116,514,464,640 parameters — 48 blocks, 256 experts routed 10 per token, 12 full-attention layers and 36
@@ -1382,7 +1410,25 @@ removed paths, byte counts, sha256 per file and a restore URL — in `~/llama-lo
   (10.1)** and its **MXFP4 twin (6.5)** — all measured, all beaten on their own axis by something
   smaller or faster.
 
----
+**The 16 GiB roster, in one block (v1.24 and v1.25).** Eleven of the forty-nine rows were measured for the
+**[16 GiB page](16gb.html)** rather than for this one, and they sit in Table 4 because each completed the same
+suite on the same harness. Three carry wide caps because they deliberate: `lfm25-24b-a2b (thinking)`
+**0.9695 code / 0.6917 knowledge** at 8192/4096 and 111.2 t/s, `Groot-19B-A3B` **0.9390 / 0.7167** at 4096 and
+64.8 t/s, `Axion-1.0-35B (IQ3_XXS)` **0.9329 / 0.7583** at 8192/4096 and 93.8 t/s. Those three are the only new
+rows that reach the top of the matrix.
+
+The other seven are small non-thinking arms measured at a **512-token cap**, which is what a card's KV budget
+leaves after the weights: `gemma-4-12B-QAT` 0.8963 code / 0.920 IFEval, `gemma-4-E4B-QAT` 0.8659 / 0.900,
+`qwen3-14b` 0.8537 / 0.880, `qwen3-30b-a3b` 0.8537 / 0.860, `mistral-small-3.1-24b` 0.8232 / 0.820,
+`qwen3-8b` 0.7866 / 0.900, `gpt-oss-20b-mxfp4` 0.5854 / 0.480. Their knowledge cells read 0.467 to 0.617 and are
+the only knowledge numbers in Table 4 measured at 512; the leaderboard page therefore ranks them in a separate
+floor table rather than against the 2048-and-up rows. Read them as what a 16 GiB card delivers, not as a ceiling.
+
+The eleventh is a perf-only row: `gemma-4-26B-A4B-QAT + MTP drafter` is the same weights as `g4-26b-a4b-qat` plus
+a 0.43 GiB draft head, decoding 54.9 t/s against 59.2 without it, at 15.06 GiB and 8k context — over a 16 GiB
+card's budget by 0.06 GiB, which is §10's worked example. **What the block changed in the ranking:** the top code
+cell moved to a 24B arm at 8192, the three-row tie at 0.9573 dropped to fourth, and the best 120-item knowledge
+score among live rows is now a 3.05 bpw diffusion export at 12.32 GiB (0.8417), a point below the driver.
 
 ---
 
@@ -1421,7 +1467,7 @@ means (c) while quoting evidence from (a). Distinguishing them is most of the wo
 Computed from `~/runs/catalogue.json`, latest run per model, restricted to models that share weights
 or a direct lineage. `Δ` is max − min within the family.
 
-**Table 5 — Within-family spread on the measured axes.**
+**Table 6 — Within-family spread on the measured axes.**
 
 ```
    family            n   HumanEval             MMLU-Pro              riddles    decode
@@ -1454,7 +1500,7 @@ you know one member of such a family scores 0.94 on HumanEval, a sibling at the 
 likely within ±3pp. That is a usable prediction.
 
 **Knowledge is the axis where the confounds live, which is not the same as being fragile.** The two
-double-digit spreads in Table 5 — gpt-oss at 16.7pp and qwen3.6/3.8 at 50pp — are a token-budget
+double-digit spreads in Table 6 — gpt-oss at 16.7pp and qwen3.6/3.8 at 50pp — are a token-budget
 difference and a 3.4-bit quantisation respectively, not lineage (§16.2 shows the gpt-oss pair in
 full). Where caps and quants *are* matched the picture is calm: gemma4's three models sit 2.5pp
 apart on knowledge and hy-memory's Q4/Q8 pair 2.5pp apart, both at identical caps. So the honest
@@ -1481,7 +1527,7 @@ while its base passed all three. A model that is a good agent is not evidence th
 
 ### 10.4 Rules of extrapolation
 
-Figure 10 — What extrapolates and what does not.
+Figure 10 collects the rules above into what extrapolates and what does not.
 
 ```
    ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -1503,6 +1549,8 @@ Figure 10 — What extrapolates and what does not.
    │ NEVER     across (d)-type "families" — qwen35/36/38 are not relatives        │
    └──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+Figure 10 — What extrapolates and what does not.
 The one-line version: **extrapolate rankings within a family at one quantisation level; never
 extrapolate absolute scores, speed, or instruction behaviour.** If a decision depends on the number
 rather than the ordering, measure the number.
@@ -1521,7 +1569,7 @@ reading them as a benchmark:
   speeds are not, but kernel-specific numerical differences are unmeasured. - **Caps differ between
   rows** (512-8192). This is the largest single source of misleading comparisons in the tables,
   which is why §7.3 exists and why every score in this document carries its cap. - **Family samples
-  are tiny.** n = 2-7. The Δ values in Table 5 are observed spreads, i.e. lower bounds; the true
+  are tiny.** n = 2-7. The Δ values in Table 6 are observed spreads, i.e. lower bounds; the true
   variance of a family is at least that and probably larger. - **Selection effects.** These models
   were not sampled randomly — they were chosen because they looked promising, which biases every
   family's apparent quality upward relative to the open population.
@@ -1537,23 +1585,31 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 
 | HumanEval | model | status |
 |---|---|---|
+| 0.9695 @8192 | lfm25-24b-a2b (thinking) | ✓ |
 | 0.9634 @2048 | gemma4-31b | ✗ 10-30 |
 | 0.9573 @2048 | gemma4-26b-uncen | ✓ driver |
 | 0.9573 @4096 | minicpm-v47-35b | ✓ |
+| 0.9573 @2048 | gemma4-26b-a4b | ✗ 10-30 |
+
+*A 24B arm measured at 8192 holds the top cell; the three rows below it are a tie at 0.9573 across two builds and three caps, which is what a 0.9573 looks like when the sampling interval is ±2.3 points.*
 
 ### 11.2 Knowledge — the best on MMLU-Pro
 
 | MMLU-Pro | model | status |
 |---|---|---|
+| 0.8750 @2048 (40 items) | qwen38fn-abl | ✓ |
 | 0.8667 @2048 | gemma4-31b | ✗ 10-30 |
 | 0.8667 @2048 | gemma4-26b-a4b | ✗ 10-30 |
 | 0.8500 @2048 | gemma4-26b-uncen | ✓ driver |
+| 0.8417 @8192 | clover-35b-a3b-iq2 | ✓ |
+
+*The first row is a 40-item re-run at cap 2048 and is marked as such in Table 4; on the full 120-item sample the driver leads, and the newest row on the list is a 3.05 bpw diffusion export at 12.32 GiB.*
 
 ### 11.3 Throughput — the fastest decoders
 
 | decode | model | status |
 |---|---|---|
-| 111.9 t/s | mellum21-fork | ✓ |
+| 111.9 t/s | mellum21-fork | ✗ 11-05 |
 | 111.2 t/s | lfm25-24b-a2b (thinking) | ✓ |
 | 106.6 t/s | lfm25-24b-a2b | ✓ |
 
@@ -1582,18 +1638,19 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 ---
 
 What the full tables show that these three do not: the **shape of the roster**. gemma4 owns breadth — the
-driver is top-three on code, **first on knowledge among models still on disk** (the two above it are retired),
-and clears all fourteen reasoning traps — at 15.6 GiB. Every other model on disk is
-a specialist that wins exactly one axis: minicpm on vision, ornith-122b on generous-cap code, gptoss on 120B
-breadth, mellum21 on throughput, qwen3next-q6 on instruction adherence, Kimi on a million-token window. A
-model that wins nothing is not on disk, which is why the retired rows stay in the tables instead of vanishing.
+driver is top-three on code, **the best knowledge score among the full 120-item rows still on disk**, and
+clears all fourteen reasoning traps — at 15.6 GiB. Everything else on disk is a specialist that wins exactly
+one axis: minicpm on vision, ornith-122b on generous-cap code, gptoss on 120B breadth, qwen3next-q6 on
+instruction adherence, `lfm25-24b-a2b (thinking)` on code, `clover-35b-a3b-iq2` on knowledge at a 3.05 bpw
+quant. Two rows this paragraph used to name — mellum21-fork on throughput and Kimi on a million-token window —
+were retired on 2026-11-05 and keep their rows in Table 4, because the losers are the point.
 
 ## 12. Which model for which job
 
 The point of measuring axes separately is that they do not correlate. Below, each job maps to the
 axis that actually governs it, and to the model that wins that axis *while still being usable*.
 
-Figure 11 — Routing a job to the axis that governs it, then to a model.
+Figure 11 draws that routing as a decision path.
 
 ```
                         ┌─────────────────────────┐
@@ -1613,7 +1670,9 @@ Figure 11 — Routing a job to the axis that governs it, then to a model.
    or mellum21     (64 / 23)    (0.8500)     or lfm25 (1M)   (64.6 t/s)
    (111.9)
 ```
-**Table 6 — Job to axis to model.**
+
+Figure 11 — Routing a job to the axis that governs it, then to a model.
+**Table 7 — Job to axis to model.**
 
 | Job | Axis that governs it | Use | Why |
 |---|---|---|---|
@@ -1659,7 +1718,7 @@ here, and nothing below should be read as a head-to-head measurement.
 The platforms differ less in their silicon than in what that phrase means, and in who owns the decision when
 the model does not fit.
 
-Figure 12 — Three platforms, three memory models.
+Figure 12 sets the three memory models side by side.
 
 ```
                         STRIX HALO             NVIDIA (RTX 4090/5090)    APPLE (M-series Max/Ultra)
@@ -1679,6 +1738,8 @@ Figure 12 — Three platforms, three memory models.
                                                 A100/H100
    ──────────────────────────────────────────────────────────────────────────────────────────────
 ```
+
+Figure 12 — Three platforms, three memory models.
 
 **Nvidia — the copy is the design, and VRAM is the wall.** Weights are staged into VRAM across PCIe: 64 GB/s
 bidirectional at Gen4 x16, 128 GB/s at Gen5, so 32 and 64 GB/s in the direction a model load travels. For a
@@ -1771,7 +1832,7 @@ long prompts are the worst case at 350-2900 t/s. ROCm-only tooling is unavailabl
 
 ### 13.5 Choosing between them
 
-Figure 13 — Choosing a platform.
+Figure 13 reduces the platform choice to a decision path.
 
 ```
    ┌────────────────────────────────────────────────────────────────────────────┐
@@ -1794,6 +1855,8 @@ Figure 13 — Choosing a platform.
    │   • you want a 24/7 box that idles at a few watts and serves several jobs  │
    └────────────────────────────────────────────────────────────────────────────┘
 ```
+
+Figure 13 — Choosing a platform.
 
 The honest summary, with the mechanism attached: **Strix Halo buys capacity, Apple buys capacity with
 bandwidth, Nvidia buys throughput.** This box is the cheapest way to hold 100 GiB of model in GPU address
@@ -1837,7 +1900,7 @@ separately.
 
 ### 14.2 Results
 
-**Table 7 — Hosted models against the local roster: same harness, same caps.**
+**Table 8 — Hosted models against the local roster: same harness, same caps.**
 
 ```
    model                          HE(164@4096)  MMLU(120)  riddles  preflight  ttft   decode*
@@ -1907,7 +1970,7 @@ same 4096 cap does not buy the same amount of answer from each route.
 A repeated prompt prefix can be served from cache. Whether that happens is a property of the
 *route*, not the model, and the measured spread is large enough to invert the price list:
 
-**Table 8 — Prompt-cache behaviour on identical repeated prefixes (~6-8k tokens, 4 calls each).**
+**Table 9 — Prompt-cache behaviour on identical repeated prefixes (~6-8k tokens, 4 calls each).**
 
 ```
    route                          cold call   repeat calls   cached share   cost per repeat call
@@ -2046,7 +2109,7 @@ full archive.
 ```
 ### 15.3 Per-run cost
 
-**Table 9 — Power, energy and thermals for the measured local runs.**
+**Table 10 — Power, energy and thermals for the measured local runs.**
 
 ```
    run                          wall    package W        Wh    Tctl peak   GPU peak
@@ -2178,7 +2241,7 @@ available.
 
 ### 16.2 The one controlled pair on this box
 
-**Table 10 — gpt-oss 120B base against its abliterated build, same harness and caps.**
+**Table 11 — gpt-oss 120B base against its abliterated build, same harness and caps.**
 
 | Axis | gpt-oss base | gpt-oss abliterated | delta |
 |---|---|---|---|
@@ -2289,7 +2352,7 @@ Two different things decide a hosted score, and conflating them is the most comm
 §14: **what the model computes** (architecture) and **how the engine serves it** (systems). DeepSeek
 changed both recently, and both are visible in the rows above.
 
-Figure 14 — Where a served number comes from.
+Figure 14 traces where a served number comes from.
 
 ```
    ┌──────────────┐   ┌────────────────────────────────┐   ┌──────────────────┐
@@ -2301,6 +2364,8 @@ Figure 14 — Where a served number comes from.
      per token          tokens per second                  model's; speed is
                                                            the deployment's
 ```
+
+Figure 14 — Where a served number comes from.
 ### 17.1 What changed in the model, in plain terms
 
 Four architectural choices matter for how fast and how cheaply these models run:
@@ -2353,7 +2418,7 @@ cross-replica load balancing. It is a serving stack for a fleet, not a single-ma
 The measured rows in §14 are consistent with these mechanisms. Read the right-hand column as the
 *likely* explanation, not as vendor confirmation — the routes do not publish their configuration.
 
-**Table 11 — Observed hosted behaviour and the mechanism that plausibly produces it.**
+**Table 12 — Observed hosted behaviour and the mechanism that plausibly produces it.**
 
 | Observation (§14) | Likely mechanism |
 |---|---|
@@ -2504,17 +2569,20 @@ or item count would change how it should be read is marked on the figure itself,
 chart that quietly compares a 512-token run with an 8192-token one is worse than no chart at all.
 
 The figures are **all-time**: 55 model files, 27 with a HumanEval row, 27 with MMLU-Pro, 20 with
-everything. Ten of those files have since been retired, and they are still plotted — a plotted point
-is a measurement, not a recommendation, and the roster view is Table 4b.
+everything. Nineteen of those files have since been retired, and they are still plotted — a plotted point
+is a measurement, not a recommendation, and the roster view is Table 5.
 
 Rebuild with `~/docs/.venv/bin/python ~/docs/charts.py`; each figure is a standalone SVG in
-`~/docs/charts/`, inked with the page's own CSS variables so it follows the light and dark themes.
+`~/docs/charts/`, inked with the page's own CSS variables so it follows the light and dark themes. One
+encoding serves all ten: bubble area is parameter count, hollow markers are floor estimates from a small cap or
+a short subset, and colour follows the family. It is stated here once rather than repeated under each figure.
 
 ### 19.1 Code quality against decode speed
 
-The trade this box actually forces. The live roster occupies the 0.95-0.96 band at 57-65 t/s
-(gemma4-26b-uncen, minicpm-v47-35b) and at 23 t/s (ornith-122b); the best all-time points are the
-retired 31B at 0.9634 and 17 t/s and the retired Q8_0 at 0.9573 with 49.4 t/s. Every point at or above
+The trade this box actually forces. The live roster now spans 0.560 to 0.876 mean quality and 15 to 111 t/s,
+and its top is three rows inside 0.04: `lfm25-24b-a2b (thinking)` 0.970 at 111 t/s, `clover-35b-a3b-iq2` 0.945
+at 67.5 and `Groot-19B-A3B` 0.939 at 64.8. The best all-time point is still the retired 31B at 0.9634 and
+17 t/s. Every point at or above
 0.9512 spans 17 to 65 t/s — a 3.8x spread — so quality does not set speed on this box: bytes read per
 token do, which is why the 25-35B MoE cluster outruns the dense files at the same score. The corner
 that is genuinely empty is "best code *and* best speed"; nothing has both. Bubble area is parameter
@@ -2522,22 +2590,26 @@ count; hollow markers are floor estimates from a small cap or a short subset.
 
 *Does not show* long-prompt behaviour — that is prefill, and §13.2 is where it matters.
 
+Figure 15 plots HumanEval against decode for every row that carries both axes.
+
 {{svg charts/f15-quality-speed.svg}}
 
-Figure 15 — HumanEval pass@1 against decode throughput, 30 models.
+Figure 15 — HumanEval pass@1 against decode throughput, 40 measured rows that carry both axes.
 
 ### 19.2 Knowledge against decode speed
 
 The same axes with the other quality measure, and a different ranking. Speed buys no knowledge: the
-two fastest files (mellum21 at 111.9 t/s, lfm25 at 106.6) read 0.8083 and 0.6917, and the best
+two fastest files (mellum21 at 111.9 t/s, `lfm25-24b-a2b (thinking)` at 111.2) read 0.8083 and 0.6917, and the best
 knowledge-per-second point on this machine is mellum21, still 5.8pp under the ceiling. That ceiling belongs
 to two retired files — the 31B and the Q8_0, both 0.8667 — with the live driver at 0.8500. The 2-bit Bolt load (0.3667) sits visibly detached from the rest of the nemotron family.
 
 *Does not show* the hosted tier, which is deliberately absent (§19.8).
 
+Figure 16 is the same plot against MMLU-Pro.
+
 {{svg charts/f16-knowledge-speed.svg}}
 
-Figure 16 — MMLU-Pro against decode throughput, 30 models.
+Figure 16 — MMLU-Pro against decode throughput, 38 measured rows that carry both axes.
 
 ### 19.3 The cap is a variable, not a detail
 
@@ -2551,9 +2623,11 @@ shown for context only.
 *Does not show* the worst case, sage-a1.5 with thinking on, where all 20 items burned the cap and
 returned nothing — that run has no score to plot (§7.3).
 
+Figure 17 plots HumanEval against the generation cap for the nine models measured twice.
+
 {{svg charts/f17-cap-sensitivity.svg}}
 
-Figure 17 — HumanEval against generation cap for the six models measured twice at n ≥ 100.
+Figure 17 — HumanEval against generation cap for the nine models measured twice at n ≥ 100.
 
 ### 19.4 The league tables, as bars
 
@@ -2561,6 +2635,8 @@ The four capability axes at once, top fifteen per axis, with the cap printed onl
 from the 2048 default. Sorting each axis separately is the point: no model tops two of them, and the
 retired files are still in the bars where they led — which is exactly how a reader can see what a
 deletion cost.
+
+Figure 18 is the per-axis leader bars.
 
 {{svg charts/f18-leader-bars.svg}}
 
@@ -2577,6 +2653,8 @@ comparison the archive cannot support — gpt-oss knowledge at 512 against 2048 
 starred and greyed rather than dropped: omitting it would hide the confound, drawing it plainly
 would launder it.
 
+Figure 19 shows each quantisation pair's direction and size.
+
 {{svg charts/f19-quant-pairs.svg}}
 
 Figure 19 — Within-pair change: second variant minus first.
@@ -2590,6 +2668,8 @@ is filtered — which is the single respect in which this figure and §10.2's ta
 figure is the one following §8's rule. `other` is the catch-all family and is wide by construction,
 not by lineage.
 
+Figure 20 is the spread inside each family.
+
 {{svg charts/f20-family-spread.svg}}
 
 Figure 20 — Within-family spread on the two ranked axes.
@@ -2602,6 +2682,8 @@ speed for code; mellum peaks on throughput and sags on knowledge; nemotron-super
 and slow. Three of the eight are retired (the 31B, the Q8_0, and Mellum's Q6_K), so the flat-and-high
 shape you see is partly a picture of what is no longer on disk. Each axis is normalised within the
 plotted set, so the figure is about shape, not absolute quality.
+
+Figure 21 is one six-axis profile per model.
 
 {{svg charts/f21-profiles.svg}}
 
@@ -2617,6 +2699,8 @@ by an order of magnitude. The local driver is marked for scale.
 logged in that session, not written to a run file, so they cannot be plotted without breaking the
 rule that every figure comes from the archive. Re-running `~/bench/bench-api-model.sh` for the five
 routes (about $1.25 at the §14.4 rates) would close it.
+
+Figure 22 plots the hosted routes' latency and cost against the local roster.
 
 {{svg charts/f22-hosted-routes.svg}}
 
@@ -2637,6 +2721,8 @@ structural:** a figure whose source ages out does not fail loudly, it silently k
 found data. This one is now picked from a list of runs that are known to be recent, and the build prints
 the run it plotted.
 
+Figure 23 is the power trace through one full suite run.
+
 {{svg charts/f23-power-run.svg}}
 
 Figure 23 — CPU package power through the 2026-11-01 Kimi-Linear-48B full suite (112 min, both capability axes).
@@ -2646,6 +2732,8 @@ Figure 23 — CPU package power through the 2026-11-01 Kimi-Linear-48B full suit
 The one controlled pair on five axes at true scale. Code and speed are identical (0.9268 both,
 +0.9 t/s); riddles and instruction-following each lose one to two items; knowledge is hatched
 because the two rows ran at different caps and the +16.7 pp is the budget, not the weights (§16.2).
+
+Figure 24 compares the base and abliterated builds on the same axes.
 
 {{svg charts/f24-abliterated-pair.svg}}
 
@@ -2661,18 +2749,21 @@ terms.
 ### 20.1 Commands
 
 ```bash
+# <port> throughout is whatever unit you started is bound to — 8082 is qwen3next-q4, and §20.2 maps the rest.
+# 8099 is deliberately not used as an example: its unit is disabled, so a copied command would hit nothing.
+
 # serve a model (swaps out whatever is resident)
 ~/llama-local/llama-switch gemma4-26b-a4b
 
 # quick core sweep: perf, preflight, needles, riddles  (~10 min)
-~/bench/bin/t20 --port 8099 --core --max-gen-toks 4096 --tag quick
+~/bench/bin/t20 --port 8082 --core --max-gen-toks 4096 --tag quick
 
-# full sweep: + HumanEval 164, MMLU-Pro 120, IFEval 30
-~/bench/bin/t20 --port 8099 --max-gen-toks 4096 --budget 3600 --tag full
+# full sweep: + HumanEval 164, MMLU-Pro 120, IFEval 50
+~/bench/bin/t20 --port 8082 --max-gen-toks 4096 --budget 3600 --tag full
 
 # individual axes
-~/bench/.venv/bin/python ~/bench/humaneval.py --port 8099 --limit 164 --max-tokens 4096
-~/bench/.venv/bin/python ~/bench/mmlu_pro.py --port 8099 --limit 120 --max-tokens 4096
+~/bench/.venv/bin/python ~/bench/humaneval.py --port 8082 --limit 164 --max-tokens 4096
+~/bench/.venv/bin/python ~/bench/mmlu_pro.py --port 8082 --limit 120 --max-tokens 4096
 
 # benchmark without disturbing the resident model
 systemd-run --user --collect --unit=bench-x --property=Type=simple \
@@ -2682,14 +2773,14 @@ systemd-run --user --collect --unit=bench-x --property=Type=simple \
 ~/llama-local/needle-long.py 8180 200000
 
 # hosted model through the shim, then the same axes as any local unit
-~/.hermes/.env && set -a && . ~/.hermes/.env && set +a
+set -a; . ~/.hermes/.env; set +a
 ~/bench/api-shim.py --model anthropic/claude-sonnet-5.5 --port 8300
 ~/bench/bin/t20 --port 8300 --core --max-gen-toks 4096 --tag sonnet
 ~/bench/bench-api-model.sh anthropic/claude-sonnet-5.5 8300 sonnet full   # core + HE + MMLU
 /usr/bin/python3 ~/bench/cache-probe.py --prefix-tokens 6000 --repeats 4
 
 # build identity of whatever is serving right now (§4.1)
-curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
+curl -s localhost:8082/props | jq -r .build_info          # -> b3-1a33095
 ~/llama-local/halo-box-strix-llama.cpp/build/bin/llama-server --version
 
 # re-stamp build identity on legacy catalogue rows (prints first, writes only with --apply)
@@ -2699,16 +2790,16 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
 ### 20.2 Ports
 
 ```
-   8082 qwen3next        8083 qwen3next-q6     8084 ornith-122b
+   8082 qwen3next-q4     8083 qwen3next-q6     8084 ornith-122b
    8085 gptoss           8086 ornith            8093 qwen38-35b
    8096 gptoss-abliterated 8097 qwen38fn-abl    8098 ornith35b (user unit)
    8099 gemma4-26b-a4b    (script only, unit disabled)
    8100 gemma4-26b-uncen  (ENABLED — the WhatsApp channel driver)
-   8181 lfm25-24b-a2b    8182 groot65b-a6b (transient bench unit, on demand)
+   8181 lfm25-24b-a2b    8182 groot65b-a6b (transient bench unit, on demand; was hy-memory)
    8183 swift15-fn-heretic (transient bench unit; on disk, no roster unit)
-   8185 ornith-mtp-21g    8186 minicpm-v47-35b
-   8189 nemotron-super   8094 orient-ornith (SYSTEM unit, boot model)
-   8090 the hardware monitor (hardware monitor, private network only)   8188 ComfyUI (image generation)
+   8185 ornith-mtp-21g    8186 minicpm-v47-35b        (8185 was gemma4-31b until 10-30)
+   8189 nemotron-super   8094 ornith35b-uncen (SYSTEM unit, boot model; 'orient-ornith')
+   8090 the hardware monitor (private network only)   8188 ComfyUI (image generation)
 
    Retired 2026-10-29/30 and no longer bound: 8087 kimi, 8091 mellum, 8095 qwen38-27b,
    8180 nemotron-bolt, 8182 hy-memory, 8184 ling3-flash, 8185 gemma4-31b, 8187 nemotron-bolt-e4b
@@ -2725,16 +2816,16 @@ curl -s localhost:8099/props | jq -r .build_info          # -> b3-1a33095
    ~/bench/api-calls.jsonl      per-call tokens, cached tokens, reasoning tokens, cost
    ~/runs/catalogue.json        one row per axis per model — source of every table here
    ~/runs/*.jsonl               per-item results, one file per axis per run
-   ~/llama-local/llama-switch   24-unit switcher; writes .intent-model
+   ~/llama-local/llama-switch   30-unit switcher; writes .intent-model
    ~/llama-local/model-guard.sh availability guard (60 s timer, 3 restarts/hour budget)
    ~/llama-local/run-*.sh       one launch script per model (flags live here)
    ~/llama-local/WIRING-*.md    wiring log and per-model verdicts
    ~/llama-local/RETIRED-models.md  recipes for every model deleted after measurement
-   ~/.config/systemd/user/llama-*.service   24 units, mutually Conflicts=
+   ~/.config/systemd/user/llama-*.service   30 units, mutually Conflicts=
 ```
 ### 20.4 Glossary
 
-**Table 12 — Glossary.**
+**Table 13 — Glossary.**
 
 | Term | Meaning |
 |---|---|
@@ -2805,8 +2896,24 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The seven most recent entries, in brief:
+The seven most recent entries, in brief — the full history, and what each edition got wrong, is on the
+[change log](changelog.html) page:
 
+- **v1.26** — **read-through pass: no measurement changed, nine claims about them did.** Counts recounted
+  (49 models in §0.0, 30 measured rows in the header, Figures 15 and 16 captioned by what they plot — 40 and
+  38 rows — Figure 17's nine cap pairs, nineteen retired files in §19, 30 units in the appendix). **Four
+  superlatives corrected:** "best HumanEval on disk" and "first on knowledge among everything on disk" were
+  each asserted more than once and were false twice over — `lfm25-24b-a2b (thinking)` is on disk at 0.9695
+  code, and `qwen38fn-abl`'s 0.8750 knowledge is a live 40-item re-run — so all four now say the best
+  knowledge score among the full 120-item rows still on disk and name the 40-item row as such. Two "what to
+  use" picks that pointed at retired files (mellum21-fork's 111 t/s, Kimi-Linear's million tokens) are
+  replaced with live rows. **Protocol:** MMLU-Pro has ten options, not four, and IFEval ran 50 prompts, not
+  30 — the 16 GiB page had both right and this page had both wrong. **Tables renumbered** so 4b is 5 and the
+  contents line "Tables 1-13" is true. **All 24 figures now cited** from the prose that carries them (none
+  was, before this pass), every caption moved below its artwork for consistency, and §19's chart encoding
+  stated once for all ten plots. §4.1 gains the clover build row and §9.1 a block for the eleven 16 GiB-roster
+  rows, which had no per-model analysis at all. Appendix: duplicate port names, the 8090 label the sanitiser
+  had doubled, and examples that pointed at the disabled :8099.
 - **v1.25** — **Clover-35B-A3B-Preview measured; the 16 GiB roster is complete.** The block-diffusion MoE that
   had sat in the roster file with no row since v1.18 now has one, from a fork that carries `clover_moe`:
   **0.9451 code (155/164@8192), 0.8417 knowledge (101/120@8192), 0.8400/0.8289 IFEval (50@4096)**, 14/14
@@ -2835,7 +2942,7 @@ The seven most recent entries, in brief:
   2026-11-08 but never written into this report, so the previous edition published a data row and three
   regenerated charts with no prose, leaderboard entry or change-log record behind them; §9 and §18.3 counts
   are now recounted from the catalogue (37 matrix rows, 155 runs, 60.6 h, 75 aliases, 16 servable families),
-  Table 4b's last three rows, which had been rendering as literal pipe text since v1.20, are back inside
+  Table 5's last three rows, which had been rendering as literal pipe text since v1.20, are back inside
   their table, and the four trees rebuilt on the evening of 2026-11-08 are tabulated in **§4.3 — registered,
   not measured**: `upstream-llama`, `flint` and `sensenova` at `7d7f028` (0.9.0-dev, ggml ABI 0.29.0),
   `prism` at `6447906bf` (0.7.0-dev, ABI 0.27.0), against the served fork `1a3309516` at ABI 0.25.3. **§13 is
@@ -2859,15 +2966,6 @@ The seven most recent entries, in brief:
   1280 tokens, which understates every thinking model on the board — Axion reads 0.27/0.20 at that pin and
   0.73/0.64 at 4096. `qwen38fn-abl`'s long-standing "invalid (1/120)" MMLU cell is replaced by 0.8750 after a
   clean 40-item re-run on the same build.
-- **v1.19** — Groot-65B-A6B measured and kept on demand: 116.5B under a 65B name, **0.9000 code (54/60 at
-  cap 2048) / 0.7500 knowledge (30/40)**, 27.6 t/s, and the archive's first real drafter win (bundled MTP
-  head, **27.66 → 35.66 t/s** at 76.3% acceptance). The finding that matters is the footprint: it does not
-  fit all-resident — GTT 71.0 GiB and one OOM kill — and only serves beside the driver under the fork's
-  `--lazy-mode auto`, at 50.4 GiB and no speed cost.
-- **v1.18** — Clover-35B-A3B-Preview measured and retired (0.8598 code / 0.4000 knowledge, AR mode only);
-  the 32B-A6B "Prune2" export **loads after all** — v1.16's "cannot load" was a tier-0-only read of a
-  three-bank expert layout — and was then retired for a split failure: repetition on Vulkan, no factual
-  knowledge on CPU.
 
 ## 22. Credits and tooling
 
