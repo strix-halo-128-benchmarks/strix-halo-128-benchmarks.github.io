@@ -29,6 +29,14 @@ if [ -n "$NEWEST" ]; then
     echo "skip: run file written in the last 15 minutes ($(basename "$NEWEST")) — measurement may still be finishing"
     exit 0
 fi
+# A harness can also be launched detached (a background shell job with persist_on_release) instead of
+# as a bench-* unit. Then no unit is active and its run file age past 15 minutes while the later axes
+# are still going — round-6 sat on MMLU-Pro for two hours after writing its identity/perf/HumanEval
+# rows. Match the harness processes themselves; they outlive both signals above.
+if pgrep -f 'complete-round[0-9]+\.py|bench/t20\.py|bench/mmlu_pro\.py|bench/humaneval\.py' >/dev/null 2>&1; then
+    echo "skip: a bench harness process is alive — $(pgrep -af 'complete-round[0-9]+\.py|bench/t20\.py|bench/mmlu_pro\.py|bench/humaneval\.py' | cut -c1-90 | paste -sd'; ')"
+    exit 0
+fi
 
 echo "=== $(date -Is) regenerate"
 ./scripts/build.sh
