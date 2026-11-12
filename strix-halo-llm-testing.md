@@ -2844,7 +2844,7 @@ curl -s localhost:8082/props | jq -r .build_info          # -> b3-1a33095
 | **needle** | a planted fact that must be retrieved from the middle of a long context |
 | **IFEval** | instruction-following benchmark with verifiable constraints |
 | **HumanEval** | code benchmark scored by executing unit tests against generated functions |
-| **MMLU-Pro** | four-option knowledge benchmark |
+| **MMLU-Pro** | ten-option knowledge benchmark (120 items, 0-shot chat probe) |
 | **PPL / temp / top-p** | sampling controls; all measurements here use temp 0 for determinism |
 
 ---
