@@ -9,6 +9,29 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.27 (2026-11-17)
+
+**Two rows, and the first controlled uncensoring test this box can run.**
+
+`lfm25-24b-a2b-htc` and its thinking arm join Table 4. Same base checkpoint as `lfm25-24b-a2b`, same QAD-Q4_0
+recipe, byte-identical 12.65 GiB file, one build: only the refusal prior was ablated, so for the first time the
+difference between the two rows is abliteration and nothing else.
+
+| what changed | before | now |
+|---|---|---|
+| measured rows | 30 on disk (header) | 32 rows over 31 files, recounted 2026-11-17 |
+| roster size | 807.6 GiB (checked 2026-11-12) | 896.9 GiB, 49 `.gguf` files, mmproj excluded |
+| §9.1 per-model analysis | one LFM2.5 entry | the abliterated twin has its own paragraph |
+| the three axes | — | 0.6890 / 0.2667 / 12-14 with the think block closed; 0.8902 / 0.6167 / 14-14 with it open |
+
+**The result is not the folklore.** Against the stock arms at matched caps the twin loses 9 items of MMLU-Pro on
+120 and gains one IFEval prompt on 50 — knowledge cost, compliance neutral — while the abliteration is supposed
+to cost both and buy neither. What it actually buys is measured by the benign refusal probe rather than by these
+three axes: on 200 prompts the stock file refuses 50 outright and hedges 13, the twin refuses none, 25.0% → 0.0%
+with 63 per-item verdict changes. The cost sits in the analysis channel, not in what the weights know.
+
+The 16 GiB page carries the same pair as its v1.24, where it also takes the IFEval lead from the stock arms.
+
 ### Version 1.26 (2026-11-12)
 
 **Read-through of the whole document: no measurement changed, nine statements about them did.**

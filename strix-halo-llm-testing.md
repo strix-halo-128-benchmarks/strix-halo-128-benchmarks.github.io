@@ -4,12 +4,12 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.26** · 12th November 2026 · Read-through: counts, superlatives and references corrected
+- **Document version:** **1.27** · 17th November 2026 · Abliterated LFM2.5 twin measured: two rows, and the refusal delta that justifies them
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-12
-- **Roster:** 49 `.gguf` files on disk, 807.6 GiB, 30 of them carrying a measured row, checked 2026-11-12
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-17
+- **Roster:** 49 `.gguf` files on disk, 896.9 GiB, 31 of them carrying a measured row (32 rows: the LFM2.5 heretic file carries two), checked 2026-11-17
   · **Change log:** §21
 
 **About this document**
@@ -1051,6 +1051,7 @@ deleted rows are why the recommendations below have reasons.
 | mellum21-fork | 12.1B | Q4_K_M | 0.9146 (164@8192) | 0.8083 (120@8192) | 10/14 | 2723 | 111.9 | 2026-10-18 | fork pre-identity | ✗ 11-05 |
 | Groot-65B-A6B | 116.5B | Q4_K_M | 0.9000 (60@2048) | 0.7500 (40@2048) | 9/14 | 597 | 27.6 | 2026-11-05 | bolt b1-a30fb49 | ✗ 11-05 |
 | gemma-4-12B-QAT | 11.9B | Q4_0 | 0.8963 (164@512) | 0.5750 (120@512) | 14/14 | 911 | 27.8 | 2026-11-10 | fork b3-1a33095 | ✓ |
+| lfm25-24b-a2b-htc (thinking) | 24.0B | Q4_0 | 0.8902 (164@4096) | 0.6167 (120@4096) | 14/14 | 3331 | 109.6 | 2026-11-16 | fork b11581-1a33095 | ✓ |
 | mellum | 12.1B | Q6_K | 0.8780 (164@4096) | 0.7000 (120@4096) | 11/14 | 2442 | 91.8 | 2026-10-12 | fork pre-identity | ✗ 10-29 |
 | qwen38-35b | 35.5B | Q4_K_M | 0.8720 (164@4096) | 0.6417 (120@4096) | 14/14 | 1550 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✓ |
 | Laguna-XS-2.1 | 33.4B | Q4_K_M | 0.8667 (60@4096) | 0.7000 (40@8192) | 10/14 | 1321 | 87.7 | 2026-11-06 | fork b3-1a33095 | ✓ |
@@ -1071,6 +1072,7 @@ deleted rows are why the recommendations below have reasons.
 | hy-memory-30b-a3b | 30.1B | Q4_K_M | 0.7805 (164@2048) | 0.7250 (120@2048) | 12/14 | 1515 | 74.7 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
 | graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | fork pre-identity | ✗ |
 | hy-memory-30b-a3b-q8 | 30.1B | Q8_0 | 0.7683 (164@2048) | 0.7500 (120@2048) | 11/14 | 1459 | 52.3 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
+| lfm25-24b-a2b-htc | 24.0B | Q4_0 | 0.6890 (164@4096) | 0.2667 (120@4096) | 12/14 | 3225 | 106.0 | 2026-11-16 | fork b11581-1a33095 | ✓ |
 | Ling-3.0-flash | — | Q4_K_M | — | 0.7667 (120@2048) | 11/14 | — | 43.5 | 2026-10-22 | fork pre-identity | ✗ 10-30 |
 | qwen38fn32-prune2 | 32.2B | QMix, 3 banks | — | — | — | 397 | 20.0 | 2026-11-03 | qwen4exp-var b1-1844325 | ✗ 11-03 |
 | ornith35b (uncensored) | 35.5B | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 1762 | 69.9 | 2026-10-31 | fork b3-1a33095 | ✓ boot |
@@ -1226,6 +1228,16 @@ high-volume, low-latency work — classification, extraction, triage — not for
 (0.8537 code, 0.6917 MMLU) but the most responsive model of its size class, with a 1M-token context
 option. Its IFEval 0.3333 in the archive is an lm-eval artefact; standalone at a 4096 cap it
 measures 0.9333, which is one of the best instruction scores on this machine.
+
+**lfm25-24b-a2b-htc — the same file with the refusal prior ablated, and the only controlled uncensoring test
+this box can run.** Same base, same quantisation recipe, a byte-identical 12.65 GiB footprint: the abliteration
+is the only variable. Two rows, because the LFM template hardcodes a think block — 0.6890 code / 0.2667
+knowledge / 12-14 riddles at 3225 / 106 t/s with the block closed at budget 0, and 0.8902 / 0.6167 / 14-14 at
+3331 / 110 with it open. Against the stock arms at matched caps that is 9 items of knowledge lost and one IFEval
+prompt gained, so the cost is real but narrow, and it sits in the analysis channel rather than in what the
+weights know. What it buys is measured by the benign refusal probe, not by these three axes: 50 outright
+refusals and 13 hedges on 200 prompts for the stock file, none for the twin, 63 per-item verdict changes. Quote
+the arm, never the file.
 
 **Kimi-Linear-48B-A3B-abl — the long-context file, and the honest version of a retired one.** The
 abliterated i1-Q4_K_M build (27.66 GiB, 49.1B with ~3B active) measures **0.7866 code, 0.5833
@@ -2899,6 +2911,16 @@ was wrong is not a correction.
 The seven most recent entries, in brief — the full history, and what each edition got wrong, is on the
 [change log](changelog.html) page:
 
+- **v1.27** — **the abliterated twin of LFM2.5-24B measured: two rows in Table 4, and the refusal delta that
+  justifies them.** `lfm25-24b-a2b-htc` and `-htc-think` are the same base checkpoint, the same QAD-Q4_0 recipe
+  and a byte-identical 12.65 GiB file as `lfm25-24b-a2b`; only the refusal behaviour was ablated. With the think
+  block closed at budget 0 the twin reads 0.6890 code / 0.2667 knowledge / 12-14 riddles at 3225 / 106 t/s;
+  with it open, 0.8902 / 0.6167 / 14-14 at 3331 / 110. Set against the stock arms at the same caps, abliteration
+  cost knowledge (9 items on 120) and gained one IFEval prompt, which is the opposite of what the folklore
+  predicts, and the probe that shows what it actually bought is not one of the three axes: on 200 benign prompts
+  the stock file refuses 50 and hedges 13, the twin refuses none — 25.0% → 0.0%, 63 per-item verdict changes.
+  The header's roster counts are recounted (896.9 GiB, 32 measured rows over 31 files), and the 16 GiB page is
+  at v1.24.
 - **v1.26** — **read-through pass: no measurement changed, nine claims about them did.** Counts recounted
   (49 models in §0.0, 30 measured rows in the header, Figures 15 and 16 captioned by what they plot — 40 and
   38 rows — Figure 17's nine cap pairs, nineteen retired files in §19, 30 units in the appendix). **Four
