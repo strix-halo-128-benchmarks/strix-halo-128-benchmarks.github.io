@@ -9,6 +9,39 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.28 (2026-11-18)
+
+**The row now describes what the box serves, and the archive's "grafted heads never pay" rule gets its one
+exception.**
+
+`Ornith-1.5-35B` (:8086) was re-measured on 2026-11-18 with its own in-weights MTP head engaged
+(`--spec-type draft-mtp --spec-draft-n-max 1`), which is how the unit has served since that date. Table 4 and
+Table 5 carry the new cells; the previous ones were the spec-off baseline of 2026-11-01.
+
+| what changed | before | now |
+|---|---|---|
+| `Ornith-1.5-35B` HumanEval | 0.8354 (137/164@4096) | 0.9024 (148/164@4096) — +14/-3 flips, sign test p=0.006, no cap-pinned row in either arm |
+| `Ornith-1.5-35B` MMLU-Pro | 0.4417 (53/120@4096) | 0.4250 (51/120@4096) — +13/-15 flips, p=0.85, noise |
+| `Ornith-1.5-35B` riddles | 13/14 | 14/14 |
+| `Ornith-1.5-35B` prefill / decode | 1633 / 74.1 t/s | 1507 / 80.5 t/s — spec-on trades prefill for decode |
+| `Ornith-1.5-35B` build and date | fork b3-1a33095, 2026-11-01 | fork b11581-19b458b, 2026-11-18 |
+
+**"Every grafted draft head loses" was false and is withdrawn.** §9.1 had said the baked MTP head's +28.7%
+was "the exact opposite of every grafted draft head tried here". An external DFlash2 drafter (0.53 GiB) on
+`ornith-122b` at n-max 1 measured **+25% decode** (23.34 → 29.21 t/s) with output-neutral quality: HumanEval
+0.9512 → 0.9634 (156 → 158, and both losses are cap-pinned rows), MMLU-Pro 0.7917 → 0.8167 (95 → 98), riddles
+12/14 → 14/14, sign test p=0.33 over 17 flips. The `ornith-122b` row keeps its 2026-10-20 spec-off figures —
+the drafter is an on-demand configuration, not how that unit always runs — and the arm's numbers are quoted in
+the §9.1 text instead. Two further DFlash2 heads grafted onto the 35B (one fetched specifically for this test,
+747 MiB) lost 9.6% and 13.8% at 87.6% and 73.8% acceptance, which is where the withdrawn sentence came from.
+
+**Downstream edits, because a row change falsifies sentences that never mention it:** §8's noise example now
+cites the 122B arm's 156 → 158 and the 35B's 137 → 148, in place of the 35B's old 2-item move; §9.1's
+35B-trough paragraph now says three of the four land in 0.82-0.87 code and the fourth left the band; the Axion
+comparison quotes 80.5 t/s / 0.4250; Table 6's ornith/qwen3.5 row moves to 0.4250-0.7917 (Δ.367) for knowledge,
+11-14/14 riddles and 23-80 t/s decode; §16.4's ablation bill is restated as 33.5 points against 0.9024, with an
+explicit caveat that the two sides are now measured under different serving configs.
+
 ### Version 1.27 (2026-11-17)
 
 **Two rows, and the first controlled uncensoring test this box can run.**

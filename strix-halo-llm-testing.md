@@ -4,7 +4,7 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.27** · 17th November 2026 · Abliterated LFM2.5 twin measured: two rows, and the refusal delta that justifies them
+- **Document version:** **1.28** · 18th November 2026 · Serving-config re-measure: the 35B's in-weights MTP head, and a 122B drafter that finally pays
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
@@ -998,8 +998,9 @@ errors is not evidence of anything. Use this table before ranking two adjacent r
 | 40 | ±4.7 pp | ±6.8 pp | ≥ 11 pp |
 | 30 | ±5.5 pp | ±7.9 pp | ≥ 13 pp |
 
-That is why the table carries `items@cap` in every cell and why a 2-item move at n=164 (§9.1's `Ornith-1.5-35B`
-re-measure) was reported as noise rather than as an improvement.
+That is why the table carries `items@cap` in every cell and why a 2-item move at n=164 (156 → 158 in the
+122B drafter arm) was reported as noise rather than as an improvement, while the 35B's 11-item move in
+the same week (137 → 148, sign test p=0.006) was not.
 
 Two forward pointers: **§10** states what may and may not be inferred from one model to another in
 the same family, and **§5.1-5.6** cover quantisation, which is the variable most often confused with
@@ -1065,7 +1066,7 @@ deleted rows are why the recommendations below have reasons.
 | Kimi-Linear-48B-A3B-abl | 49.1B | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 1774 | 74.8 | 2026-11-01 | fork b3-1a33095 | ✗ 11-05 |
 | qwen38fn-abl | 176.9B | IQ3_S | 0.8476 (164@2048) | 0.8750 (40@2048) | 11/14 | 448 | 52.9 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen36-35b | 34.7B | Q4_K_M | 0.8354 (164) | 0.4500 (120) | 12/14 | 1548 | 57.1 | 2026-10-12 | fork pre-identity | ✗ |
-| Ornith-1.5-35B | 35.5B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 1633 | 74.1 | 2026-11-01 | fork b3-1a33095 | ✓ |
+| Ornith-1.5-35B | 35.5B | Q4_K_M | 0.9024 (164@4096) | 0.4250 (120@4096) | 14/14 | 1507 | 80.5 | 2026-11-18 | fork b11581-19b458b | ✓ |
 | mistral-small-3.1-24b | 23.6B | Q4_K_M | 0.8232 (164@512) | 0.6083 (120@512) | 12/14 | 460 | 14.9 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | qwen3-8b | 8.2B | Q4_K_M | 0.7866 (164@512) | 0.5833 (120@512) | 13/14 | 1300 | 39.0 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | kimi | 49.1B | Q4_K_M | 0.7866 (164@2048) | 0.5500 (120@2048) | 13/14 | 1597 | 67.4 | 2026-10-14 | fork pre-identity | ✗ 10-29 |
@@ -1130,7 +1131,7 @@ endpoint column is a roster record, not a ranking, and a snapshot that silently 
 | lfm25-24b-a2b | Q4_0 | 0.8537 (164@4096) | 0.6917 (120@4096) | 10/14 | 106.6 | 2026-10-17 | fork pre-identity | :8181 |
 | Kimi-Linear-48B-A3B-abl | Q4_K_M | 0.7866 (164@8192) | 0.5833 (120@8192) | 13/14 | 74.8 | 2026-11-01 | fork b3-1a33095 | :8086 |
 | qwen38fn-abl | IQ3_S | 0.8476 (164@2048) | invalid (1/120) | 11/14 | 52.9 | 2026-10-13 | fork pre-identity | :8097 |
-| Ornith-1.5-35B | Q4_K_M | 0.8354 (164@4096) | 0.4417 (120@4096) | 13/14 | 74.1 | 2026-11-01 | fork b3-1a33095 | :8086 |
+| Ornith-1.5-35B | Q4_K_M | 0.9024 (164@4096) | 0.4250 (120@4096) | 14/14 | 80.5 | 2026-11-18 | fork b11581-19b458b | :8086 |
 | ornith35b (uncensored) | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 69.9 | 2026-10-31 | fork b3-1a33095 | :8094 boot |
 
 *Retired since this snapshot (2026-11-05): `mellum21-fork`, `Groot-65B-A6B`, `nemotron-super-120b` and
@@ -1257,9 +1258,13 @@ that raised knowledge to 0.7500 while dropping to 52.3 t/s. Retired as a redunda
 knowledge row 12.5 pp behind the 26B driver at two-thirds the speed. The Q4/Q8 pair remains the
 cleanest quant-ladder datapoint in the archive (§10.3).
 
-**qwen38-35b / qwen36-35b / ornith35b / Ornith-1.5-35B — the 35B trough.** All four land between
-0.82 and 0.87 code with mediocre knowledge and 57-75 t/s. They are not bad; they are simply
-dominated by the 26B MoE (faster and better) and the 122B (slower but much better).
+**qwen38-35b / qwen36-35b / ornith35b / Ornith-1.5-35B — the 35B trough.** Three of the four land
+between 0.82 and 0.87 code with mediocre knowledge and 57-75 t/s; the fourth, `Ornith-1.5-35B`, left
+that band on 2026-11-18 when it was re-measured with its own MTP head engaged — 0.9024 code at
+80.5 t/s, the only external-drafter-free speed win among them. The other three are not bad; they are
+simply dominated by the 26B MoE (faster and better) and the 122B (slower but much better), and
+`Ornith-1.5-35B` at 0.9024 still sits below the 24B LFM thinking arm on code and far below the 122B
+on knowledge.
 
 Two of the four were re-measured at cap 4096 on 2026-11-01, and the two verdicts differ on **which
 axis** the cap was suppressing. `qwen38-35b` gained 3 HumanEval items (0.8537 → **0.8720**) but
@@ -1267,7 +1272,10 @@ axis** the cap was suppressing. `qwen38-35b` gained 3 HumanEval items (0.8537 �
 for that model the 512 cap was cutting off reasoning before the answer, and the damage showed up in
 knowledge far more than in code. `Ornith-1.5-35B` (Q4_K_M) gained 2 HumanEval items (0.8232 →
 **0.8354**) and 3 knowledge items (0.4167 → **0.4417**, +2.5 pp, inside SE) — a row that was close to
-honest already, and whose remaining weakness is the model, not the budget. So the
+honest already, and whose remaining weakness is the model, not the budget. Its own later re-measure
+(2026-11-18, §9.1's spec paragraph) then moved it again, and by far more: with the in-weights MTP head
+engaged the same file reads 0.9024 code and 0.4250 knowledge, so the cap story here is the small
+effect and the serving head is the large one. So the
 lesson is not "512 understates" or "512 is fine": it is that the cap's damage is **axis-dependent**,
 and a single axis read at 512 cannot tell you which case you are in.
 
@@ -1310,8 +1318,15 @@ Code lands at **0.9000 (54/60 at cap 2048)** and knowledge at **0.7500 (30/40)**
 with their item counts shown, and comparable only to other subsample rows such as flint's 60-item figure.
 Decode is **27.6 t/s**, roughly 1.8x slower than the 116.8B gpt-oss file at similar active size, and
 instruction-following is the soft axis — IFEval 0.60 prompt-strict and 0.56 instruction-strict over 30
-items, against 0.93 for Qwen3-Next-80B. Its bundled MTP head is the one clean speed win in the archive:
-**27.66 → 35.66 t/s, +28.7%, 76.3% acceptance**, the exact opposite of every grafted draft head tried here.
+items, against 0.93 for Qwen3-Next-80B. Its bundled MTP head is a clean speed win — **27.66 → 35.66
+t/s, +28.7%, 76.3% acceptance** — and until 2026-11-18 it was the only one in the archive. The
+exception is the 122B: an external DFlash2 drafter at n-max 1 on `ornith-122b` measured 0.9634 code and
+0.8167 knowledge (164 and 120 items at cap 4096) at 29.2 t/s, against 0.9512 / 0.7917 at 23.3 — +25%
+decode and output-neutral (11 flips up, 6 down, sign test p=0.33, and the two HumanEval losses are
+cap-pinned rows rather than wrong answers). Two independently trained DFlash2 heads on the 35B lost 9.6%
+and 13.8%, while that file's own in-weights head won 16%. The rule is therefore not grafted-versus-baked
+but whether trunk and head were trained together: the 122B's drafter and every MTP head here were,
+the 35B grafts were not.
 Riddles read 9/14, but all five misses returned precisely the 2048 cap with no content at all; re-asked at
 4096 the family-relations puzzle answers correctly after 1,953 thinking tokens, so that row measures
 deliberation length rather than capability. Kept, not adopted: the driver still wins on code, knowledge,
@@ -1321,7 +1336,7 @@ instruction-following and speed.
 34.66B, roughly A3B) from Axion1-0, Apache-2.0, with a paper pitching open agent foundation models.
 At Q4_K_M it is 19.71 GiB and decodes at **76.2 t/s** with 1422 t/s prefill — nothing else in the
 20 GiB class pairs 0.8500 code (51/60) with 0.7750 knowledge (31/40) at that rate: qwen38-35b is
-74.8 t/s with 0.6417 knowledge, Ornith-1.5-35B 74.1 t/s with 0.4417. Instruction-following is where
+74.8 t/s with 0.6417 knowledge, Ornith-1.5-35B 80.5 t/s with 0.4250. Instruction-following is where
 it *looks* broken and is not: IFEval reads 0.27 prompt-strict at the harness's pinned 1280-token
 generation limit and 0.73 when the constraint is allowed 4096. The mechanism is deliberation, not
 refusal — asked directly for "a sentence about a dog without using the letter e" it ran 3,010 tokens
@@ -1485,7 +1500,7 @@ or a direct lineage. `Δ` is max − min within the family.
    family            n   HumanEval             MMLU-Pro              riddles    decode
    ──────────────────────────────────────────────────────────────────────────────────────────
    gemma4            4   0.9390-0.9634 Δ.024   0.8417-0.8667 Δ.025   14-14/14   17-59 t/s
-   ornith / qwen3.5  6   0.5610-0.9512 Δ.390   0.4417-0.7917 Δ.350   11-13/14   23-74 t/s
+   ornith / qwen3.5  6   0.5610-0.9512 Δ.390   0.4250-0.7917 Δ.367   11-14/14   23-80 t/s
    qwen3.6 / 3.8     7   0.8354-0.8720 Δ.037   0.0083-0.6417 Δ.633   11-14/14   53-75 t/s
    nemotron          3   0.1786-0.9512 Δ.773   0.3667-0.7667 Δ.400    8-13/14   23-73 t/s
    mellum            3   0.8780-0.9146 Δ.037   0.7000-0.8083 Δ.108   10-11/14   92-112 t/s
@@ -2320,11 +2335,12 @@ nothing about abliteration either way.
 
 The same trap catches the boot model. `Ornith-1.5-35B-Uncensored-YMQ-M` (15.1 GiB, IQ3_XXS) was
 measured on 2026-10-31 at cap 4096 — **0.5671 code, 0.6333 knowledge, 12/14 riddles** — and at 0.57
-it looks like a 26.8-point ablation bill against the **0.8354** that the standard `Ornith-1.5-35B`
-build scores at the same cap since 2026-11-01. The comparison is now like-for-like on budget, so the
-remaining gap is the quantisation rung (3.06 bpw against 4.9) plus the uncensoring tune, and it cannot
-be attributed to the cap: re-measuring the standard file at four times its original budget moved two
-code items and three knowledge items, not 27 points. What the run does establish
+it looks like a 33.5-point ablation bill against the **0.9024** that the standard `Ornith-1.5-35B` build
+scores at the same cap since 2026-11-18. That comparison is like-for-like on budget but not on serving
+config: the standard file's row is measured with its in-weights MTP head engaged, so the 33.5 points mix
+the quantisation rung (3.06 bpw against 4.9), the uncensoring tune and the draft head. It cannot be
+attributed to the cap at any rate: re-measuring the standard file at four times its original budget moved
+two code items and three knowledge items, not 34 points. What the run does establish
 is that the cap is not the explanation — re-measuring at four times the budget moved one code item —
 so the honest label is "an IQ3-class uncensored fine-tune, not a clean abliteration datapoint".
 
