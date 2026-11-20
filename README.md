@@ -87,7 +87,7 @@ reproducing the numbers elsewhere is roughly 40–60 hours now that the harness 
 
 ## Credits
 
-Measurements, analysis and the writing of these documents were done by **Dom**
+Measurements, analysis and the writing of these documents were done by **Dom Ashworth**
 ([github.com/barmynon](https://github.com/barmynon)) with **Hermes Agent** (Nous Research) driven by
 **DeepSeek `deepseek-flash`**, over four weeks. The model scheduled and monitored the benchmark runs, read their outputs and drafted the
 text; the hardware produced the measurements, and every figure is traceable to a run id in the

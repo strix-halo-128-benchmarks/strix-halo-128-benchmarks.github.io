@@ -3,7 +3,8 @@ message: "If you use these measurements, cite this record."
 title: "Local LLM benchmarks on AMD Strix Halo (gfx1151), and the 16 GiB VRAM class"
 type: dataset
 authors:
-  - name: "Dom"
+  - family-names: "Ashworth"
+    given-names: "Dom"
     alias: "barmynon"
     website: "https://github.com/barmynon"
 date-released: 2026-11-10
@@ -16,7 +17,7 @@ abstract: >-
   Vulkan. HumanEval pass@1 and MMLU-Pro accuracy at stated token caps, IFEval,
   prefill and decode, all with build identity and quant per run; plus a roster
   defined by what fits a 16 GiB graphics card, with fit and KV-cache arithmetic,
-  context budgets, thirteen 16 GB cards compared, and the platform differences
+  context budgets, twelve 16 GB cards compared, and the platform differences
   between a unified APU, a discrete card and Apple Silicon. Every figure is
   traceable to a run id in the published catalogue.
 keywords:
