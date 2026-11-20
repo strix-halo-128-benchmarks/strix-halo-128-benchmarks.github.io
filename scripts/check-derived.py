@@ -18,6 +18,7 @@ import glob
 import json
 import math
 import os
+from decimal import Decimal, ROUND_HALF_UP
 import re
 import sys
 
@@ -197,6 +198,8 @@ def main() -> int:
               if (pick(m, "riddles") or {}).get("score") == (pick(m, "riddles") or {}).get("total") == 14)
     ok("riddle tally at 14/14", r14 == 15 and "fifteen models tied" in md, f"computed {r14}")
 
+    ok("§3 riddle denominator", "15 of the 21 rows" in md,
+       "the page states a denominator that is not the roster's row count")
     kv36 = [m["id"] for m in models.values() if m.get("kv_mib_per_ktok") == 36]
     ok("rows at 36 MiB per 1k", len(kv36) == 6 and "Six rows land at 36" in md, f"computed {len(kv36)}: {sorted(kv36)}")
 
@@ -222,6 +225,30 @@ def main() -> int:
         if abs(printed - means[cells[0]]) > 0.0015:
             bad_means.append(f"{cells[0]} prints {printed:.3f}, archive {means[cells[0]]:.3f}")
     ok("every mean in Table 2 matches the archive", not bad_means, "; ".join(bad_means[:4]))
+
+    # ---- every footprint in Table 2, from the stated arithmetic ------------
+    bad_fp = []
+    for line in md.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) != 12 or cells[0] not in models:
+            continue
+        try:
+            printed = float(cells[3].split()[0])
+        except (ValueError, IndexError):
+            continue
+        m = models[cells[0]]
+        calc = footprint(m, m["ctx"])
+        if abs(printed - calc) > 0.006:      # the page prints 2 dp; 18.275 legitimately reads 18.28
+            bad_fp.append(f"{cells[0]} prints {printed:.2f}, arithmetic {calc:.3f}")
+    ok("every Table 2 footprint re-derives", not bad_fp, "; ".join(bad_fp[:4]))
+
+    # ---- §10: the drafter's cost at a matched context ---------------------
+    base8 = footprint(models["g4-26b-a4b-qat"], 8192)
+    mtp8 = footprint(models["g4-26b-a4b-qat-mtp"], 8192)
+    ok("§10 drafter arithmetic at 8k",
+       f"{base8:.2f}" in md and f"{mtp8:.2f}" in md and abs((mtp8 - base8) - 0.43) < 0.005
+       and "at the same 8k context" in md,
+       f"8k: {base8:.2f} vs {mtp8:.2f}, delta {mtp8 - base8:.3f}")
 
     # ---- the footnote's rounding examples, from the counts ------------------
     for mid in ("lfm25-24b-a2b-think", "mistral-24b-q4"):
@@ -267,6 +294,9 @@ def main() -> int:
     dense_gb = 11.907 * 4.52 / 8.0     # the 12B dense
     ref_moe, ref_dense = 59.0, 28.0    # measured on this host (Table 10, reference row)
 
+    def half_up(x: float) -> str:
+        return str(Decimal(str(x)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
     def bands(bws, lo_hi=(0.35, 0.55)):
         lo, hi = min(bws), max(bws)
         moe = [(lo / moe_gb) * lo_hi[0] / ref_moe, (hi / moe_gb) * lo_hi[1] / ref_moe]
@@ -276,7 +306,7 @@ def main() -> int:
     small = bands([288, 320, 448])
     mid = bands([512, 560, 576, 624, 640, 672])
     for label, (moe, dn) in (("128-bit group", small), ("256-bit group", mid)):
-        want = (f"{moe[0]:.2f}–{moe[1]:.2f}×", f"{dn[0]:.2f}–{dn[1]:.2f}×")
+        want = (f"{half_up(moe[0])}–{half_up(moe[1])}×", f"{half_up(dn[0])}–{half_up(dn[1])}×")
         ok(f"§12 {label} ratio ranges",
            want[0] in md and want[1] in md, f"computed MoE {want[0]}, dense {want[1]}")
 

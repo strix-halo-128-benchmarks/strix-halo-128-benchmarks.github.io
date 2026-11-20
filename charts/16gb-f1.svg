@@ -971,7 +971,7 @@ z
 L 351.694714 112.470892 
 L 355.126616 110.070469 
 L 390.258882 102.84028 
-L 430.921227 71.490182 
+L 416.608082 47.399193 
 L 439.899473 35.339238 
 " clip-path="url(#p1a48f70a2a)" style="fill: none; stroke-dasharray: 0.9,1.485; stroke-dashoffset: 0; stroke: #7a828e; stroke-width: 0.9"/>
    </g>
@@ -1061,18 +1061,18 @@ L 355.126616 84.559156
     </g>
    </g>
    <g id="LineCollection_24">
-    <path d="M 416.608082 142.997076 
-L 416.608082 91.60424 
+    <path d="M 416.608082 68.097511 
+L 416.608082 26.700874 
 " clip-path="url(#p1a48f70a2a)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95; stroke-width: 1.25"/>
    </g>
    <g id="line2d_126">
     <g clip-path="url(#p1a48f70a2a)">
-     <use xlink:href="#m2855eb7564" x="416.608082" y="142.997076" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+     <use xlink:href="#m2855eb7564" x="416.608082" y="68.097511" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
    <g id="line2d_127">
     <g clip-path="url(#p1a48f70a2a)">
-     <use xlink:href="#m2855eb7564" x="416.608082" y="91.60424" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+     <use xlink:href="#m2855eb7564" x="416.608082" y="26.700874" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
    <g id="LineCollection_25">
@@ -1294,7 +1294,7 @@ Q 318.660283 88.024105 322.054902 140.800862
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--fg)" x="295.531882" y="30.5648" transform="rotate(-0 295.531882 30.5648)">g4-e4b-qat</text>
    </g>
    <g id="text_37">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="433.899473" y="27.657597" transform="rotate(-0 433.899473 27.657597)">clover-35b-a3b-iq2</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: end; fill: var(--fg)" x="433.899473" y="14.657597" transform="rotate(-0 433.899473 14.657597)">clover-35b-a3b-iq2</text>
    </g>
    <g id="text_38">
     <text style="font-size: 7.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--warn, #d05c4a)" x="449.983735" y="30.944722" transform="rotate(-0 449.983735 30.944722)">over budget</text>
@@ -1324,7 +1324,7 @@ Q 318.660283 88.024105 322.054902 140.800862
    </g>
    <g id="line2d_160">
     <g clip-path="url(#p1a48f70a2a)">
-     <use xlink:href="#ma6308338b8" x="416.608082" y="117.300658" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
+     <use xlink:href="#ma6308338b8" x="416.608082" y="47.399193" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
    <g id="line2d_161">

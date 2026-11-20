@@ -429,7 +429,7 @@ z
    </g>
    <g id="PathCollection_5">
     <g clip-path="url(#pf0544e9507)">
-     <use xlink:href="#mbd4876be8c" x="423.484931" y="172.412263" style="fill: #d55e00; stroke: var(--code); stroke-width: 0.8"/>
+     <use xlink:href="#mbd4876be8c" x="423.484931" y="114.916074" style="fill: #d55e00; stroke: var(--code); stroke-width: 0.8"/>
     </g>
    </g>
    <g id="PathCollection_6">
@@ -527,7 +527,7 @@ Q 114.637457 133.901519 118.747132 124.777534
     <text style="font-weight: 700; font-size: 8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #009e73" x="53.312042" y="151.106855" transform="rotate(-0 53.312042 151.106855)">budget pick: g4-e4b-qat</text>
    </g>
    <g id="text_25">
-    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="423.484931" y="188.731169" transform="rotate(-0 423.484931 188.731169)">gpt-oss-20b-mxfp4</text>
+    <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="423.484931" y="131.23498" transform="rotate(-0 423.484931 131.23498)">gpt-oss-20b-mxfp4</text>
    </g>
    <g id="text_26">
     <text style="font-size: 7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: var(--fg)" x="477.836537" y="262.427154" transform="rotate(-0 477.836537 262.427154)">lfm25-24b-a2b</text>
