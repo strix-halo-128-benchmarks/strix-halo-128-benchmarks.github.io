@@ -242,6 +242,53 @@ def main() -> int:
             bad_fp.append(f"{cells[0]} prints {printed:.2f}, arithmetic {calc:.3f}")
     ok("every Table 2 footprint re-derives", not bad_fp, "; ".join(bad_fp[:4]))
 
+    # ---- Table 5 carries the SWA term, so a footprint can be done by hand --
+    bad_swa = []
+    for line in md.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) != 7 or cells[0] not in models:
+            continue
+        swa = models[cells[0]].get("swa_fixed_mib", 0)
+        want = f"{swa * 0.5 / 1024:.3f}" if swa else "—"
+        if cells[2] != want:
+            bad_swa.append(f"{cells[0]} prints {cells[2]}, arithmetic {want}")
+    ok("Table 5's SWA column", not bad_swa, "; ".join(bad_swa[:4]))
+
+    # the hand recipe must close: weights + context column + SWA + 1 GiB
+    worst = None
+    for line in md.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) != 7 or cells[0] not in models:
+            continue
+        m = models[cells[0]]
+        col = {8192: 3, 16384: 4, 32768: 5, 65536: 6}.get(m["ctx"])
+        if not col:
+            continue
+        try:
+            kv = float(cells[col]); swa = 0.0 if cells[2] == "—" else float(cells[2])
+        except ValueError:
+            continue
+        hand = m["size_gib"] + (m.get("draft_gib", 0) or 0) + kv + swa + 1.0
+        if worst is None or abs(hand - footprint(m, m["ctx"])) > worst[1]:
+            worst = (m["id"], abs(hand - footprint(m, m["ctx"])), hand)
+    ok("Table 5 + weights + 1 GiB reproduces Table 2", worst is not None and worst[1] < 0.006,
+       f"largest gap {worst[0]} {worst[1]:.3f} GiB" if worst else "no rows matched")
+
+    # ---- §4's HumanEval band is pair-specific -------------------------------
+    for a, b, want in (("lfm25-24b-a2b-think", "clover-35b-a3b-iq2", 4.4),
+                       ("g4-12b-qat", "g4-26b-a4b-qat", 6.5)):
+        got = diff_interval({(x, "humaneval"): pick(x, "humaneval") for x in (a, b)}, a, b, "humaneval")
+        half = f"±{got[1]:.1f}" if got else "?"
+        ok(f"§4 HumanEval band {a}/{b}", got is not None and abs(got[1] - want) < 0.1 and half in md,
+           f"computed {half}, page states {want}")
+
+    # ---- the load-time arithmetic ------------------------------------------
+    biggest = max(m["size_gib"] for m in models.values())
+    gb = biggest * 1.073741824
+    ok("storage load-time figure",
+       f"about {gb / 1.9:.0f} s" in md and f"up to {gb / 0.5:.0f} s" in md,
+       f"{biggest} GiB = {gb:.2f} GB -> {gb/1.9:.0f} s at 1.9 GB/s, {gb/0.5:.0f} s at 0.5")
+
     # ---- §10: the drafter's cost at a matched context ---------------------
     base8 = footprint(models["g4-26b-a4b-qat"], 8192)
     mtp8 = footprint(models["g4-26b-a4b-qat-mtp"], 8192)
