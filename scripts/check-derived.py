@@ -165,14 +165,14 @@ def main() -> int:
     for name, a, b, axis, expect in (
         ("Table 4 HumanEval", "lfm25-24b-a2b-think", "clover-35b-a3b-iq2", "humaneval", 4.4),
         ("Table 4 MMLU-Pro", "clover-35b-a3b-iq2", "axion-1.0-35b-iq3", "mmlu_pro", 10.1),
-        ("Table 6 MMLU-Pro", "g4-12b-qat", "g4-26b-a4b-qat", "mmlu_pro", 12.3),
+        ("Table 6 MMLU-Pro", "g4-12b-qat", "g4-26b-a4b-qat", "mmlu_pro", 12.4),
     ):
         got = diff_interval({(m, ax): pick(m, ax) for m in (a, b) for ax in (axis,)}, a, b, axis)
         if got is None:
             ok(name, False, "missing run rows")
             continue
         margin, half = got
-        printed = f"±{half:.1f}-point" if expect != 12.3 else "±12-point"
+        printed = f"±{Decimal(str(half)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)}-point"
         ok(f"{name} interval", abs(half - expect) < 0.15 and printed in md,
            f"computed ±{half:.1f} for a {margin:.1f}-point gap, page prints {printed}")
     ok("no single-score interval used for a two-row claim", "±7.7-point" not in body)
@@ -281,6 +281,35 @@ def main() -> int:
         half = f"±{got[1]:.1f}" if got else "?"
         ok(f"§4 HumanEval band {a}/{b}", got is not None and abs(got[1] - want) < 0.1 and half in md,
            f"computed {half}, page states {want}")
+
+    # ---- all six two-row bands, to one decimal, Decimal HALF_UP ------------
+    pairs = (("lfm25-24b-a2b-think", "clover-35b-a3b-iq2", "humaneval", "4.4"),
+             ("g4-12b-qat", "g4-26b-a4b-qat", "humaneval", "6.5"),
+             ("clover-35b-a3b-iq2", "axion-1.0-35b-iq3", "mmlu_pro", "10.1"),
+             ("g4-12b-qat", "g4-26b-a4b-qat", "mmlu_pro", "12.4"),
+             ("lfm25-24b-a2b-htc-think", "lfm25-24b-a2b-think", "ifeval", "10.0"),
+             ("lfm25-24b-a2b-think", "g4-26b-a4b-qat", "ifeval", "12.2"))
+    for a, b, axis, want in pairs:
+        got = diff_interval({(x, axis): pick(x, axis) for x in (a, b)}, a, b, axis)
+        if got is None:
+            ok(f"band {axis} {a}/{b}", False, "missing rows")
+            continue
+        printed = str(Decimal(str(got[1])).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
+        ok(f"band {axis} {a}/{b}", printed == want and f"±{printed}" in md,
+           f"computed ±{printed}, page says ±{want}")
+
+    # ---- §8 names all sixteen other quality rows --------------------------
+    seg = md[md.find("Of the other sixteen quality rows"): md.find("Of the other sixteen quality rows") + 1400]
+    named = [mid for mid in means if mid in seg]
+    ok("§8 names all sixteen", len(named) == len(means) - 3 and "sixteen" in seg,
+       f"{len(named)} named, {len(means) - 3} expected")
+
+    # ---- Figure 6's threshold counts ---------------------------------------
+    vals = sorted(means.values(), reverse=True)
+    for thr, want in ((0.78, 10), (0.85, 3), (0.75, 13)):
+        got = sum(1 for v in vals if v > thr)
+        word = {3: "three", 10: "ten", 13: "thirteen"}[want]
+        ok(f"Figure 6 threshold {thr}", got == want and f"{word} " in md, f"{got} rows above {thr}")
 
     # ---- the load-time arithmetic ------------------------------------------
     biggest = max(m["size_gib"] for m in models.values())
@@ -416,7 +445,10 @@ def main() -> int:
                 val = clean(m.group(1))
                 for j in re.finditer(r"[a-z][.:,][A-Za-z]", val):
                     lint.append(f"{attr}: {val[max(0, j.start() - 25):j.end() + 15]!r}")
-        text = clean(re.sub(r"<[^>]+>", "", page))
+        # inline tags disappear (so punctuation butting against a code span shows), block tags become
+        # a boundary (so two adjacent table cells are not glued into one word)
+        inline = re.sub(r"</?(code|b|i|em|strong|a|span|abbr)(\s[^>]*)?>", "", page)
+        text = clean(re.sub(r"<[^>]+>", " ", inline))
         for j in re.finditer(r"[a-z][.:,][A-Za-z]", text):
             snippet = text[max(0, j.start() - 30):j.end() + 20]
             lint.append(f"rendered text: {snippet!r}")
