@@ -322,7 +322,7 @@ document.querySelectorAll('table.sortable').forEach(function(t){
       rows.forEach(function(r){ tb.appendChild(r); });
     });
   });
-  if (t.tBodies[0].rows.length >= 8) {
+  if (t.tBodies[0].rows.length >= 12) {
     var inp=document.createElement('input');
     inp.type='search'; inp.className='tfilter'; inp.placeholder='filter rows…';
     inp.setAttribute('aria-label','Filter rows in this table');
