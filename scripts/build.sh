@@ -202,7 +202,7 @@ test "$(grep -c '<svg' "$REPO/16gb.html")" -ge 6 || { echo "FAIL: 16 GiB page sh
 ! grep -q 'missing figure' "$REPO/16gb.html"     || { echo "FAIL: 16 GiB page has an unresolved figure"; exit 1; }
 python3 "$REPO/scripts/check-prose.py" "$REPO/strix-halo-llm-testing.md" "$REPO/changelog.md" "$RUNS" \
     || { echo "FAIL: a prose score disagrees with the matrix"; exit 1; }
-python3 "$REPO/scripts/check-derived.py" "$REPO/16gb-vram.md" "$HOME/bench/16gb/matrix.json" "$RUNS" \
+python3 "$REPO/scripts/check-derived.py" "$REPO/16gb-vram.md" "$HOME/bench/16gb/matrix.json" "$RUNS" "$REPO/16gb.html" \
     || { echo "FAIL: 16 GiB page prose disagrees with the archive"; exit 1; }
 grep -q 'index.html'          "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the report"; exit 1; }
 grep -q 'retired-models.html' "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the ledger"; exit 1; }

@@ -223,6 +223,32 @@ def main() -> int:
             bad_means.append(f"{cells[0]} prints {printed:.3f}, archive {means[cells[0]]:.3f}")
     ok("every mean in Table 2 matches the archive", not bad_means, "; ".join(bad_means[:4]))
 
+    # ---- the footnote's rounding examples, from the counts ------------------
+    for mid in ("lfm25-24b-a2b-think", "mistral-24b-q4"):
+        vals = [score(pick(mid, ax), ax)[0] for ax in ("humaneval", "mmlu_pro", "ifeval")]
+        if any(v is None for v in vals):
+            ok(f"footnote example {mid}", False, "missing run rows")
+            continue
+        mean4 = sum(float(v) for v in vals if v is not None) / 3.0
+        ok(f"footnote example {mid}", f"{mean4:.4f}" in md and f"{mean4:.3f}" in md,
+           f"computed {mean4:.4f} (prints {mean4:.3f})")
+
+    # ---- what the provenance manifest actually covers ----------------------
+    prov_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "data", "provenance.json")
+    if os.path.exists(prov_path):
+        prov = json.load(open(prov_path, encoding="utf-8"))
+        covered = {f["file"].split("/")[-1] for v in prov.values() for f in v.get("files", [])}
+        roster = {m["file"] for m in models.values()}
+        inside = sorted(roster & covered)
+        words = {2: "two", 3: "three", 4: "four", 5: "five", 6: "six", 16: "sixteen"}
+        spelled = words.get(len(inside), str(len(inside)))
+        ok("§14 provenance coverage",
+           (f"only {len(inside)} of this page's {len(roster)} roster files are in it" in md
+            or f"only {spelled} of this page's {len(roster)} roster files" in md)
+           and all(f in md for f in inside),
+           f"computed {len(inside)} of {len(roster)}: {inside}")
+
     # ---- Table 10 and the card count ----------------------------------------
     cards = re.search(r"\| card \| memory \| peak bandwidth.*?\n((?:\|.*\n)+)", md)
     n_cards = len([l for l in cards.group(1).splitlines()
@@ -264,7 +290,9 @@ def main() -> int:
     # ---- lint: joined words and lost spaces ---------------------------------
     # Code spans, link targets and bare identifiers carry dots and colons legitimately,
     # so they are stripped before the punctuation rule runs.
-    prose = re.sub(r"`[^`]*`", " ", md)
+    # Backticks are removed but their content is kept: the failure this catches is punctuation
+    # butting against a code span ("ceiling.`qwen3-30b`"), which deleting the span would hide.
+    prose = body.replace("`", "")
     prose = re.sub(r"\]\([^)]*\)", " ", prose)
     prose = re.sub(r"https?://\S+", " ", prose)
     prose = re.sub(r"^\|.*$", " ", prose, flags=re.M)          # table rows: ids and figures
@@ -283,6 +311,38 @@ def main() -> int:
         for bad in ("rowswhose", "andthe", "ofit", "tothe", "inthe", "atthe"):
             if bad in line:
                 lint.append(f"line {i}: joined word {bad!r}")
+
+    # the rendered page: attribute values and figcaptions, where the md cannot show the result
+    if len(sys.argv) > 4 and os.path.exists(sys.argv[4]):
+        page = open(sys.argv[4], encoding="utf-8").read()
+        # figures are checked at source, and the JSON-LD block is machine data, not prose
+        page = re.sub(r"<svg.*?</svg>", " ", page, flags=re.S)
+        page = re.sub(r"<script.*?</script>", " ", page, flags=re.S)
+        page = re.sub(r"<style.*?</style>", " ", page, flags=re.S)
+        page = re.sub(r"<pre.*?</pre>", " ", page, flags=re.S)
+        # the document-history table quotes the old, broken strings on purpose; it is a record, not prose
+        m = re.search(r"<h2[^>]*>\s*16\.\s*Document history", page)
+        if m:
+            end = page.find("</table>", m.start())
+            if end > 0:
+                page = page[:m.start()] + " " + page[end + len("</table>"):]
+
+        def clean(txt: str) -> str:
+            for pat in (r"https?://\S+", r"(?:/[\w.\-]+)+",
+                        r"\b[\w-]+\.(py|sh|html|md|cpp|json|gguf|cff|txt|svg|log|out|jsonl|yml|toml)\b",
+                        r"\b[\w-]+\.(com|org|io|net|dev)\b", r"\b\w+\.\w+_\w+\b",
+                        r"\b\d+\.\d+\b", r"\b[ei]\.[gse]\."):
+                txt = re.sub(pat, " ", txt, flags=re.I)
+            return txt
+        for attr in ("alt", "aria-label", "title"):
+            for m in re.finditer(attr + r'="([^"]*)"', page):
+                val = clean(m.group(1))
+                for j in re.finditer(r"[a-z][.:,][A-Za-z]", val):
+                    lint.append(f"{attr}: {val[max(0, j.start() - 25):j.end() + 15]!r}")
+        text = clean(re.sub(r"<[^>]+>", "", page))
+        for j in re.finditer(r"[a-z][.:,][A-Za-z]", text):
+            snippet = text[max(0, j.start() - 30):j.end() + 20]
+            lint.append(f"rendered text: {snippet!r}")
     ok("no joined words or lost spaces", not lint, "; ".join(lint[:6]))
 
     # ---- phrases that were true two revisions ago ---------------------------
