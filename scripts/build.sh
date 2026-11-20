@@ -148,7 +148,7 @@ DESC="Measured capability and throughput for local LLMs on AMD Strix Halo (gfx11
       "Per-axis rankings of local LLMs measured on Strix Halo: HumanEval, MMLU-Pro, reasoning traps, decode and prefill, each row with its token cap, item count and llama.cpp build."
 "$PY" "$DOCS/md2html.py" "$REPO/16gb-vram.md" "$REPO/16gb.html" \
       "16 GiB of VRAM: which local LLMs fit, and what they score" \
-      "Which local LLMs fit a 16 GiB graphics card and what they score: HumanEval, MMLU-Pro and IFEval at stated caps, fit and KV-cache arithmetic, context budgets, dense versus MoE, a decision map, thirteen 16 GB cards compared, and the licence on the data."
+      "Which local LLMs fit a 16 GiB graphics card and what they score: HumanEval, MMLU-Pro and IFEval at stated caps, fit and KV-cache arithmetic, context budgets, dense versus MoE, a decision map, twelve 16 GB cards compared, plus the reference host, and the licence on the data."
 
 echo "== 5b. discovery files (robots + sitemap)"
 cat > "$REPO/robots.txt" <<ROBOTS
@@ -202,6 +202,8 @@ test "$(grep -c '<svg' "$REPO/16gb.html")" -ge 6 || { echo "FAIL: 16 GiB page sh
 ! grep -q 'missing figure' "$REPO/16gb.html"     || { echo "FAIL: 16 GiB page has an unresolved figure"; exit 1; }
 python3 "$REPO/scripts/check-prose.py" "$REPO/strix-halo-llm-testing.md" "$REPO/changelog.md" "$RUNS" \
     || { echo "FAIL: a prose score disagrees with the matrix"; exit 1; }
+python3 "$REPO/scripts/check-derived.py" "$REPO/16gb-vram.md" "$HOME/bench/16gb/matrix.json" "$RUNS" \
+    || { echo "FAIL: 16 GiB page prose disagrees with the archive"; exit 1; }
 grep -q 'index.html'          "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the report"; exit 1; }
 grep -q 'retired-models.html' "$REPO/leaderboards.html" || { echo "FAIL: leaderboards do not link the ledger"; exit 1; }
 test "$(grep -c '<table' "$REPO/leaderboards.html")" -ge 6 || { echo "FAIL: expected 6 leaderboard tables"; exit 1; }
