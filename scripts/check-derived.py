@@ -187,9 +187,16 @@ def main() -> int:
     thinking = [m for m in reasoning if m["id"] not in perf_only]
     ok("reasoning-arm count", len(thinking) == 9 and "**nine** rows whose templates open a think block" in md,
        f"{len(thinking)} thinking arms with quality rows, {len(reasoning)} flagged non-off")
-    wide = [m for m in thinking if m["id"] != "gpt-oss-20b-mxfp4"]
-    ok("4096-cap reasoning arms", len(wide) == 8
-       and "eight of the nine reasoning arms" in md and "eight of nine reasoning arms" in md, f"{len(wide)}")
+    def widest_cap(mid, axis):
+        # every archived row for the axis, not the picked one: the claim is that a wider cap exists
+        got = allrows.get((mid, axis), [])
+        # IFEval records its cap as gen_max_toks; the other axes use max_tokens
+        return max([max(r.get("max_tokens") or 0, r.get("gen_max_toks") or 0) for r in got] + [0])
+    short = [m["id"] for m in thinking
+             if any(widest_cap(m["id"], ax) < 4096 for ax in ("humaneval", "mmlu_pro", "ifeval"))]
+    ok("every reasoning arm has a 4096-or-wider run on all three axes",
+       not short and "4096 on all nine reasoning arms" in md and "all nine were then given a wider cap" in md,
+       f"short: {short}")
 
     he8192 = [mid for mid in models if (score(pick(mid, "humaneval"), "humaneval")[2]) == 8192]
     ok("8192-cap HumanEval arms", len(he8192) == 4 and "four 8192-cap arms" in md, f"{len(he8192)}: {sorted(he8192)}")
@@ -320,6 +327,45 @@ def main() -> int:
         got = sum(1 for v in vals if v > thr)
         word = {3: "three", 10: "ten", 13: "thirteen"}[want]
         ok(f"Figure 6 threshold {thr}", got == want and f"{word} " in md, f"{got} rows above {thr}")
+
+    # ---- ordinals, ranks and count claims, derived from Table 2 -------------
+    # A re-measure moves these without moving any count or interval, so each prose ordinal
+    # ("fifth", "eight rows", "third-weakest", "65 points") is checked against Table 2 here.
+    def _num(v):
+        v = v.replace("\u2020", "").replace("\u2021", "").strip()
+        try:
+            return float(v)
+        except ValueError:
+            return None
+    t2 = []
+    for line in md.split("\n"):
+        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        if len(c) == 12 and _num(c[6]) is not None:
+            m = re.match(r"([\d.]+)", c[3])
+            if m:
+                t2.append(dict(id=c[0], foot=float(m.group(1)), flag=c[3], he=_num(c[6]),
+                               mm=_num(c[7]), ife=_num(c[8])))
+    wall = [r for r in t2 if r["foot"] <= 15.06 and "NO" not in r["flag"]]
+    #                                  ^ rows the page marks as not fitting are outside the picks
+    WORD = {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth", 6: "sixth", 7: "seventh", 8: "eighth"}
+    he = sorted([r for r in wall if r["he"] is not None], key=lambda r: -r["he"])
+    rk = [i for i, r in enumerate(he) if r["id"].startswith("axion")][0] + 1
+    ok("§3 axion's HumanEval placing", f"sits {WORD[rk]} on HumanEval" in md, f"rank {rk} of {len(he)} fitting rows")
+    n90 = sum(1 for r in t2 if r["he"] is not None and r["he"] >= 0.90)
+    NWORD = {6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven", 12: "twelve"}
+    ok("§8 rows above 0.90 HumanEval",
+       f"{NWORD.get(n90, n90)} rows that score above 0.90 HumanEval" in md, f"{n90} rows")
+    fit12 = sorted([r for r in wall if r["foot"] >= 12 and r["ife"] is not None], key=lambda r: r["ife"])
+    ok("§3 IFEval weakest claim",
+       "third-weakest among the rows that fit at 12 GiB or more" in md and fit12[0]["id"] in md
+       and fit12[1]["id"] in md,
+       f"lowest {fit12[0]['id']} {fit12[0]['ife']}, then {fit12[1]['id']} {fit12[1]['ife']}")
+    mmcols = [r["mm"] for r in t2 if r["mm"] is not None]
+    widest = round((max(mmcols) - min(mmcols)) * 100)
+    ok("Table 4's scoped MMLU gap", f"that is {widest} points" in md, f"column range {widest} points")
+    body = md[:md.find("## 16. Document history")] if "## 16. Document history" in md else md
+    ok("no stale 8.4-point gap in the body", "8.4 points" not in body,
+       "8.4 points still in the body outside the history")
 
     # ---- every version has its own history row, with no gaps -----------------
     vers = [int(m.group(1)) for m in re.finditer(r"^\| 1\.(\d+) \| \d+(?:st|nd|rd|th) \w+ \d{4} \|", md, re.M)]
