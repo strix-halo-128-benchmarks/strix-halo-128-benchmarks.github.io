@@ -14,7 +14,7 @@ and loses knowledge is not "0.7 of a model".
 3. **`build` is the llama.cpp that produced the row.** Decode rates move 10-20% between builds, so a
    throughput comparison across different builds is a comparison of builds as much as models.
 
-52 measured rows: **33 servable**, 19 retired but kept in place, because a
+52 measured rows: **32 servable**, 20 retired but kept in place, because a
 leaderboard with the failures deleted is how the same 60 GB gets downloaded twice.
 
 ---
@@ -120,7 +120,7 @@ justifies 60-70 GiB at 23-27 t/s on a box whose best model fits in a sixth of th
 | 6 | Clover-35B-A3B-Preview (IQ2_M, AR mode) | 14/14 | — | — | fork b11581-19b458b | 2026-11-12 | ✓ |
 | 7 | Axion-1.0-35B (IQ3_XXS) | 14/14 | — | — | fork b3-1a33095 | 2026-11-12 | ✓ |
 | 8 | qwen3next-q6 | 14/14 | — | — | fork pre-identity | 2026-10-10 | ✓ |
-| 9 | Hy4-flash (IQ2_S/IQ2_XXS) | 14/14 | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 9 | Hy4-flash (IQ2_S/IQ2_XXS) | 14/14 | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✗ retired |
 | 10 | qwen3next-q4 | 14/14 | — | — | fork b3-1a33095 | 2026-10-31 | ✓ |
 | 11 | gemma-4-12B-QAT | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
 | 12 | lfm25-24b-a2b-htc (thinking) | 14/14 | — | — | fork b11581-1a33095 | 2026-11-16 | ✓ |
@@ -222,7 +222,7 @@ failure the code and knowledge axes do not show. `14/14` is the ceiling; several
 | 47 | qwen35 | 22.9 t/s | — | — | fork pre-identity | 2026-10-11 | ✗ retired |
 | 48 | nemotron-bolt (broken load) | 22.7 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
 | 49 | qwen38fn32-prune2 | 20.0 t/s | — | — | qwen4exp-var b1-1844325 | 2026-11-03 | ✗ retired |
-| 50 | Hy4-flash (IQ2_S/IQ2_XXS) | 18.9 t/s | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 50 | Hy4-flash (IQ2_S/IQ2_XXS) | 18.9 t/s | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✗ retired |
 | 51 | gemma4-31b | 17.0 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
 | 52 | mistral-small-3.1-24b | 14.9 t/s | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
 
@@ -280,7 +280,7 @@ parameters, not total parameters. The top of this table is two ~12-24B MoEs; the
 | 45 | nemotron-super-120b | 411 t/s | — | — | bolt pre-identity | 2026-10-18 | ✗ retired |
 | 46 | qwen38fn32-prune2 | 397 t/s | — | — | qwen4exp-var b1-1844325 | 2026-11-03 | ✗ retired |
 | 47 | gemma4-31b | 350 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
-| 48 | Hy4-flash (IQ2_S/IQ2_XXS) | 276 t/s | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 48 | Hy4-flash (IQ2_S/IQ2_XXS) | 276 t/s | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✗ retired |
 | 49 | Lite-Beam-M2.7-229B | 261 t/s | — | — | fork b3-1a33095 | 2026-11-08 | ✓ |
 
 Prefill is shader-bound and moves far more between builds than decode does. Use it to size long-prompt
@@ -292,7 +292,7 @@ work, not to rank models generally.
 
 | # | model | HumanEval | n | cap | build | measured | status |
 |---:|---|---:|---:|---:|---|---|---|
-| 1 | Hy4-flash (IQ2_S/IQ2_XXS) | 0.9207 **floor** | 164 | 512 | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 1 | Hy4-flash (IQ2_S/IQ2_XXS) | 0.9207 **floor** | 164 | 512 | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✗ retired |
 | 2 | gemma-4-12B-QAT | 0.8963 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
 | 3 | gemma-4-E4B-QAT | 0.8659 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
 | 4 | qwen3-14b | 0.8537 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |

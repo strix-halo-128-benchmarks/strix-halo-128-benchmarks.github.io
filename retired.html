@@ -550,5 +550,24 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <h3>Kept: Laguna-XS-2.1 Q4_K_M — 20,274,300,032 B (18.88 GiB)</h3>
 <p>pp 1320.6 / <strong>tg 87.7 t/s</strong> / ttft 1386 ms; preflight 3/3; needles 2k+8k PASS; riddles 10/14; HE 0.7000 (42/60), MMLU-Pro 0.6000 (24/40), IFEval 0.7667/0.8444 — <strong>with 35 of 308 generations pinned at the 2048 cap</strong>, so the HE/MMLU figures are floors rather than ceilings. Sha256 <code>1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb</code>.</p>
 <hr>
+<h2>2026-11-20 pass — Hy4-flash IQ2 out (79.79 GiB freed)</h2>
+<p>The 218.9B arm measured on 2026-11-19 answered its question and the answer was no, so the weights went the next day rather than sitting on disk as an exhibit. All three files were hashed BEFORE deletion and all three matched the LFS oids published by <code>AtomicChat/Hy4-flash-GGUF</code>, so this copy is restorable to the byte.</p>
+<h3>Hy4-flash AD IQ2_S/IQ2_XXS — 84,700,799,872 B of weights (78.88 GiB), plus a 0.91 GiB projector</h3>
+<ul>
+<li><code>models/hy4-flash-iq2/Hy4-flash-AD-IQ2_S-IQ2_XXS-00001-of-00002.gguf</code> — 49,060,453,184 B, sha256 <code>cf32bc2cec9a7cc815faf9356500155b058926c2e3d5a8aabc87f8f11f277348</code></li>
+<li><code>models/hy4-flash-iq2/Hy4-flash-AD-IQ2_S-IQ2_XXS-00002-of-00002.gguf</code> — 35,640,346,688 B, sha256 <code>c89e1c7767630dffcca8b2fe76611e04f86c2aaf18f1715192241ce9cea48a74</code></li>
+<li><code>models/hy4-flash-iq2/mmproj-Hy4-flash-F16.gguf</code> — 971,849,408 B, sha256 <code>eb44b47d4d254968ae80c88655925ef544aef7524e136ee882909a44275620f3</code> (text-only arm: the PR-tree projector rejects this file with <code>load_hparams: unknown projector type: hy_v4_flash</code>, so vision was never usable)</li>
+<li>Measured 2026-11-19, run <code>20261119-214032-hy4flash-iq2-full</code>, build <code>hy4flash-pr b1-f8d4cc4</code> (upstream PR</li>
+</ul>
+<p>#32517), caps 512 on all three capability axes: <strong>HE 0.9207 (151/164) · MMLU-Pro 0.6167 (74/120) · IFEval 0.7667/0.8444 (30) · riddles 14/14 · preflight 3/3 · needles 2k+8k</strong>, pp 276.2 / tg 18.9 t/s, 5,984 s wall.</p>
+<ul>
+<li>Why it went: no slot. Knowledge tied a 30B Q3 build and sat 0.23 under the driver; code was third; decode was 3.5x Ornith-35B's cost on the same suite. 78.88 GiB of weights needs 79 of the 100 GiB pool at 32k, so it can only ever be served by displacing the driver and the boot unit.</li>
+<li>The bound is the quantisation, not the architecture: 2.6 bpw. The only less-damaged builds are Q3_K (144.7 GiB) and Q4_K_M (156.8 GiB), neither of which this box can hold — so "re-download at a better quant" is not an available experiment.</li>
+</ul>
+<p>What stays: <code>run-hy4-flash.sh</code> (port 8101, <code>HY4_VISION</code> gated off by default) and the <code>hy4flash-pr-llama.cpp</code> build tree, because PR #32517 is still open and the tree is what would serve a re-download. There is no systemd unit and no llama-switch entry for this model, and the row stays in Table 4 of the report marked <code>✗ 11-20</code>.</p>
+<p>Restore:</p>
+<p>mkdir -p $HOME/llama-local/models/hy4-flash-iq2 &amp;&amp; cd $HOME/llama-local/models/hy4-flash-iq2 for f in Hy4-flash-AD-IQ2_S-IQ2_XXS-00001-of-00002.gguf \ Hy4-flash-AD-IQ2_S-IQ2_XXS-00002-of-00002.gguf \ mmproj-Hy4-flash-F16.gguf; do $HOME/llama-local/fetch-hf-curl.sh AtomicChat/Hy4-flash-GGUF "$f" . || exit 1 done # verify each against the sha256 above (the repo's own LFS oids), then serve with $HOME/llama-local/run-hy4-flash.sh # the loader needs the hy4flash-pr tree: <code>hy_v4_flash</code> is not in the serving fork or the Bolt tree</p>
+<p>Only re-download this for a reason: PR #32517 merging does not improve the numbers, it only makes the build ordinary. The number that would change the verdict is a sub-3 bpw artefact with a different scheme, and none existed when this was retired.</p>
+<hr>
 <p><em>Source: <a href="https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io">github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io</a>. Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.</em></p>
 </main></body></html>

@@ -1298,4 +1298,51 @@ the 2048 cap**, so the HE/MMLU figures are floors rather than ceilings. Sha256
 
 ---
 
+## 2026-11-20 pass — Hy4-flash IQ2 out (79.79 GiB freed)
+
+The 218.9B arm measured on 2026-11-19 answered its question and the answer was no, so the weights went the next
+day rather than sitting on disk as an exhibit. All three files were hashed BEFORE deletion and all three matched
+the LFS oids published by `AtomicChat/Hy4-flash-GGUF`, so this copy is restorable to the byte.
+
+### Hy4-flash AD IQ2_S/IQ2_XXS — 84,700,799,872 B of weights (78.88 GiB), plus a 0.91 GiB projector
+
+- `models/hy4-flash-iq2/Hy4-flash-AD-IQ2_S-IQ2_XXS-00001-of-00002.gguf` — 49,060,453,184 B, sha256
+  `cf32bc2cec9a7cc815faf9356500155b058926c2e3d5a8aabc87f8f11f277348`
+- `models/hy4-flash-iq2/Hy4-flash-AD-IQ2_S-IQ2_XXS-00002-of-00002.gguf` — 35,640,346,688 B, sha256
+  `c89e1c7767630dffcca8b2fe76611e04f86c2aaf18f1715192241ce9cea48a74`
+- `models/hy4-flash-iq2/mmproj-Hy4-flash-F16.gguf` — 971,849,408 B, sha256
+  `eb44b47d4d254968ae80c88655925ef544aef7524e136ee882909a44275620f3` (text-only arm: the PR-tree projector
+  rejects this file with `load_hparams: unknown projector type: hy_v4_flash`, so vision was never usable)
+- Measured 2026-11-19, run `20261119-214032-hy4flash-iq2-full`, build `hy4flash-pr b1-f8d4cc4` (upstream PR
+  #32517), caps 512 on all three capability axes: **HE 0.9207 (151/164) · MMLU-Pro 0.6167 (74/120) · IFEval
+  0.7667/0.8444 (30) · riddles 14/14 · preflight 3/3 · needles 2k+8k**, pp 276.2 / tg 18.9 t/s, 5,984 s wall.
+- Why it went: no slot. Knowledge tied a 30B Q3 build and sat 0.23 under the driver; code was third; decode was
+  3.5x Ornith-35B's cost on the same suite. 78.88 GiB of weights needs 79 of the 100 GiB pool at 32k, so it can
+  only ever be served by displacing the driver and the boot unit.
+- The bound is the quantisation, not the architecture: 2.6 bpw. The only less-damaged builds are Q3_K (144.7 GiB)
+  and Q4_K_M (156.8 GiB), neither of which this box can hold — so "re-download at a better quant" is not an
+  available experiment.
+
+What stays: `run-hy4-flash.sh` (port 8101, `HY4_VISION` gated off by default) and the
+`hy4flash-pr-llama.cpp` build tree, because PR #32517 is still open and the tree is what would serve a
+re-download. There is no systemd unit and no llama-switch entry for this model, and the row stays in Table 4 of
+the report marked `✗ 11-20`.
+
+Restore:
+
+    mkdir -p $HOME/llama-local/models/hy4-flash-iq2 && cd $HOME/llama-local/models/hy4-flash-iq2
+    for f in Hy4-flash-AD-IQ2_S-IQ2_XXS-00001-of-00002.gguf \
+             Hy4-flash-AD-IQ2_S-IQ2_XXS-00002-of-00002.gguf \
+             mmproj-Hy4-flash-F16.gguf; do
+      $HOME/llama-local/fetch-hf-curl.sh AtomicChat/Hy4-flash-GGUF "$f" . || exit 1
+    done
+    # verify each against the sha256 above (the repo's own LFS oids), then serve with $HOME/llama-local/run-hy4-flash.sh
+    # the loader needs the hy4flash-pr tree: `hy_v4_flash` is not in the serving fork or the Bolt tree
+
+Only re-download this for a reason: PR #32517 merging does not improve the numbers, it only makes the build
+ordinary. The number that would change the verdict is a sub-3 bpw artefact with a different scheme, and none
+existed when this was retired.
+
+---
+
 *Source: [github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io](https://github.com/strix-halo-128-benchmarks/strix-halo-128-benchmarks.github.io). Entries written after 2026-10-30 record the sha256 before deleting; earlier ones say when a hash was never captured.*

@@ -9,6 +9,33 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.30 (2026-11-20)
+
+**Hy4-flash leaves the disk the same day it was measured: the row stays, the 79 GiB does not.**
+
+The IQ2 arm added in v1.29 answered its question — no slot — so its weights were deleted rather than kept as
+a 79 GiB exhibit. Both shards and the vision projector were hashed against `AtomicChat/Hy4-flash-GGUF`'s
+published LFS oids and all three matched, so the deletion is reversible to the byte from the retirement
+ledger. Table 4 keeps the row and marks the disk cell retired; every score, caption and figure on the page is
+byte-identical to v1.29, because nothing was re-measured.
+
+| what changed | before | now |
+|---|---|---|
+| Table 4, Hy4-flash row, `disk` cell | `✓ PR-tree` | `✗ 11-20` |
+| §11.4 riddle table, same row | `✓ PR-tree` | `✗ 11-20` |
+| header roster | 53 `.gguf` files, 977.0 GiB, 32 files / 33 rows carrying a measurement | 51 files, 898.1 GiB, 31 files / 32 rows — the two shards (78.88 GiB) and the projector (0.91 GiB) are the removal |
+| §0.3 and §18.3 servable count | 33 | 32 |
+| §9.1 per-model block | verdict only | verdict plus the deletion, its hashes and where the restore recipe lives |
+| §21 change log | nine entries in brief | ten |
+
+**What was deliberately left alone.** The 16 GiB page stays at v1.26 (Hy4 was never class-legal at a 15 GiB
+envelope), Table 5's servable snapshot stays dated 2026-10-31, and no figure was regenerated — `charts.py`
+plots the archive, and the archive did not change, so the `n =` in every scatter footer still reads what
+v1.29 published. The launcher `run-hy4-flash.sh` and the `hy4flash-pr` build tree stay in place: PR #32517 is
+still open, and the tree is what would serve a re-download.
+
+**Freed:** 79.79 GiB (78.88 of weights, 0.91 of projector). Disk went from 445 GiB free to 524 GiB.
+
 ### Version 1.29 (2026-11-20)
 
 **A 218.9B MoE measured on an unmerged build tree: the row is real, the slot is not — and four figure captions

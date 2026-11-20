@@ -4,12 +4,12 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.29** · 20th November 2026 · Hy4-flash at IQ2: 218.9B of weights on an unmerged PR tree, and the 26B driver still wins every axis that matters
+- **Document version:** **1.30** · 20th November 2026 · Hy4-flash retired from disk after the measurement: 79 GiB freed, the row kept at `✗`, and the roster recounted
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-19
-- **Roster:** 53 `.gguf` files on disk, 977.0 GiB, 32 of them carrying a measured row (33 rows: the LFM2.5 heretic file carries two), checked 2026-11-20
+- **Roster:** 51 `.gguf` files on disk, 898.1 GiB, 31 of them carrying a measured row (32 rows: the LFM2.5 heretic file carries two), checked 2026-11-20
   · **Change log:** §21
 
 **About this document**
@@ -155,7 +155,7 @@ that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (§8 has the full table).
 
 ### 0.3 What exists as a result
 
-A roster of **33 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
+A roster of **32 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
 build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with
 Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured,
 failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against
@@ -1046,7 +1046,7 @@ deleted rows are why the recommendations below have reasons.
 | gptoss-abliterated | 116.8B | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 1052 | 50.5 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen35 | 122.1B | Q4_K_M | 0.9242 (66) | 0.5417 (48) | 12/14 | 622 | 22.9 | 2026-10-11 | fork pre-identity | ✗ |
 | ornith-mtp-21g | 35.5B | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 1610 | 65.2 | 2026-10-17 | fork pre-identity | ✓ |
-| Hy4-flash (IQ2_S/IQ2_XXS) | 218.9B | IQ2_S | 0.9207 (164@512) | 0.6167 (120@512) | 14/14 | 276 | 18.9 | 2026-11-19 | hy4flash-pr b1-f8d4cc4 | ✓ PR-tree |
+| Hy4-flash (IQ2_S/IQ2_XXS) | 218.9B | IQ2_S | 0.9207 (164@512) | 0.6167 (120@512) | 14/14 | 276 | 18.9 | 2026-11-19 | hy4flash-pr b1-f8d4cc4 | ✗ 11-20 |
 | flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | flint pre-identity | ✗ 10-30 |
 | Swift-1.5-FN-Heretic | 176.9B | IQ3_S | 0.9167 (60@2048) | 0.8000 (40@2048) | 11/14 | 512 | 25.6 | 2026-11-05 | fork b3-1a33095 | ✓ |
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
@@ -1473,7 +1473,10 @@ needles, at **276 t/s prefill and 18.9 t/s decode** — the second-slowest decod
 knowledge and 0.23 under the driver. **Verdict: no slot and no unit.** The bound is not the architecture but the
 trim: the only less-damaged builds of this file are Q3_K at 144.7 GiB and Q4_K_M at 156.8 GiB, neither of which
 this box can hold, so "try it at a better quantisation" is not an available experiment at any effort. The row
-stays because the negative is the measurement, and the launcher stays on port 8101 for the day #32517 merges.
+stays because the negative is the measurement, not despite it. The weights themselves went on 2026-11-20: the two
+shards and the projector were hashed against `AtomicChat/Hy4-flash-GGUF`'s LFS oids first (all three matched, so the
+file is restorable to the byte from `~/llama-local/RETIRED-models.md`), then deleted, freeing 79 GiB. The launcher
+and the `hy4flash-pr` tree stay on port 8101 for the day #32517 merges.
 
 ---
 
@@ -1679,7 +1682,7 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | 14/14 | graft-50b-a3b | ✗ |
 | 14/14 | gpt-oss-20b-mxfp4 | ✓ |
 | 14/14 | gemma-4-26B-A4B-QAT + MTP drafter | ✓ |
-| 14/14 | Hy4-flash (IQ2_S/IQ2_XXS) | ✓ PR-tree |
+| 14/14 | Hy4-flash (IQ2_S/IQ2_XXS) | ✗ 11-20 |
 
 ---
 
@@ -2559,7 +2562,7 @@ change results.
 
 **The one cost that is measured:** 226 runs, of which the 200 that record a wall time total **95.1 hours of
 benchmark execution**, recorded run by run in `catalogue.json`, over 2026-10-07 → 2026-11-19. Of the 96 model
-aliases with at least one measurement, 52 carry a row in Table 4 and 33 of those are on files still on disk;
+aliases with at least one measurement, 52 carry a row in Table 4 and 32 of those are on files still on disk;
 every deletion is recorded in the ledger, and the two largest deletion passes alone released 61.6 GiB and
 245.1 GiB.
 
@@ -2944,9 +2947,17 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The nine most recent entries, in brief — the full history, and what each edition got wrong, is on the
+The ten most recent entries, in brief — the full history, and what each edition got wrong, is on the
 [change log](changelog.html) page:
 
+- **v1.30** — **Hy4-flash retired from disk: the row stays, the 79 GiB does not.** The IQ2 arm measured in v1.29
+  earned no slot — 218.9B of weights for a decode rate 3.5x Ornith-35B's and a knowledge score level with a 30B Q3
+  build — so its two shards and projector were deleted on 2026-11-20, after all three files' sha256 matched
+  `AtomicChat/Hy4-flash-GGUF`'s LFS oids (so the copy is restorable to the byte). Table 4's `disk` cell and the
+  §11.4 riddle row move `✓ PR-tree` → `✗ 11-20`. **Recounts:** the header (53 → 51 files, 977.0 → 898.1 GiB of
+  weights, 32 → 31 files carrying a measured row, 33 → 32 rows) and §0.3's and §18.3's servable count (33 → 32).
+  The launcher and the `hy4flash-pr` tree stay, because #32517 is still open. Nothing was re-measured, so every
+  figure, caption and score in this edition is byte-identical to v1.29's.
 - **v1.29** — **Hy4-flash at IQ2 measured: a 218.9B MoE that needs an unmerged PR tree, and no slot at the end of
   it.** `tencent/Hy4-flash` declares `hy_v4_flash`, which neither the fork nor the Bolt tree registers (both know
   only `hy_v4`, the base model), so this arm ran from an unmerged upstream PR (#32517) built into its own tree —
