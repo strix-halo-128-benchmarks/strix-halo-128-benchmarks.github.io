@@ -68,7 +68,7 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 </style></head>
 <body><main>
 <h1>Testing Local LLMs on AMD Strix Halo</h1>
-<p class="docver"><strong>Document version:</strong> <strong>1.28</strong> · 18th November 2026 · Serving-config re-measure: the 35B's in-weights MTP head, and a 122B drafter that finally pays</p>
+<p class="docver"><strong>Document version:</strong> <strong>1.29</strong> · 20th November 2026 · Hy4-flash at IQ2: 218.9B of weights on an unmerged PR tree, and the 26B driver still wins every axis that matters</p>
 <nav><strong>Contents</strong><ol><li><a href="#s0">0. Executive summary</a></li><li><a href="#s1">1. Why test at all — the problem this solves</a></li><li><a href="#s2">2. The platform: what Strix Halo actually is</a></li><li><a href="#s3">3. The OS and driver stack</a></li><li><a href="#s4">4. The runtime: three llama.cpp trees and why</a></li><li><a href="#s5">5. Memory accounting and quantisation</a></li><li><a href="#s6">6. The serving architecture</a></li><li><a href="#s7">7. The harness</a></li><li><a href="#s8">8. How to read the results that follow</a></li><li><a href="#s9">9. Results — the measured matrix</a></li><li><a href="#s10">10. Can you extrapolate from one model to another in the same family?</a></li><li><a href="#s11">11. The leaders, in one screen</a></li><li><a href="#s12">12. Which model for which job</a></li><li><a href="#s13">13. Strix Halo against Nvidia and Apple</a></li><li><a href="#s14">14. Hosted frontier models as a reference point</a></li><li><a href="#s15">15. What a local run costs in power, heat and money</a></li><li><a href="#s16">16. Uncensored and abliterated models: what the removal actually costs</a></li><li><a href="#s17">17. Why the hosted DeepSeek numbers look the way they do</a></li><li><a href="#s18">18. For newcomers: what to expect, and what to avoid</a></li><li><a href="#s19">19. The same data, plotted</a></li><li><a href="#s20">20. Appendix</a></li><li><a href="#s21">21. Change log</a></li><li><a href="#s22">22. Credits and tooling</a></li><li><a href="#s23">23. Prior art — what exists already, and which question each source answers</a></li></ol></nav>
 
 <blockquote><strong>Also published:</strong> <a href="leaderboards.html">Leaderboards by axis</a> — code, knowledge, reasoning, decode and prefill, each row with its cap and build · <a href="retired-models.html">Retired models — what was deleted, why, with hashes and restore recipes</a> · <a href="changelog.html">Change log</a> — every correction and the numbers that forced it · <a href="16gb.html">16 GiB of VRAM — local LLMs</a> — what fits on a 16 GiB card, what it scores, and why the answer changes with the memory architecture.</blockquote>
@@ -77,8 +77,8 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 
 <li><strong>Host:</strong> Minisforum <strong>MS-S1 MAX</strong> (product_family <code>MINISFORUM</code>, board <code>SHWSA</code>, BIOS 1.06, EC 0.15) · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)</li>
 <li><strong>Runtime:</strong> llama.cpp on Vulkan · <strong>Harness:</strong> <code>~/bench</code> (<code>t20</code>)</li>
-<li><strong>Archive:</strong> <code>~/runs/catalogue.json</code> · <strong>Measurements:</strong> 2026-10-07 → 2026-11-17</li>
-<li><strong>Roster:</strong> 49 <code>.gguf</code> files on disk, 896.9 GiB, 31 of them carrying a measured row (32 rows: the LFM2.5 heretic file carries two), checked 2026-11-17 · <strong>Change log:</strong> <a class="sref" href="#s21">&#167;21</a></li>
+<li><strong>Archive:</strong> <code>~/runs/catalogue.json</code> · <strong>Measurements:</strong> 2026-10-07 → 2026-11-19</li>
+<li><strong>Roster:</strong> 53 <code>.gguf</code> files on disk, 977.0 GiB, 32 of them carrying a measured row (33 rows: the LFM2.5 heretic file carries two), checked 2026-11-20 · <strong>Change log:</strong> <a class="sref" href="#s21">&#167;21</a></li>
 </ul>
 <p><strong>About this document</strong></p>
 <p><em>Audience:</em> someone deciding what to run on a 128 GB unified-memory AMD machine, and someone checking whether the numbers are honest. <em>Provenance:</em> every figure comes from a run recorded in <code>~/runs/catalogue.json</code>, a log file, or a query against the hardware monitor's database; nothing is quoted from a vendor or a leaderboard. <em>What it is not:</em> a benchmark of these models in general. It is a measurement of one machine, at one software version, at stated caps — <a class="sref" href="#s10">&#167;10</a>.5 and <a class="sref" href="#s14">&#167;14</a>.6 say exactly how far that can be pushed.</p>
@@ -158,7 +158,7 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <h3>0.2 Conventions used throughout</h3>
 <p><strong><code>MMLU</code> in a compact score or table cell means MMLU-Pro</strong> (the 120-item chat 0-shot probe described in <a class="sref" href="#s7">&#167;7</a>.2), never the original 14,000-item MMLU; the full name is written out wherever the distinction matters. <strong>GTT</strong> is the Graphics Translation Table — the GPU-addressable window into system RAM, which on this machine is the 100 GiB pool that actually matters (<a class="sref" href="#s2">&#167;2</a>.1), not the 8 GiB reported as VRAM. <strong>SE</strong> is the standard error of a proportion, quoted whenever two scores are close enough that sampling noise could explain the gap; at n=164 that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (<a class="sref" href="#s8">&#167;8</a> has the full table).</p>
 <h3>0.3 What exists as a result</h3>
-<p>A roster of <strong>30 servable models</strong> with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured, failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against hosted frontier models that establishes how large the gap actually is. Port 8099 (the QAT Q4_0 driver named in earlier editions) still has its script but its unit is disabled; only one model unit is enabled at a time and :8100 holds that slot.</p>
+<p>A roster of <strong>33 servable models</strong> with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured, failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against hosted frontier models that establishes how large the gap actually is. Port 8099 (the QAT Q4_0 driver named in earlier editions) still has its script but its unit is disabled; only one model unit is enabled at a time and :8100 holds that slot.</p>
 <h2 id="s1">1. Why test at all — the problem this solves</h2>
 <p>The obvious approach to picking a local model is to read a leaderboard, pick the top entry that fits in memory, and run it. That approach fails on this class of hardware for four independent reasons.</p>
 <p><strong>Reason 1: the hardware changes the ranking.</strong> Benchmarks are usually run on data-centre GPUs with tensor cores and hundreds of GB/s of HBM bandwidth. This machine has an integrated GPU with no tensor cores and roughly a quarter of that bandwidth. Models are not uniformly penalised: a dense 30B model and a 26B mixture-of-experts model of the same file size can differ by 4x in tokens per second. Published scores cannot tell you which side of that cliff a model sits on.</p>
@@ -578,9 +578,9 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <hr>
 <h2 id="s9">9. Results — the measured matrix</h2>
 <p><em>Ranked per axis instead? <a href="leaderboards.html">Leaderboards by axis</a> — same rows, one axis per table, each carrying its cap and build.</em></p>
-<p>One row per model that completed the full suite and reached a verdict — 49 of the 87 model aliases that have at least one measurement in the archive. <code>HE</code> is <code>score (items@cap)</code>; caps differ, so read section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build identity — the flavour and commit that produced it — tabulated in <a class="sref" href="#s4">&#167;4</a>.1, and recorded per run from 2026-10-27 onwards. The <code>build</code> column names the tree and the commit that produced the row — <code>fork b3-1a33095</code>, <code>bolt b1-a30fb49</code>, or <code>pre-identity</code> where the run predates identity stamping (<a class="sref" href="#s4">&#167;4</a>.1 explains why that is a window, not a guess). The full path is deliberately not published. The <code>measured</code> column is the date of the best-scoring run shown — the run id and the full build identity are in <code>data/catalogue.json</code>, so any row can be traced to the exact binary that produced it. The <code>disk</code> column is the roster as of <strong>2026-11-03</strong>: <code>✓</code> present and servable, <code>✗</code> retired (recipes in <code>~/llama-local/RETIRED-models.md</code>). Table 4 is all-time by design — the deleted rows are why the recommendations below have reasons.</p>
+<p>One row per model that completed the full suite and reached a verdict — 52 of the 96 model aliases that have at least one measurement in the archive. <code>HE</code> is <code>score (items@cap)</code>; caps differ, so read section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build identity — the flavour and commit that produced it — tabulated in <a class="sref" href="#s4">&#167;4</a>.1, and recorded per run from 2026-10-27 onwards. The <code>build</code> column names the tree and the commit that produced the row — <code>fork b3-1a33095</code>, <code>bolt b1-a30fb49</code>, or <code>pre-identity</code> where the run predates identity stamping (<a class="sref" href="#s4">&#167;4</a>.1 explains why that is a window, not a guess). The full path is deliberately not published. The <code>measured</code> column is the date of the best-scoring run shown — the run id and the full build identity are in <code>data/catalogue.json</code>, so any row can be traced to the exact binary that produced it. The <code>disk</code> column is the roster as of <strong>2026-11-20</strong>: <code>✓</code> present and servable, <code>✗</code> retired (recipes in <code>~/llama-local/RETIRED-models.md</code>). Table 4 is all-time by design — the deleted rows are why the recommendations below have reasons.</p>
 <p><strong>Table 4 — The measured matrix, all-time: one row per model, best run, caps shown with item counts.</strong></p>
-<table class="wide"><thead><tr><th>Model</th><th>Params</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>prefill t/s</th><th>decode t/s</th><th>measured</th><th>build</th><th>disk</th></tr></thead><tbody><tr><td>lfm25-24b-a2b (thinking)</td><td>24.0B</td><td>Q4_0</td><td>0.9695 (164@8192)</td><td>0.6917 (120@4096)</td><td>14/14</td><td>3360</td><td>111.2</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>gemma4-31b</td><td>30.7B</td><td>Q4_0</td><td>0.9634 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>350</td><td>17.0</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-uncen</td><td>25.2B</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>1759</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>✓ driver</td></tr><tr><td>minicpm-v47-35b</td><td>34.7B</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>1600</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>gemma4-26b-a4b</td><td>25.2B</td><td>Q8_0</td><td>0.9573 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>—</td><td>49.4</td><td>2026-10-30</td><td>fork b3-1a33095</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-qat-q4</td><td>25.2B</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>1900</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>ornith-122b</td><td>124.6B</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>605</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>nemotron-super-120b</td><td>123.6B</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>411</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✗ 11-05</td></tr><tr><td>Nemotron-Bolt-74B-A9B</td><td>74.0B</td><td>IQ2_XXS</td><td>0.9451 (164@2048)</td><td>0.3667 (120@2048)</td><td>13/14</td><td>577</td><td>72.8</td><td>2026-10-16</td><td>bolt pre-identity</td><td>✗ 10-30</td></tr><tr><td>Clover-35B-A3B-Preview (IQ2_M, AR mode)</td><td>34.7B</td><td>IQ2_M</td><td>0.9451 (164@8192)</td><td>0.8417 (120@8192)</td><td>14/14</td><td>1849</td><td>67.5</td><td>2026-11-12</td><td>fork b11581-19b458b</td><td>✓</td></tr><tr><td>Groot-19B-A3B</td><td>19.0B</td><td>Q4_K_M</td><td>0.9390 (164@4096)</td><td>0.7167 (120@4096)</td><td>13/14</td><td>2176</td><td>64.8</td><td>2026-11-11</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Axion-1.0-35B (IQ3_XXS)</td><td>34.7B</td><td>IQ3_XXS</td><td>0.9329 (164@8192)</td><td>0.7583 (120@4096)</td><td>14/14</td><td>1543</td><td>93.8</td><td>2026-11-12</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3next-q6</td><td>79.7B</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>1189</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>1045</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss-abliterated</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>1052</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen35</td><td>122.1B</td><td>Q4_K_M</td><td>0.9242 (66)</td><td>0.5417 (48)</td><td>12/14</td><td>622</td><td>22.9</td><td>2026-10-11</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>ornith-mtp-21g</td><td>35.5B</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>1610</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>flint (i1-Q4_K_M)</td><td>40.0B</td><td>Q4_K_M</td><td>0.9167 (60@4096)</td><td>—</td><td>10/14</td><td>—</td><td>71.1</td><td>2026-10-25</td><td>flint pre-identity</td><td>✗ 10-30</td></tr><tr><td>Swift-1.5-FN-Heretic</td><td>176.9B</td><td>IQ3_S</td><td>0.9167 (60@2048)</td><td>0.8000 (40@2048)</td><td>11/14</td><td>512</td><td>25.6</td><td>2026-11-05</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3next-q4</td><td>79.7B</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>1219</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>mellum21-fork</td><td>12.1B</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>2723</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>✗ 11-05</td></tr><tr><td>Groot-65B-A6B</td><td>116.5B</td><td>Q4_K_M</td><td>0.9000 (60@2048)</td><td>0.7500 (40@2048)</td><td>9/14</td><td>597</td><td>27.6</td><td>2026-11-05</td><td>bolt b1-a30fb49</td><td>✗ 11-05</td></tr><tr><td>gemma-4-12B-QAT</td><td>11.9B</td><td>Q4_0</td><td>0.8963 (164@512)</td><td>0.5750 (120@512)</td><td>14/14</td><td>911</td><td>27.8</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>lfm25-24b-a2b-htc (thinking)</td><td>24.0B</td><td>Q4_0</td><td>0.8902 (164@4096)</td><td>0.6167 (120@4096)</td><td>14/14</td><td>3331</td><td>109.6</td><td>2026-11-16</td><td>fork b11581-1a33095</td><td>✓</td></tr><tr><td>mellum</td><td>12.1B</td><td>Q6_K</td><td>0.8780 (164@4096)</td><td>0.7000 (120@4096)</td><td>11/14</td><td>2442</td><td>91.8</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>qwen38-35b</td><td>35.5B</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>1550</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Laguna-XS-2.1</td><td>33.4B</td><td>Q4_K_M</td><td>0.8667 (60@4096)</td><td>0.7000 (40@8192)</td><td>10/14</td><td>1321</td><td>87.7</td><td>2026-11-06</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>gemma-4-E4B-QAT</td><td>7.5B</td><td>Q4_0</td><td>0.8659 (164@512)</td><td>0.4667 (120@512)</td><td>14/14</td><td>2243</td><td>57.8</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3-14b</td><td>14.8B</td><td>Q4_K_M</td><td>0.8537 (164@512)</td><td>0.6083 (120@512)</td><td>14/14</td><td>743</td><td>23.5</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3-30b-a3b</td><td>30.5B</td><td>Q3_K_M</td><td>0.8537 (164@512)</td><td>0.6167 (120@512)</td><td>14/14</td><td>1910</td><td>79.7</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Clover-35B-A3B-Preview</td><td>34.7B</td><td>Q4_K_M</td><td>0.8598 (164@4096)</td><td>0.4000 (120@4096)</td><td>14/14</td><td>1461</td><td>53.7</td><td>2026-11-03</td><td>clover b1-6b9c0cf</td><td>✗ 11-03</td></tr><tr><td>lfm25-24b-a2b</td><td>24.0B</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>2930</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Axion-1.0-35B</td><td>34.7B</td><td>Q4_K_M</td><td>0.8500 (60@2048)</td><td>0.7750 (40@2048)</td><td>10/14</td><td>1422</td><td>76.2</td><td>2026-11-05</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Lite-Beam-M2.7-229B</td><td>228.7B</td><td>IQ2_XXS</td><td>0.8000 (60@4096)</td><td>0.6750 (40@4096)</td><td>10/14</td><td>261</td><td>34.1</td><td>2026-11-08</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>1774</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✗ 11-05</td></tr><tr><td>qwen38fn-abl</td><td>176.9B</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>0.8750 (40@2048)</td><td>11/14</td><td>448</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen36-35b</td><td>34.7B</td><td>Q4_K_M</td><td>0.8354 (164)</td><td>0.4500 (120)</td><td>12/14</td><td>1548</td><td>57.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>Ornith-1.5-35B</td><td>35.5B</td><td>Q4_K_M</td><td>0.9024 (164@4096)</td><td>0.4250 (120@4096)</td><td>14/14</td><td>1507</td><td>80.5</td><td>2026-11-18</td><td>fork b11581-19b458b</td><td>✓</td></tr><tr><td>mistral-small-3.1-24b</td><td>23.6B</td><td>Q4_K_M</td><td>0.8232 (164@512)</td><td>0.6083 (120@512)</td><td>12/14</td><td>460</td><td>14.9</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3-8b</td><td>8.2B</td><td>Q4_K_M</td><td>0.7866 (164@512)</td><td>0.5833 (120@512)</td><td>13/14</td><td>1300</td><td>39.0</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>kimi</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@2048)</td><td>0.5500 (120@2048)</td><td>13/14</td><td>1597</td><td>67.4</td><td>2026-10-14</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>hy-memory-30b-a3b</td><td>30.1B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.7250 (120@2048)</td><td>12/14</td><td>1515</td><td>74.7</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>graft-50b-a3b</td><td>50.7B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.6583 (120@2048)</td><td>14/14</td><td>1368</td><td>54.3</td><td>2026-10-19</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>hy-memory-30b-a3b-q8</td><td>30.1B</td><td>Q8_0</td><td>0.7683 (164@2048)</td><td>0.7500 (120@2048)</td><td>11/14</td><td>1459</td><td>52.3</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>lfm25-24b-a2b-htc</td><td>24.0B</td><td>Q4_0</td><td>0.6890 (164@4096)</td><td>0.2667 (120@4096)</td><td>12/14</td><td>3225</td><td>106.0</td><td>2026-11-16</td><td>fork b11581-1a33095</td><td>✓</td></tr><tr><td>Ling-3.0-flash</td><td>—</td><td>Q4_K_M</td><td>—</td><td>0.7667 (120@2048)</td><td>11/14</td><td>—</td><td>43.5</td><td>2026-10-22</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen38fn32-prune2</td><td>32.2B</td><td>QMix, 3 banks</td><td>—</td><td>—</td><td>—</td><td>397</td><td>20.0</td><td>2026-11-03</td><td>qwen4exp-var b1-1844325</td><td>✗ 11-03</td></tr><tr><td>ornith35b (uncensored)</td><td>35.5B</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>1762</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓ boot</td></tr><tr><td>gpt-oss-20b-mxfp4</td><td>20.9B</td><td>MXFP4</td><td>0.5854 (164@512)</td><td>0.5583 (120@512)</td><td>14/14</td><td>2169</td><td>74.4</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>gemma-4-26B-A4B-QAT + MTP drafter</td><td>25.2B</td><td>Q4_0</td><td>—</td><td>—</td><td>14/14</td><td>1886</td><td>54.9</td><td>2026-11-09</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>nemotron-bolt (broken load)</td><td>74.0B</td><td>IQ2_XXS</td><td>0.1786 (56@512)</td><td>0.4146 (41@512)</td><td>8/14</td><td>586</td><td>22.7</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr></tbody></table>
+<table class="wide"><thead><tr><th>Model</th><th>Params</th><th>Quant</th><th>HumanEval</th><th>MMLU-Pro</th><th>Riddles</th><th>prefill t/s</th><th>decode t/s</th><th>measured</th><th>build</th><th>disk</th></tr></thead><tbody><tr><td>lfm25-24b-a2b (thinking)</td><td>24.0B</td><td>Q4_0</td><td>0.9695 (164@8192)</td><td>0.6917 (120@4096)</td><td>14/14</td><td>3360</td><td>111.2</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>gemma4-31b</td><td>30.7B</td><td>Q4_0</td><td>0.9634 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>350</td><td>17.0</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-uncen</td><td>25.2B</td><td>Q4_K_M</td><td>0.9573 (164@2048)</td><td>0.8500 (120@2048)</td><td>14/14</td><td>1759</td><td>56.9</td><td>2026-10-28</td><td>fork b3-1a33095</td><td>✓ driver</td></tr><tr><td>minicpm-v47-35b</td><td>34.7B</td><td>Q6_K</td><td>0.9573 (164@4096)</td><td>0.7750 (120@4096)</td><td>10/14</td><td>1600</td><td>64.6</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✓</td></tr><tr><td>gemma4-26b-a4b</td><td>25.2B</td><td>Q8_0</td><td>0.9573 (164@2048)</td><td>0.8667 (120@2048)</td><td>14/14</td><td>—</td><td>49.4</td><td>2026-10-30</td><td>fork b3-1a33095</td><td>✗ 10-30</td></tr><tr><td>gemma4-26b-qat-q4</td><td>25.2B</td><td>Q4_0</td><td>0.9512 (164@2048)</td><td>0.8417 (120@2048)</td><td>14/14</td><td>1900</td><td>59.5</td><td>2026-10-21</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>ornith-122b</td><td>124.6B</td><td>Q4_K_M</td><td>0.9512 (164@4096)</td><td>0.7917 (120@4096)</td><td>12/14</td><td>605</td><td>23.3</td><td>2026-10-20</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>nemotron-super-120b</td><td>123.6B</td><td>Q3_K_M</td><td>0.9512 (164@4096)</td><td>0.7667 (120@4096)</td><td>11/14</td><td>411</td><td>27.1</td><td>2026-10-18</td><td>bolt pre-identity</td><td>✗ 11-05</td></tr><tr><td>Nemotron-Bolt-74B-A9B</td><td>74.0B</td><td>IQ2_XXS</td><td>0.9451 (164@2048)</td><td>0.3667 (120@2048)</td><td>13/14</td><td>577</td><td>72.8</td><td>2026-10-16</td><td>bolt pre-identity</td><td>✗ 10-30</td></tr><tr><td>Clover-35B-A3B-Preview (IQ2_M, AR mode)</td><td>34.7B</td><td>IQ2_M</td><td>0.9451 (164@8192)</td><td>0.8417 (120@8192)</td><td>14/14</td><td>1849</td><td>67.5</td><td>2026-11-12</td><td>fork b11581-19b458b</td><td>✓</td></tr><tr><td>Groot-19B-A3B</td><td>19.0B</td><td>Q4_K_M</td><td>0.9390 (164@4096)</td><td>0.7167 (120@4096)</td><td>13/14</td><td>2176</td><td>64.8</td><td>2026-11-11</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Axion-1.0-35B (IQ3_XXS)</td><td>34.7B</td><td>IQ3_XXS</td><td>0.9329 (164@8192)</td><td>0.7583 (120@4096)</td><td>14/14</td><td>1543</td><td>93.8</td><td>2026-11-12</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3next-q6</td><td>79.7B</td><td>Q6_K</td><td>0.9296 (142)</td><td>0.6058 (104)</td><td>14/14</td><td>1189</td><td>45.8</td><td>2026-10-10</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164)</td><td>0.5833 (120)</td><td>12/14</td><td>1045</td><td>50.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>gptoss-abliterated</td><td>116.8B</td><td>MXFP4</td><td>0.9268 (164@2048)</td><td>0.7500 (120@2048)</td><td>10/14</td><td>1052</td><td>50.5</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen35</td><td>122.1B</td><td>Q4_K_M</td><td>0.9242 (66)</td><td>0.5417 (48)</td><td>12/14</td><td>622</td><td>22.9</td><td>2026-10-11</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>ornith-mtp-21g</td><td>35.5B</td><td>IQ4_XS</td><td>0.9207 (164@4096)</td><td>0.7750 (120@2048)</td><td>11/14</td><td>1610</td><td>65.2</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Hy4-flash (IQ2_S/IQ2_XXS)</td><td>218.9B</td><td>IQ2_S</td><td>0.9207 (164@512)</td><td>0.6167 (120@512)</td><td>14/14</td><td>276</td><td>18.9</td><td>2026-11-19</td><td>hy4flash-pr b1-f8d4cc4</td><td>✓ PR-tree</td></tr><tr><td>flint (i1-Q4_K_M)</td><td>40.0B</td><td>Q4_K_M</td><td>0.9167 (60@4096)</td><td>—</td><td>10/14</td><td>—</td><td>71.1</td><td>2026-10-25</td><td>flint pre-identity</td><td>✗ 10-30</td></tr><tr><td>Swift-1.5-FN-Heretic</td><td>176.9B</td><td>IQ3_S</td><td>0.9167 (60@2048)</td><td>0.8000 (40@2048)</td><td>11/14</td><td>512</td><td>25.6</td><td>2026-11-05</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3next-q4</td><td>79.7B</td><td>Q4_K_M</td><td>0.9146 (164@2048)</td><td>0.7417 (120@2048)</td><td>14/14</td><td>1219</td><td>58.1</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>mellum21-fork</td><td>12.1B</td><td>Q4_K_M</td><td>0.9146 (164@8192)</td><td>0.8083 (120@8192)</td><td>10/14</td><td>2723</td><td>111.9</td><td>2026-10-18</td><td>fork pre-identity</td><td>✗ 11-05</td></tr><tr><td>Groot-65B-A6B</td><td>116.5B</td><td>Q4_K_M</td><td>0.9000 (60@2048)</td><td>0.7500 (40@2048)</td><td>9/14</td><td>597</td><td>27.6</td><td>2026-11-05</td><td>bolt b1-a30fb49</td><td>✗ 11-05</td></tr><tr><td>gemma-4-12B-QAT</td><td>11.9B</td><td>Q4_0</td><td>0.8963 (164@512)</td><td>0.5750 (120@512)</td><td>14/14</td><td>911</td><td>27.8</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>lfm25-24b-a2b-htc (thinking)</td><td>24.0B</td><td>Q4_0</td><td>0.8902 (164@4096)</td><td>0.6167 (120@4096)</td><td>14/14</td><td>3331</td><td>109.6</td><td>2026-11-16</td><td>fork b11581-1a33095</td><td>✓</td></tr><tr><td>mellum</td><td>12.1B</td><td>Q6_K</td><td>0.8780 (164@4096)</td><td>0.7000 (120@4096)</td><td>11/14</td><td>2442</td><td>91.8</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>qwen38-35b</td><td>35.5B</td><td>Q4_K_M</td><td>0.8720 (164@4096)</td><td>0.6417 (120@4096)</td><td>14/14</td><td>1550</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Laguna-XS-2.1</td><td>33.4B</td><td>Q4_K_M</td><td>0.8667 (60@4096)</td><td>0.7000 (40@8192)</td><td>10/14</td><td>1321</td><td>87.7</td><td>2026-11-06</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>gemma-4-E4B-QAT</td><td>7.5B</td><td>Q4_0</td><td>0.8659 (164@512)</td><td>0.4667 (120@512)</td><td>14/14</td><td>2243</td><td>57.8</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3-14b</td><td>14.8B</td><td>Q4_K_M</td><td>0.8537 (164@512)</td><td>0.6083 (120@512)</td><td>14/14</td><td>743</td><td>23.5</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3-30b-a3b</td><td>30.5B</td><td>Q3_K_M</td><td>0.8537 (164@512)</td><td>0.6167 (120@512)</td><td>14/14</td><td>1910</td><td>79.7</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Clover-35B-A3B-Preview</td><td>34.7B</td><td>Q4_K_M</td><td>0.8598 (164@4096)</td><td>0.4000 (120@4096)</td><td>14/14</td><td>1461</td><td>53.7</td><td>2026-11-03</td><td>clover b1-6b9c0cf</td><td>✗ 11-03</td></tr><tr><td>lfm25-24b-a2b</td><td>24.0B</td><td>Q4_0</td><td>0.8537 (164@4096)</td><td>0.6917 (120@4096)</td><td>10/14</td><td>2930</td><td>106.6</td><td>2026-10-17</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>Axion-1.0-35B</td><td>34.7B</td><td>Q4_K_M</td><td>0.8500 (60@2048)</td><td>0.7750 (40@2048)</td><td>10/14</td><td>1422</td><td>76.2</td><td>2026-11-05</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Lite-Beam-M2.7-229B</td><td>228.7B</td><td>IQ2_XXS</td><td>0.8000 (60@4096)</td><td>0.6750 (40@4096)</td><td>10/14</td><td>261</td><td>34.1</td><td>2026-11-08</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>Kimi-Linear-48B-A3B-abl</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@8192)</td><td>0.5833 (120@8192)</td><td>13/14</td><td>1774</td><td>74.8</td><td>2026-11-01</td><td>fork b3-1a33095</td><td>✗ 11-05</td></tr><tr><td>qwen38fn-abl</td><td>176.9B</td><td>IQ3_S</td><td>0.8476 (164@2048)</td><td>0.8750 (40@2048)</td><td>11/14</td><td>448</td><td>52.9</td><td>2026-10-13</td><td>fork pre-identity</td><td>✓</td></tr><tr><td>qwen36-35b</td><td>34.7B</td><td>Q4_K_M</td><td>0.8354 (164)</td><td>0.4500 (120)</td><td>12/14</td><td>1548</td><td>57.1</td><td>2026-10-12</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>Ornith-1.5-35B</td><td>35.5B</td><td>Q4_K_M</td><td>0.9024 (164@4096)</td><td>0.4250 (120@4096)</td><td>14/14</td><td>1507</td><td>80.5</td><td>2026-11-18</td><td>fork b11581-19b458b</td><td>✓</td></tr><tr><td>mistral-small-3.1-24b</td><td>23.6B</td><td>Q4_K_M</td><td>0.8232 (164@512)</td><td>0.6083 (120@512)</td><td>12/14</td><td>460</td><td>14.9</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>qwen3-8b</td><td>8.2B</td><td>Q4_K_M</td><td>0.7866 (164@512)</td><td>0.5833 (120@512)</td><td>13/14</td><td>1300</td><td>39.0</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>kimi</td><td>49.1B</td><td>Q4_K_M</td><td>0.7866 (164@2048)</td><td>0.5500 (120@2048)</td><td>13/14</td><td>1597</td><td>67.4</td><td>2026-10-14</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>hy-memory-30b-a3b</td><td>30.1B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.7250 (120@2048)</td><td>12/14</td><td>1515</td><td>74.7</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>graft-50b-a3b</td><td>50.7B</td><td>Q4_K_M</td><td>0.7805 (164@2048)</td><td>0.6583 (120@2048)</td><td>14/14</td><td>1368</td><td>54.3</td><td>2026-10-19</td><td>fork pre-identity</td><td>✗</td></tr><tr><td>hy-memory-30b-a3b-q8</td><td>30.1B</td><td>Q8_0</td><td>0.7683 (164@2048)</td><td>0.7500 (120@2048)</td><td>11/14</td><td>1459</td><td>52.3</td><td>2026-10-17</td><td>fork pre-identity</td><td>✗ 10-29</td></tr><tr><td>lfm25-24b-a2b-htc</td><td>24.0B</td><td>Q4_0</td><td>0.6890 (164@4096)</td><td>0.2667 (120@4096)</td><td>12/14</td><td>3225</td><td>106.0</td><td>2026-11-16</td><td>fork b11581-1a33095</td><td>✓</td></tr><tr><td>Ling-3.0-flash</td><td>—</td><td>Q4_K_M</td><td>—</td><td>0.7667 (120@2048)</td><td>11/14</td><td>—</td><td>43.5</td><td>2026-10-22</td><td>fork pre-identity</td><td>✗ 10-30</td></tr><tr><td>qwen38fn32-prune2</td><td>32.2B</td><td>QMix, 3 banks</td><td>—</td><td>—</td><td>—</td><td>397</td><td>20.0</td><td>2026-11-03</td><td>qwen4exp-var b1-1844325</td><td>✗ 11-03</td></tr><tr><td>ornith35b (uncensored)</td><td>35.5B</td><td>IQ3_XXS</td><td>0.5671 (164@4096)</td><td>0.6333 (120@4096)</td><td>12/14</td><td>1762</td><td>69.9</td><td>2026-10-31</td><td>fork b3-1a33095</td><td>✓ boot</td></tr><tr><td>gpt-oss-20b-mxfp4</td><td>20.9B</td><td>MXFP4</td><td>0.5854 (164@512)</td><td>0.5583 (120@512)</td><td>14/14</td><td>2169</td><td>74.4</td><td>2026-11-10</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>gemma-4-26B-A4B-QAT + MTP drafter</td><td>25.2B</td><td>Q4_0</td><td>—</td><td>—</td><td>14/14</td><td>1886</td><td>54.9</td><td>2026-11-09</td><td>fork b3-1a33095</td><td>✓</td></tr><tr><td>nemotron-bolt (broken load)</td><td>74.0B</td><td>IQ2_XXS</td><td>0.1786 (56@512)</td><td>0.4146 (41@512)</td><td>8/14</td><td>586</td><td>22.7</td><td>2026-10-21</td><td>fork pre-identity</td><td>✗ 10-30</td></tr></tbody></table>
 <p><strong>The twelve 16 GiB-card rows are new in this edition.</strong> They are the same box, the same build (<code>b3-1a33095</code>), the same harness and the same per-item records — measured against a different question: what a <strong>16 GiB graphics card</strong> can hold, rather than what this 100 GiB pool can. That changes the caps, and the caps change the scores. The seven small non-thinking arms (<code>gemma-4-12B-QAT</code>, <code>gemma-4-E4B-QAT</code>, <code>qwen3-14b</code>, <code>qwen3-30b-a3b</code>, <code>qwen3-8b</code>, <code>mistral-small-3.1-24b</code>, <code>gpt-oss-20b-mxfp4</code>) were scored at <strong>512 tokens</strong> on both capability axes, which is the generation budget a 16 GiB card leaves after its weights and KV cache — so read those cells as "what you get on the card", not as the model's ceiling. The three arms that deliberate (<code>lfm25-24b-a2b (thinking)</code>, <code>Groot-19B-A3B</code>, <code>Axion-1.0-35B (IQ3_XXS)</code>) were re-run at 4096-8192 because 512 pins them mid-thought and measures the cap instead of the model; their 512-cap numbers are on the 16 GiB page as the cap evidence. <code>gemma-4-26B-A4B-QAT</code> and base <code>lfm25-24b-a2b</code> already had rows here at wider caps (2048 and 4096), so those two files appear once: at their better run. <code>Clover-35B-A3B-Preview</code> is the twelfth and the one to read carefully: it is a block-diffusion model that llama.cpp runs autoregressively, so its 0.9451/0.8417 is the causal-decode arm of a model trained for parallel decode — the flavour of the weights, not the speed of the architecture it was designed for. The fit arithmetic, the per-card budget tables and the 16 GiB verdicts are on the <strong><a href="16gb.html">16 GiB page</a></strong>; this table is the cross-class record.</p>
 <p>New in this edition: the <code>gemma4-26b-uncen</code> row (measured 2026-10-28, the model that now answers the channel) and the <code>disk</code> column. <strong>Three rows were wrong in version 1.2 and are corrected.</strong> <code>qwen3next-q6</code> was published as 0.9207 (164@2048) — no run supports that: its best is 0.9296 over 142 items, and 0.9207 is <code>ornith-mtp-21g</code>'s figure, copied onto it. <code>nemotron-super-120b</code> reads 0.9512 (156/164) at cap 4096 rather than 0.9329; two runs exist (156/164 and 153/164) and the old row quoted neither cleanly. And <code>gemma4-26b-a4b</code> and <code>gemma4-26b-qat-q4</code> were listed as two models when they are <strong>one weight file measured twice</strong> (156/164 and 154/164, cap 2048, MMLU 101/120 in both): the run alias was shared across the Q8_0 and QAT files, which is how a table comes to compare a file with itself. The Q8_0 row now carries its own file's numbers.</p>
 <p><strong>Table 5 — what is actually servable on 2026-10-31.</strong> Sixteen artefacts, every one now carrying a capability row. The inventory it counts from is the roster header at the top of this page — 49 <code>.gguf</code> files, 807.6 GiB on disk including projectors and drafters, checked 2026-11-12 — and <a class="sref" href="#s20">&#167;20</a>.3 is the file map, not a listing. Table 5 is deliberately a duplicate of Table 4 restricted to what was servable on that date: the endpoint column is a roster record, not a ranking, and a snapshot that silently shrinks is not a snapshot.</p>
@@ -637,8 +637,9 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <li>Earlier, on 10-29: <strong>Kimi-Linear-48B-A3B (28.0)</strong>, <strong>Hy-Memory-30B-A3B (17.0)</strong>, <strong>Mellum2.1 Q6_K (10.1)</strong> and its <strong>MXFP4 twin (6.5)</strong> — all measured, all beaten on their own axis by something smaller or faster.</li>
 </ul>
 <p><strong>The 16 GiB roster, in one block (v1.24 and v1.25).</strong> Eleven of the forty-nine rows were measured for the <strong><a href="16gb.html">16 GiB page</a></strong> rather than for this one, and they sit in Table 4 because each completed the same suite on the same harness. Three carry wide caps because they deliberate: <code>lfm25-24b-a2b (thinking)</code> <strong>0.9695 code / 0.6917 knowledge</strong> at 8192/4096 and 111.2 t/s, <code>Groot-19B-A3B</code> <strong>0.9390 / 0.7167</strong> at 4096 and 64.8 t/s, <code>Axion-1.0-35B (IQ3_XXS)</code> <strong>0.9329 / 0.7583</strong> at 8192/4096 and 93.8 t/s. Those three are the only new rows that reach the top of the matrix.</p>
-<p>The other seven are small non-thinking arms measured at a <strong>512-token cap</strong>, which is what a card's KV budget leaves after the weights: <code>gemma-4-12B-QAT</code> 0.8963 code / 0.920 IFEval, <code>gemma-4-E4B-QAT</code> 0.8659 / 0.900, <code>qwen3-14b</code> 0.8537 / 0.880, <code>qwen3-30b-a3b</code> 0.8537 / 0.860, <code>mistral-small-3.1-24b</code> 0.8232 / 0.820, <code>qwen3-8b</code> 0.7866 / 0.900, <code>gpt-oss-20b-mxfp4</code> 0.5854 / 0.480. Their knowledge cells read 0.467 to 0.617 and are the only knowledge numbers in Table 4 measured at 512; the leaderboard page therefore ranks them in a separate floor table rather than against the 2048-and-up rows. Read them as what a 16 GiB card delivers, not as a ceiling.</p>
+<p>The other seven are small non-thinking arms measured at a <strong>512-token cap</strong>, which is what a card's KV budget leaves after the weights: <code>gemma-4-12B-QAT</code> 0.8963 code / 0.920 IFEval, <code>gemma-4-E4B-QAT</code> 0.8659 / 0.900, <code>qwen3-14b</code> 0.8537 / 0.880, <code>qwen3-30b-a3b</code> 0.8537 / 0.860, <code>mistral-small-3.1-24b</code> 0.8232 / 0.820, <code>qwen3-8b</code> 0.7866 / 0.900, <code>gpt-oss-20b-mxfp4</code> 0.5854 / 0.480. Their knowledge cells read 0.467 to 0.617 and, with the 218.9B Hy4-flash below, are the only knowledge numbers in Table 4 measured at 512; the leaderboard page therefore ranks them in a separate floor table rather than against the 2048-and-up rows. Read them as what a 16 GiB card delivers, not as a ceiling.</p>
 <p>The eleventh is a perf-only row: <code>gemma-4-26B-A4B-QAT + MTP drafter</code> is the same weights as <code>g4-26b-a4b-qat</code> plus a 0.43 GiB draft head, decoding 54.9 t/s against 59.2 without it, at 15.06 GiB and 8k context — over a 16 GiB card's budget by 0.06 GiB, which is <a class="sref" href="#s10">&#167;10</a>'s worked example. <strong>What the block changed in the ranking:</strong> the top code cell moved to a 24B arm at 8192, the three-row tie at 0.9573 dropped to fourth, and the best 120-item knowledge score among live rows is now a 3.05 bpw diffusion export at 12.32 GiB (0.8417), a point below the driver.</p>
+<p><strong>Hy4-flash at IQ2 — 218.9B of weights, and the trim is the whole result.</strong> 218.9B total with 10B active per token, 42 blocks, 512 experts top-16 plus one shared, MLA attention, 1M training context, vision in the weights and unusable here. Every GGUF of it declares <code>hy_v4_flash</code>, an arch neither the serving fork nor the Bolt tree registers (both know only <code>hy_v4</code>, the base model), so this row came from an <strong>unmerged upstream PR (#32517)</strong> built into its own tree — text-only, because that PR's projector rejects the file and the server exits rather than falling back. 78.88 GiB of weights, 79 of the 100 GiB pool at 32k, measured with the driver and the boot unit still resident. Caps are 512 on all three capability axes, which is what 2.6 bpw leaves: <strong>0.9207 code (151/164)</strong>, <strong>0.6167 knowledge (74/120)</strong>, 0.7667 / 0.8444 IFEval (30), 14/14 riddles, 3/3 preflight, both needles, at <strong>276 t/s prefill and 18.9 t/s decode</strong> — the second-slowest decoder in Table 4 after <code>mistral-small-3.1-24b</code>, and 3.5x the decode cost of Ornith-35B on the same suite (5,984 s of wall against 683 s). Against the roster it is sixteenth on code with a tie at 0.9207, level with the 30B Q3 build on knowledge and 0.23 under the driver. <strong>Verdict: no slot and no unit.</strong> The bound is not the architecture but the trim: the only less-damaged builds of this file are Q3_K at 144.7 GiB and Q4_K_M at 156.8 GiB, neither of which this box can hold, so "try it at a better quantisation" is not an available experiment at any effort. The row stays because the negative is the measurement, and the launcher stays on port 8101 for the day #32517 merges.</p>
 <hr>
 <h2 id="s10">10. Can you extrapolate from one model to another in the same family?</h2>
 <p>This is the question that decides how much of this document you can reuse. If results transferred across a family, one careful measurement of a 26B model would tell you what to expect from its 31B sibling, from its abliterated variant, and from its Q4 requantisation. They do not transfer uniformly, and the pattern of where they fail is consistent enough to state as rules.</p>
@@ -725,7 +726,7 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <h3>11.3 Throughput — the fastest decoders</h3>
 <table><thead><tr><th>decode</th><th>model</th><th>status</th></tr></thead><tbody><tr><td>111.9 t/s</td><td>mellum21-fork</td><td>✗ 11-05</td></tr><tr><td>111.2 t/s</td><td>lfm25-24b-a2b (thinking)</td><td>✓</td></tr><tr><td>106.6 t/s</td><td>lfm25-24b-a2b</td><td>✓</td></tr></tbody></table>
 <h3>11.4 Reasoning traps — models that clear all fourteen</h3>
-<table><thead><tr><th>riddles</th><th>model</th><th>status</th></tr></thead><tbody><tr><td>14/14</td><td>lfm25-24b-a2b (thinking)</td><td>✓</td></tr><tr><td>14/14</td><td>gemma4-31b</td><td>✗ 10-30</td></tr><tr><td>14/14</td><td>gemma4-26b-uncen</td><td>✓ driver</td></tr><tr><td>14/14</td><td>gemma4-26b-a4b</td><td>✗ 10-30</td></tr><tr><td>14/14</td><td>gemma4-26b-qat-q4</td><td>✓</td></tr><tr><td>14/14</td><td>Clover-35B-A3B-Preview (IQ2_M, AR mode)</td><td>✓</td></tr><tr><td>14/14</td><td>Axion-1.0-35B (IQ3_XXS)</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3next-q6</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3next-q4</td><td>✓</td></tr><tr><td>14/14</td><td>gemma-4-12B-QAT</td><td>✓</td></tr><tr><td>14/14</td><td>qwen38-35b</td><td>✓</td></tr><tr><td>14/14</td><td>gemma-4-E4B-QAT</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3-14b</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3-30b-a3b</td><td>✓</td></tr><tr><td>14/14</td><td>graft-50b-a3b</td><td>✗</td></tr><tr><td>14/14</td><td>gpt-oss-20b-mxfp4</td><td>✓</td></tr><tr><td>14/14</td><td>gemma-4-26B-A4B-QAT + MTP drafter</td><td>✓</td></tr></tbody></table>
+<table><thead><tr><th>riddles</th><th>model</th><th>status</th></tr></thead><tbody><tr><td>14/14</td><td>lfm25-24b-a2b (thinking)</td><td>✓</td></tr><tr><td>14/14</td><td>gemma4-31b</td><td>✗ 10-30</td></tr><tr><td>14/14</td><td>gemma4-26b-uncen</td><td>✓ driver</td></tr><tr><td>14/14</td><td>gemma4-26b-a4b</td><td>✗ 10-30</td></tr><tr><td>14/14</td><td>gemma4-26b-qat-q4</td><td>✓</td></tr><tr><td>14/14</td><td>Clover-35B-A3B-Preview (IQ2_M, AR mode)</td><td>✓</td></tr><tr><td>14/14</td><td>Axion-1.0-35B (IQ3_XXS)</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3next-q6</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3next-q4</td><td>✓</td></tr><tr><td>14/14</td><td>gemma-4-12B-QAT</td><td>✓</td></tr><tr><td>14/14</td><td>qwen38-35b</td><td>✓</td></tr><tr><td>14/14</td><td>gemma-4-E4B-QAT</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3-14b</td><td>✓</td></tr><tr><td>14/14</td><td>qwen3-30b-a3b</td><td>✓</td></tr><tr><td>14/14</td><td>graft-50b-a3b</td><td>✗</td></tr><tr><td>14/14</td><td>gpt-oss-20b-mxfp4</td><td>✓</td></tr><tr><td>14/14</td><td>gemma-4-26B-A4B-QAT + MTP drafter</td><td>✓</td></tr><tr><td>14/14</td><td>Hy4-flash (IQ2_S/IQ2_XXS)</td><td>✓ PR-tree</td></tr></tbody></table>
 <hr>
 <p>What the full tables show that these three do not: the <strong>shape of the roster</strong>. gemma4 owns breadth — the driver is top-three on code, <strong>the best knowledge score among the full 120-item rows still on disk</strong>, and clears all fourteen reasoning traps — at 15.6 GiB. Everything else on disk is a specialist that wins exactly one axis: minicpm on vision, ornith-122b on generous-cap code, gptoss on 120B breadth, qwen3next-q6 on instruction adherence, <code>lfm25-24b-a2b (thinking)</code> on code, <code>clover-35b-a3b-iq2</code> on knowledge at a 3.05 bpw quant. Two rows this paragraph used to name — mellum21-fork on throughput and Kimi on a million-token window — were retired on 2026-11-05 and keep their rows in Table 4, because the losers are the point.</p>
 <h2 id="s12">12. Which model for which job</h2>
@@ -1106,7 +1107,7 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <li><strong>Do not trust a repo name.</strong> A <code>*-GGUF</code> repo can contain diffusion weights (one measured case declared <code>arch = wan</code>). Read the header before a 15 GiB download: <code>head -c 4M model.gguf</code> and parse the metadata.</li>
 </ol>
 <h3>18.3 What this method cost, and what it bought</h3>
-<p><strong>The one cost that is measured:</strong> 207 runs totalling <strong>76.9 hours of benchmark execution</strong>, recorded run by run in <code>catalogue.json</code>, over 2026-10-07 → 2026-11-12. Of the 87 model aliases with at least one measurement, 30 servable models carry a row in Table 4 and every deletion is recorded in the ledger; the two largest deletion passes alone released 61.6 GiB and 245.1 GiB.</p>
+<p><strong>The one cost that is measured:</strong> 226 runs, of which the 200 that record a wall time total <strong>95.1 hours of benchmark execution</strong>, recorded run by run in <code>catalogue.json</code>, over 2026-10-07 → 2026-11-19. Of the 96 model aliases with at least one measurement, 52 carry a row in Table 4 and 33 of those are on files still on disk; every deletion is recorded in the ledger, and the two largest deletion passes alone released 61.6 GiB and 245.1 GiB.</p>
 <p>A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive one at 20 minutes to 2 hours depending on the model. The benefit is that every decision is a line in the catalogue rather than an opinion, and a re-test — of a new quantisation, a new llama.cpp build, or a model released next week — is a command rather than a project.</p>
 <h3>18.4 Effort: what it took, and what it would take you</h3>
 <p>Every other number in this report traces to a run. This one does not, and is labelled accordingly: it is a <strong>reconstruction from artefacts</strong> — line counts, run wall times, document revisions — not a time log. Ranges, not a point estimate.</p>
@@ -1123,7 +1124,7 @@ a.sref:hover { color:var(--acc); border-bottom-color:var(--acc); }
 <p>The trade this box actually forces. The live roster now spans 0.560 to 0.876 mean quality and 15 to 111 t/s, and its top is three rows inside 0.04: <code>lfm25-24b-a2b (thinking)</code> 0.970 at 111 t/s, <code>clover-35b-a3b-iq2</code> 0.945 at 67.5 and <code>Groot-19B-A3B</code> 0.939 at 64.8. The best all-time point is still the retired 31B at 0.9634 and 17 t/s. Every point at or above 0.9512 spans 17 to 65 t/s — a 3.8x spread — so quality does not set speed on this box: bytes read per token do, which is why the 25-35B MoE cluster outruns the dense files at the same score. The corner that is genuinely empty is "best code <em>and</em> best speed"; nothing has both. Bubble area is parameter count; hollow markers are floor estimates from a small cap or a short subset.</p>
 <p><em>Does not show</em> long-prompt behaviour — that is prefill, and <a class="sref" href="#s13">&#167;13</a>.2 is where it matters.</p>
 <p>Figure 15 plots HumanEval against decode for every row that carries both axes.</p>
-<figure class="fig"><svg role="img" aria-label="HumanEval pass@1 against decode throughput, 40 measured rows that carry both axes" xmlns:xlink="http://www.w3.org/1999/xlink" width="507.024pt" height="394.135961pt" viewBox="0 0 507.024 394.135961" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>HumanEval pass@1 against decode throughput, 40 measured rows that carry both axes</title><desc>HumanEval pass@1 against decode throughput, 40 measured rows that carry both axes — generated from the run catalogue, not drawn by hand.</desc>
+<figure class="fig"><svg role="img" aria-label="HumanEval pass@1 against decode throughput, 58 measured models that carry both axes" xmlns:xlink="http://www.w3.org/1999/xlink" width="507.024pt" height="394.135961pt" viewBox="0 0 507.024 394.135961" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>HumanEval pass@1 against decode throughput, 58 measured models that carry both axes</title><desc>HumanEval pass@1 against decode throughput, 58 measured models that carry both axes — generated from the run catalogue, not drawn by hand.</desc>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -1905,6 +1906,20 @@ z
     </g>
    </g>
    <g id="PathCollection_36">
+    <path d="M 163.603563 62.087624 
+C 165.253568 62.087624 166.836215 61.43207 168.002944 60.26534 
+C 169.169674 59.098611 169.825228 57.515964 169.825228 55.865959 
+C 169.825228 54.215954 169.169674 52.633307 168.002944 51.466577 
+C 166.836215 50.299848 165.253568 49.644294 163.603563 49.644294 
+C 161.953558 49.644294 160.370911 50.299848 159.204181 51.466577 
+C 158.037451 52.633307 157.381898 54.215954 157.381898 55.865959 
+C 157.381898 57.515964 158.037451 59.098611 159.204181 60.26534 
+C 160.370911 61.43207 161.953558 62.087624 163.603563 62.087624 
+L 163.603563 62.087624 
+z
+" clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+   </g>
+   <g id="PathCollection_37">
     <defs>
      <path id="m3c52065c17" d="M 0 3.489329 
 C 0.925381 3.489329 1.812985 3.121672 2.467328 2.467328 
@@ -1922,12 +1937,12 @@ z
      <use xlink:href="#m3c52065c17" x="358.199117" y="94.501157" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_37">
+   <g id="PathCollection_38">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m3c52065c17" x="374.416468" y="94.501157" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_38">
+   <g id="PathCollection_39">
     <path d="M 399.402458 122.569814 
 C 400.229509 122.569814 401.022798 122.241223 401.607612 121.656409 
 C 402.192426 121.071596 402.521017 120.278307 402.521017 119.451255 
@@ -1941,7 +1956,7 @@ L 399.402458 122.569814
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_39">
+   <g id="PathCollection_40">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -1959,12 +1974,12 @@ z
      <use xlink:href="#mc028a00990" x="438.500337" y="75.169153" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_40">
+   <g id="PathCollection_41">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc028a00990" x="434.329548" y="64.653234" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_41">
+   <g id="PathCollection_42">
     <path d="M 251.649748 96.983449 
 C 253.331913 96.983449 254.945408 96.315118 256.134878 95.125648 
 C 257.324348 93.936178 257.992679 92.322683 257.992679 90.640518 
@@ -1978,7 +1993,7 @@ L 251.649748 96.983449
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_42">
+   <g id="PathCollection_43">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -1996,12 +2011,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="68.168143" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_43">
+   <g id="PathCollection_44">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="57.623414" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_44">
+   <g id="PathCollection_45">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -2019,7 +2034,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="45.321229" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_45">
+   <g id="PathCollection_46">
     <path d="M 122.725152 86.817055 
 C 123.483799 86.817055 124.211476 86.515641 124.747921 85.979196 
 C 125.284365 85.442752 125.585779 84.715075 125.585779 83.956427 
@@ -2033,7 +2048,7 @@ L 122.725152 86.817055
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_46">
+   <g id="PathCollection_47">
     <path d="M 234.22131 273.679075 
 C 235.284413 273.679075 236.304118 273.2567 237.055845 272.504972 
 C 237.807573 271.753245 238.229948 270.733541 238.229948 269.670437 
@@ -2047,7 +2062,7 @@ L 234.22131 273.679075
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_47">
+   <g id="PathCollection_48">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -2065,7 +2080,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="48.836139" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_48">
+   <g id="PathCollection_49">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -2083,7 +2098,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="47.078684" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_49">
+   <g id="PathCollection_50">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -2101,22 +2116,22 @@ z
      <use xlink:href="#m8fde69458a" x="227.245553" y="43.563774" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_50">
+   <g id="PathCollection_51">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="385.919509" y="61.138324" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_51">
+   <g id="PathCollection_52">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="55.865959" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_52">
+   <g id="PathCollection_53">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="157.740725" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_53">
+   <g id="PathCollection_54">
     <path d="M 189.317516 59.7135 
 C 190.60532 59.7135 191.840553 59.20185 192.751168 58.291235 
 C 193.661783 57.38062 194.173433 56.145387 194.173433 54.857583 
@@ -2130,7 +2145,7 @@ L 189.317516 59.7135
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_54">
+   <g id="PathCollection_55">
     <path d="M 332.269501 83.590441 
 C 333.104605 83.590441 333.905618 83.258651 334.496126 82.668143 
 C 335.086634 82.077635 335.418424 81.276622 335.418424 80.441517 
@@ -2144,7 +2159,7 @@ L 332.269501 83.590441
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_55">
+   <g id="PathCollection_56">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -2162,7 +2177,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="69.896788" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_56">
+   <g id="PathCollection_57">
     <defs>
      <path id="m0b407346a4" d="M 0 5.669875 
 C 1.503668 5.669875 2.945953 5.072461 4.009207 4.009207 
@@ -2180,7 +2195,7 @@ z
      <use xlink:href="#m0b407346a4" x="320.350354" y="76.926608" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_57">
+   <g id="PathCollection_58">
     <path d="M 297.508633 57.418735 
 C 298.600456 57.418735 299.647707 56.984949 300.419743 56.212913 
 C 301.191778 55.440878 301.625564 54.393626 301.625564 53.301803 
@@ -4265,7 +4280,7 @@ z
    </g>
   </g>
   <g id="text_32">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 57 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 58 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>
@@ -4275,12 +4290,12 @@ z
  </defs>
 </svg>
 </figure>
-<p>Figure 15 — HumanEval pass@1 against decode throughput, 40 measured rows that carry both axes.</p>
+<p>Figure 15 — HumanEval pass@1 against decode throughput, 58 measured models that carry both axes.</p>
 <h3>19.2 Knowledge against decode speed</h3>
 <p>The same axes with the other quality measure, and a different ranking. Speed buys no knowledge: the two fastest files (mellum21 at 111.9 t/s, <code>lfm25-24b-a2b (thinking)</code> at 111.2) read 0.8083 and 0.6917, and the best knowledge-per-second point on this machine is mellum21, still 5.8pp under the ceiling. That ceiling belongs to two retired files — the 31B and the Q8_0, both 0.8667 — with the live driver at 0.8500. The 2-bit Bolt load (0.3667) sits visibly detached from the rest of the nemotron family.</p>
 <p><em>Does not show</em> the hosted tier, which is deliberately absent (<a class="sref" href="#s19">&#167;19</a>.8).</p>
 <p>Figure 16 is the same plot against MMLU-Pro.</p>
-<figure class="fig"><svg role="img" aria-label="MMLU-Pro against decode throughput, 38 measured rows that carry both axes" xmlns:xlink="http://www.w3.org/1999/xlink" width="507.024pt" height="394.135961pt" viewBox="0 0 507.024 394.135961" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>MMLU-Pro against decode throughput, 38 measured rows that carry both axes</title><desc>MMLU-Pro against decode throughput, 38 measured rows that carry both axes — generated from the run catalogue, not drawn by hand.</desc>
+<figure class="fig"><svg role="img" aria-label="MMLU-Pro against decode throughput, 56 measured models that carry both axes" xmlns:xlink="http://www.w3.org/1999/xlink" width="507.024pt" height="394.135961pt" viewBox="0 0 507.024 394.135961" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>MMLU-Pro against decode throughput, 56 measured models that carry both axes</title><desc>MMLU-Pro against decode throughput, 56 measured models that carry both axes — generated from the run catalogue, not drawn by hand.</desc>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -4999,6 +5014,20 @@ z
     </g>
    </g>
    <g id="PathCollection_33">
+    <path d="M 163.603563 152.932597 
+C 165.253568 152.932597 166.836215 152.277043 168.002944 151.110314 
+C 169.169674 149.943584 169.825228 148.360937 169.825228 146.710932 
+C 169.825228 145.060927 169.169674 143.47828 168.002944 142.31155 
+C 166.836215 141.144821 165.253568 140.489267 163.603563 140.489267 
+C 161.953558 140.489267 160.370911 141.144821 159.204181 142.31155 
+C 158.037451 143.47828 157.381898 145.060927 157.381898 146.710932 
+C 157.381898 148.360937 158.037451 149.943584 159.204181 151.110314 
+C 160.370911 152.277043 161.953558 152.932597 163.603563 152.932597 
+L 163.603563 152.932597 
+z
+" clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
+   </g>
+   <g id="PathCollection_34">
     <defs>
      <path id="m3c52065c17" d="M 0 3.489329 
 C 0.925381 3.489329 1.812985 3.121672 2.467328 2.467328 
@@ -5016,12 +5045,12 @@ z
      <use xlink:href="#m3c52065c17" x="358.199117" y="174.826801" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_34">
+   <g id="PathCollection_35">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m3c52065c17" x="374.416468" y="160.789943" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_35">
+   <g id="PathCollection_36">
     <path d="M 399.402458 156.868996 
 C 400.229509 156.868996 401.022798 156.540405 401.607612 155.955592 
 C 402.192426 155.370778 402.521017 154.577489 402.521017 153.750437 
@@ -5035,7 +5064,7 @@ L 399.402458 156.868996
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_36">
+   <g id="PathCollection_37">
     <defs>
      <path id="mc028a00990" d="M 0 2.871508 
 C 0.761533 2.871508 1.491978 2.568948 2.030463 2.030463 
@@ -5053,12 +5082,12 @@ z
      <use xlink:href="#mc028a00990" x="438.500337" y="115.096387" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_37">
+   <g id="PathCollection_38">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc028a00990" x="434.329548" y="146.710932" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_38">
+   <g id="PathCollection_39">
     <defs>
      <path id="mf66fbd696a" d="M 0 4.941634 
 C 1.310537 4.941634 2.567574 4.420953 3.494263 3.494263 
@@ -5076,7 +5105,7 @@ z
      <use xlink:href="#mf66fbd696a" x="289.591646" y="83.481841" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_39">
+   <g id="PathCollection_40">
     <path d="M 251.649748 128.478823 
 C 253.331913 128.478823 254.945408 127.810492 256.134878 126.621022 
 C 257.324348 125.431551 257.992679 123.818057 257.992679 122.135892 
@@ -5090,7 +5119,7 @@ L 251.649748 128.478823
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_40">
+   <g id="PathCollection_41">
     <defs>
      <path id="mc2ee6024d7" d="M 0 2.529511 
 C 0.670834 2.529511 1.314283 2.262986 1.788634 1.788634 
@@ -5108,12 +5137,12 @@ z
      <use xlink:href="#mc2ee6024d7" x="410.42771" y="111.59771" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_41">
+   <g id="PathCollection_42">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#mc2ee6024d7" x="437.513269" y="65.946307" style="fill: #e69f00; fill-opacity: 0.9; stroke: #e69f00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_42">
+   <g id="PathCollection_43">
     <defs>
      <path id="m4879b2310d" d="M 0 3.148906 
 C 0.8351 3.148906 1.636108 2.817117 2.226613 2.226613 
@@ -5131,7 +5160,7 @@ z
      <use xlink:href="#m4879b2310d" x="351.497285" y="79.983165" style="fill: #7a828e; fill-opacity: 0.9; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_43">
+   <g id="PathCollection_44">
     <path d="M 122.725152 153.112388 
 C 123.483799 153.112388 124.211476 152.810975 124.747921 152.27453 
 C 125.284365 151.738085 125.585779 151.010408 125.585779 150.251761 
@@ -5145,7 +5174,7 @@ L 122.725152 153.112388
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #7a828e; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_44">
+   <g id="PathCollection_45">
     <path d="M 234.22131 235.910231 
 C 235.284413 235.910231 236.304118 235.487856 237.055845 234.736129 
 C 237.807573 233.984401 238.229948 232.964697 238.229948 231.901594 
@@ -5159,7 +5188,7 @@ L 234.22131 235.910231
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_45">
+   <g id="PathCollection_46">
     <defs>
      <path id="m1ba2dc6065" d="M 0 4.008638 
 C 1.063103 4.008638 2.082807 3.586262 2.834535 2.834535 
@@ -5177,7 +5206,7 @@ z
      <use xlink:href="#m1ba2dc6065" x="373.446054" y="252.09275" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_46">
+   <g id="PathCollection_47">
     <defs>
      <path id="ma3d2d3fecb" d="M 0 4.879982 
 C 1.294186 4.879982 2.53554 4.365796 3.450668 3.450668 
@@ -5195,7 +5224,7 @@ z
      <use xlink:href="#ma3d2d3fecb" x="216.057791" y="83.481841" style="fill: #cc79a7; fill-opacity: 0.9; stroke: #cc79a7; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_47">
+   <g id="PathCollection_48">
     <defs>
      <path id="m8fde69458a" d="M 0 4.896351 
 C 1.298527 4.896351 2.544045 4.38044 3.462243 3.462243 
@@ -5213,22 +5242,22 @@ z
      <use xlink:href="#m8fde69458a" x="227.245553" y="62.405477" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_48">
+   <g id="PathCollection_49">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="385.919509" y="227.51771" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_49">
+   <g id="PathCollection_50">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="352.952039" y="79.983165" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_50">
+   <g id="PathCollection_51">
     <g clip-path="url(#p0f31717e25)">
      <use xlink:href="#m48be08a524" x="363.94316" y="139.713579" style="fill: #d55e00; fill-opacity: 0.9; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_51">
+   <g id="PathCollection_52">
     <path d="M 189.317516 183.181394 
 C 190.60532 183.181394 191.840553 182.669744 192.751168 181.759129 
 C 193.661783 180.848514 194.173433 179.613282 194.173433 178.325477 
@@ -5242,7 +5271,7 @@ L 189.317516 183.181394
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_52">
+   <g id="PathCollection_53">
     <path d="M 332.269501 220.128452 
 C 333.104605 220.128452 333.905618 219.796662 334.496126 219.206154 
 C 335.086634 218.615646 335.418424 217.814633 335.418424 216.979528 
@@ -5256,7 +5285,7 @@ L 332.269501 220.128452
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_53">
+   <g id="PathCollection_54">
     <defs>
      <path id="mfe8514205e" d="M 0 3.16981 
 C 0.840643 3.16981 1.646969 2.835819 2.241394 2.241394 
@@ -5274,7 +5303,7 @@ z
      <use xlink:href="#mfe8514205e" x="374.433195" y="136.17275" style="fill: #009e73; fill-opacity: 0.9; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
     </g>
    </g>
-   <g id="PathCollection_54">
+   <g id="PathCollection_55">
     <path d="M 320.350354 43.500313 
 C 321.854023 43.500313 323.296307 42.902899 324.359562 41.839645 
 C 325.422816 40.776391 326.020229 39.334106 326.020229 37.830437 
@@ -5288,7 +5317,7 @@ L 320.350354 43.500313
 z
 " clip-path="url(#p0f31717e25)" style="fill: none; stroke: #009e73; stroke-opacity: 0.9; stroke-width: 1.4"/>
    </g>
-   <g id="PathCollection_55">
+   <g id="PathCollection_56">
     <path d="M 297.508633 155.422511 
 C 298.600456 155.422511 299.647707 154.988725 300.419743 154.216689 
 C 301.191778 153.444654 301.625564 152.397402 301.625564 151.305579 
@@ -7373,7 +7402,7 @@ z
    </g>
   </g>
   <g id="text_30">
-   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 55 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
+   <text style="font-size: 6.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="383.934437" transform="rotate(-0 8.64 383.934437)">n = 56 models · bubble area ∝ parameters · source: ~/runs/catalogue.json</text>
   </g>
  </g>
  <defs>
@@ -7383,12 +7412,12 @@ z
  </defs>
 </svg>
 </figure>
-<p>Figure 16 — MMLU-Pro against decode throughput, 38 measured rows that carry both axes.</p>
+<p>Figure 16 — MMLU-Pro against decode throughput, 56 measured models that carry both axes.</p>
 <h3>19.3 The cap is a variable, not a detail</h3>
 <p>Six models in the archive were measured at two generation budgets, each pair joined by a line. nemotron-super-120b moves 0.835 → 0.951 HumanEval between a 2048 and a 4096 cap; lfm25 0.445 → 0.854; mellum 0.177 → 0.878 between a 1024 and a 4096 cap, which is the largest single move in the figure and is a budget artefact, not a model result. Against that, qwen3next-q6 gets <em>slightly worse</em> with more room (0.9296 → 0.9207), because it was never budget-limited. Grey dots are models measured once, shown for context only.</p>
 <p><em>Does not show</em> the worst case, sage-a1.5 with thinking on, where all 20 items burned the cap and returned nothing — that run has no score to plot (<a class="sref" href="#s7">&#167;7</a>.3).</p>
-<p>Figure 17 plots HumanEval against the generation cap for the nine models measured twice.</p>
-<figure class="fig"><svg role="img" aria-label="HumanEval against generation cap for the nine models measured twice at n ≥ 100" xmlns:xlink="http://www.w3.org/1999/xlink" width="483.26231pt" height="289.159961pt" viewBox="0 0 483.26231 289.159961" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>HumanEval against generation cap for the nine models measured twice at n ≥ 100</title><desc>HumanEval against generation cap for the nine models measured twice at n ≥ 100 — generated from the run catalogue, not drawn by hand.</desc>
+<p>Figure 17 plots HumanEval against the generation cap for the ten models measured twice.</p>
+<figure class="fig"><svg role="img" aria-label="HumanEval against generation cap for the ten models measured twice at n ≥ 100" xmlns:xlink="http://www.w3.org/1999/xlink" width="483.26231pt" height="289.159961pt" viewBox="0 0 483.26231 289.159961" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>HumanEval against generation cap for the ten models measured twice at n ≥ 100</title><desc>HumanEval against generation cap for the ten models measured twice at n ≥ 100 — generated from the run catalogue, not drawn by hand.</desc>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -7973,6 +8002,7 @@ z
      <use xlink:href="#m59aad4ac2e" x="334.480357" y="85.956525" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
      <use xlink:href="#m59aad4ac2e" x="334.480357" y="55.729876" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
      <use xlink:href="#m59aad4ac2e" x="334.480357" y="52.704732" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
+     <use xlink:href="#m59aad4ac2e" x="92.197778" y="48.167015" style="fill: var(--dim); fill-opacity: 0.55; stroke: var(--dim); stroke-opacity: 0.55"/>
     </g>
    </g>
    <g id="patch_3">
@@ -12590,7 +12620,7 @@ z
  </defs>
 </svg>
 </figure>
-<p>Figure 17 — HumanEval against generation cap for the nine models measured twice at n ≥ 100.</p>
+<p>Figure 17 — HumanEval against generation cap for the ten models measured twice at n ≥ 100.</p>
 <h3>19.4 The league tables, as bars</h3>
 <p>The four capability axes at once, top fifteen per axis, with the cap printed only where it differs from the 2048 default. Sorting each axis separately is the point: no model tops two of them, and the retired files are still in the bars where they led — which is exactly how a reader can see what a deletion cost.</p>
 <p>Figure 18 is the per-axis leader bars.</p>
@@ -15933,7 +15963,7 @@ L 566.643608 56.464
 <h3>19.7 One profile per model</h3>
 <p>Specialists and the generalist on one scale: the eight highest-scoring of the twenty models with every axis measured. The gemma4 lines are flat and high across all six axes; ornith-122b trades speed for code; mellum peaks on throughput and sags on knowledge; nemotron-super is knowledge-heavy and slow. Three of the eight are retired (the 31B, the Q8_0, and Mellum's Q6_K), so the flat-and-high shape you see is partly a picture of what is no longer on disk. Each axis is normalised within the plotted set, so the figure is about shape, not absolute quality.</p>
 <p>Figure 21 is one six-axis profile per model.</p>
-<figure class="fig"><svg role="img" aria-label="Six-axis profile of the eight best-scoring models with every axis measured (of 20)" xmlns:xlink="http://www.w3.org/1999/xlink" width="756.70505pt" height="314.599914pt" viewBox="0 0 756.70505 314.599914" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>Six-axis profile of the eight best-scoring models with every axis measured (of 20)</title><desc>Six-axis profile of the eight best-scoring models with every axis measured (of 20) — generated from the run catalogue, not drawn by hand.</desc>
+<figure class="fig"><svg role="img" aria-label="Six-axis profile of the eight best-scoring models with every axis measured (of 44)" xmlns:xlink="http://www.w3.org/1999/xlink" width="756.70505pt" height="314.599914pt" viewBox="0 0 756.70505 314.599914" xmlns="http://www.w3.org/2000/svg" version="1.1"><title>Six-axis profile of the eight best-scoring models with every axis measured (of 44)</title><desc>Six-axis profile of the eight best-scoring models with every axis measured (of 44) — generated from the run catalogue, not drawn by hand.</desc>
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -16501,7 +16531,7 @@ L 641.9638 116.749625
    </g>
   </g>
   <g id="text_24">
-   <text style="font-size: 6.3px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="304.446438" transform="rotate(-0 8.64 304.446438)">models with all six axes measured (n = 8 of 43) · each axis normalised within this set (speed axes square-root scaled), so a profile shows shape, not absolute score · source: catalogue</text>
+   <text style="font-size: 6.3px; font-family: 'DejaVu Sans'; text-anchor: start; fill: var(--dim)" x="8.64" y="304.446438" transform="rotate(-0 8.64 304.446438)">models with all six axes measured (n = 8 of 44) · each axis normalised within this set (speed axes square-root scaled), so a profile shows shape, not absolute score · source: catalogue</text>
   </g>
  </g>
  <defs>
@@ -16511,7 +16541,7 @@ L 641.9638 116.749625
  </defs>
 </svg>
 </figure>
-<p>Figure 21 — Six-axis profile of the eight best-scoring models with every axis measured (of 20).</p>
+<p>Figure 21 — Six-axis profile of the eight best-scoring models with every axis measured (of 44).</p>
 <h3>19.8 Hosted routes, measured</h3>
 <p>What each hosted route's money buys, across the five routes measured: the pinned DeepSeek route has the lowest time-to-first-token and the highest effective throughput, Sonnet the highest cost per call by an order of magnitude. The local driver is marked for scale.</p>
 <p><em>Does not show</em> hosted accuracy, and that gap is worth naming: the HE and MMLU rows in <a class="sref" href="#s14">&#167;14</a> were logged in that session, not written to a run file, so they cannot be plotted without breaking the rule that every figure comes from the archive. Re-running <code>~/bench/bench-api-model.sh</code> for the five routes (about $1.25 at the <a class="sref" href="#s14">&#167;14</a>.4 rates) would close it.</p>
@@ -20854,8 +20884,10 @@ curl -s localhost:8082/props | jq -r .build_info          # -&gt; b3-1a33095
 <p>Every shard's hash, not just the first: <a href="data/provenance.json"><code>data/provenance.json</code></a>.</p>
 <h2 id="s21">21. Change log</h2>
 <p>The full version history lives on its own page: <strong><a href="changelog.html">change log</a></strong> — every correction, the numbers that forced it, and what the report said before. It is long by design; a correction that hides what was wrong is not a correction.</p>
-<p>The seven most recent entries, in brief — the full history, and what each edition got wrong, is on the <a href="changelog.html">change log</a> page:</p>
+<p>The nine most recent entries, in brief — the full history, and what each edition got wrong, is on the <a href="changelog.html">change log</a> page:</p>
 <ul>
+<li><strong>v1.29</strong> — <strong>Hy4-flash at IQ2 measured: a 218.9B MoE that needs an unmerged PR tree, and no slot at the end of it.</strong> <code>tencent/Hy4-flash</code> declares <code>hy_v4_flash</code>, which neither the fork nor the Bolt tree registers (both know only <code>hy_v4</code>, the base model), so this arm ran from an unmerged upstream PR (#32517) built into its own tree — text-only, because that PR's projector rejects the file. 78.88 GiB of weights, 79 of the 100 GiB pool at 32k, caps 512 on all three capability axes: <strong>0.9207 code (151/164), 0.6167 knowledge (74/120), 0.7667/0.8444 IFEval (30), 14/14 riddles</strong>, 276 t/s prefill and 18.9 t/s decode — the second-slowest decoder in Table 4, and 3.5x Ornith-35B's decode cost on the same suite (5,984 s of wall against 683 s). Table 4 gains the row, <a class="sref" href="#s9">&#167;9</a>.1 a block, <a class="sref" href="#s11">&#167;11</a>.4 the riddle entry; the verdict is no slot, because the less-damaged builds of the same file are 144.7 GiB and 156.8 GiB. <strong>Recounts:</strong> the header (53 files, 977.0 GiB, 32 files carrying a measured row, 33 rows — the two DFlash draft files and this arm's two shards are the four files added since the last check), <a class="sref" href="#s9">&#167;9</a>'s alias denominators (52 of 96, restated from the archive rather than carried forward), <a class="sref" href="#s0">&#167;0</a>.3's and <a class="sref" href="#s18">&#167;18</a>.3's servable count (30 → 33, matching Table 4's ✓ column, which had already read 32), and <a class="sref" href="#s18">&#167;18</a>.3's cost line (226 runs, 95.1 h over the 200 rows that record a wall time, window → 2026-11-19). <strong>Four figure captions corrected to what their figures plot:</strong> 15 and 16 read 40 and 38 models while the artwork had plotted 57 and 55 since the 2026-11-17 refresh; 17's cap pairs were "nine" and are ten; 21's "of 20" is 44. <strong>Deliberately not re-derived:</strong> Table 5's servable snapshot (dated 2026-10-31), <a class="sref" href="#s10">&#167;10</a>.2's family spreads (Hy4 is the only member of its family, so there is no spread to report), and Figure 23's power trace. The 16 GiB page stays at v1.26 — 79 GiB is not class-legal there, so nothing on it moved.</li>
+<li><strong>v1.28</strong> — <strong>serving-config re-measure.</strong> <code>Ornith-1.5-35B</code> re-measured with its own in-weights MTP head engaged: 0.9024 code (+14/−3 flips, p=0.006), 0.4250 knowledge (noise), 14/14 riddles, 1507 / 80.5 t/s. The "every grafted draft head loses" claim was withdrawn — an external DFlash2 drafter paid. Full entry on the <a href="changelog.html">change log</a> page; it was not summarised in this brief list at the time, which is what this line fixes.</li>
 <li><strong>v1.27</strong> — <strong>the abliterated twin of LFM2.5-24B measured: two rows in Table 4, and the refusal delta that justifies them.</strong> <code>lfm25-24b-a2b-htc</code> and <code>-htc-think</code> are the same base checkpoint, the same QAD-Q4_0 recipe and a byte-identical 12.65 GiB file as <code>lfm25-24b-a2b</code>; only the refusal behaviour was ablated. With the think block closed at budget 0 the twin reads 0.6890 code / 0.2667 knowledge / 12-14 riddles at 3225 / 106 t/s; with it open, 0.8902 / 0.6167 / 14-14 at 3331 / 110. Set against the stock arms at the same caps, abliteration cost knowledge (9 items on 120) and gained one IFEval prompt, which is the opposite of what the folklore predicts, and the probe that shows what it actually bought is not one of the three axes: on 200 benign prompts the stock file refuses 50 and hedges 13, the twin refuses none — 25.0% → 0.0%, 63 per-item verdict changes. The header's roster counts are recounted (896.9 GiB, 32 measured rows over 31 files), and the 16 GiB page is at v1.24.</li>
 <li><strong>v1.26</strong> — <strong>read-through pass: no measurement changed, nine claims about them did.</strong> Counts recounted (49 models in <a class="sref" href="#s0">&#167;0</a>.0, 30 measured rows in the header, Figures 15 and 16 captioned by what they plot — 40 and 38 rows — Figure 17's nine cap pairs, nineteen retired files in <a class="sref" href="#s19">&#167;19</a>, 30 units in the appendix). <strong>Four superlatives corrected:</strong> "best HumanEval on disk" and "first on knowledge among everything on disk" were each asserted more than once and were false twice over — <code>lfm25-24b-a2b (thinking)</code> is on disk at 0.9695 code, and <code>qwen38fn-abl</code>'s 0.8750 knowledge is a live 40-item re-run — so all four now say the best knowledge score among the full 120-item rows still on disk and name the 40-item row as such. Two "what to use" picks that pointed at retired files (mellum21-fork's 111 t/s, Kimi-Linear's million tokens) are replaced with live rows. <strong>Protocol:</strong> MMLU-Pro has ten options, not four, and IFEval ran 50 prompts, not 30 — the 16 GiB page had both right and this page had both wrong. <strong>Tables renumbered</strong> so 4b is 5 and the contents line "Tables 1-13" is true. <strong>All 24 figures now cited</strong> from the prose that carries them (none was, before this pass), every caption moved below its artwork for consistency, and <a class="sref" href="#s19">&#167;19</a>'s chart encoding stated once for all ten plots. <a class="sref" href="#s4">&#167;4</a>.1 gains the clover build row and <a class="sref" href="#s9">&#167;9</a>.1 a block for the eleven 16 GiB-roster rows, which had no per-model analysis at all. Appendix: duplicate port names, the 8090 label the sanitiser had doubled, and examples that pointed at the disabled :8099.</li>
 <li><strong>v1.25</strong> — <strong>Clover-35B-A3B-Preview measured; the 16 GiB roster is complete.</strong> The block-diffusion MoE that had sat in the roster file with no row since v1.18 now has one, from a fork that carries <code>clover_moe</code>: <strong>0.9451 code (155/164@8192), 0.8417 knowledge (101/120@8192), 0.8400/0.8289 IFEval (50@4096)</strong>, 14/14 riddles, 1849 t/s prefill, 67.5 t/s decode, 12.32 GiB. On the 16 GiB roster it is <strong>second on code</strong> behind <code>lfm25-24b-a2b (thinking)</code> at 0.970 and <strong>first on knowledge</strong> by 10 items over <code>axion-1.0-35b-iq3</code>, which moves that page's <a class="sref" href="#s3">&#167;3</a> verdicts; across this matrix it is the best 120-item knowledge score of any live row except the driver (0.8500). Measured <strong>AR-only</strong> — llama.cpp runs the model autoregressively, so this is the causal-decode arm, not the parallel decode the weights were trained for. IFEval also settles the cap question on this model: 0.560/0.553 at the 1280 pin, 0.840/0.829 at 4096. Roster now 49 measured rows, 30 servable, 207 runs.</li>

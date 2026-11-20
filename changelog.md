@@ -9,6 +9,48 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.29 (2026-11-20)
+
+**A 218.9B MoE measured on an unmerged build tree: the row is real, the slot is not — and four figure captions
+had drifted from their artwork.**
+
+`tencent/Hy4-flash` (218,938,353,741 params, 42 blocks, 512 experts top-16 plus one shared, MLA attention, 1M
+training context) declares `general.architecture = hy_v4_flash`. Neither the serving fork nor the Bolt tree
+registers that string — both know only `hy_v4`, the earlier base model — so every GGUF of it dies at load with
+`unknown model architecture`. The measurement therefore came from **upstream PR #32517** (open, mergeable, head
+`Little0o0:hy4-flash` f8d4cc4), built into its own tree so the unit-serving fork was untouched. Vision is dead in
+that tree (the projector fails `load_hparams: unknown projector type` and the server exits), so the arm is
+text-only, which is the row's build cell.
+
+| what changed | before | now |
+|---|---|---|
+| Table 4 | — | new row: `Hy4-flash (IQ2_S/IQ2_XXS)`, 218.9B, IQ2_S, 0.9207 (164@512), 0.6167 (120@512), 14/14, 276 / 18.9 t/s, 2026-11-19, `hy4flash-pr b1-f8d4cc4`, `✓ PR-tree` |
+| header roster | 49 files, 896.9 GiB, 31 files / 32 rows, checked 2026-11-17 | 53 files, 977.0 GiB, 32 files / 33 rows, checked 2026-11-20 — the two DFlash draft files (1.24 GiB) and this arm's two shards (78.88 GiB) are the additions |
+| header measurement window | 2026-10-07 → 2026-11-17 | 2026-10-07 → 2026-11-19 |
+| §9 alias denominators | 49 of 87 | 52 of 96, restated from the archive: 96 distinct aliases carry at least one measurement, 52 a Table 4 row |
+| §0.3 and §18.3 servable count | 30 | 33 — Table 4's `✓` column already read 32 before this edition, so the prose had drifted by two |
+| §18.3 cost line | 207 runs, 76.9 h, window to 2026-11-12 | 226 runs, 95.1 h over the 200 rows that record a wall time, window to 2026-11-19 |
+| Figure 15 / 16 captions | "40 measured rows" / "38 measured rows" | 58 / 56 measured models — the figures' own footers read 57 and 55 at the last publish, so the captions had been wrong since the 2026-11-17 refresh |
+| Figure 17 caption | nine models measured twice | ten cap pairs at n ≥ 100 |
+| Figure 21 caption | "of 20" | "of 44" models with all six axes measured |
+
+**The numbers.** Caps are 512 on all three capability axes, which is what a 2.6 bpw file leaves at 78.88 GiB of
+weights and 32k context: **0.9207 code (151/164)**, **0.6167 knowledge (74/120)**, **0.7667 / 0.8444 IFEval (30)**,
+14/14 riddles, 3/3 preflight, both needles, 276 t/s prefill and 18.9 t/s decode. It is sixteenth on code with a tie
+at 0.9207, level with the 30B Q3 build on knowledge, 0.23 under the driver — and the second-slowest decoder in
+Table 4, at 3.5x Ornith-35B's decode cost on the same suite (5,984 s of wall against 683 s).
+
+**Why it keeps no slot.** Not the architecture: the trim. The only less-damaged builds of this file are Q3_K at
+144.7 GiB and Q4_K_M at 156.8 GiB, neither of which this box can hold, so "test it at a better quantisation" is not
+an available experiment at any effort. That is why the row is published and the file is not promoted to a unit.
+
+**Deliberately not re-derived.** Table 5's servable snapshot is dated 2026-10-31 and is left as a snapshot; §10.2's
+family spreads gain nothing, because Hy4 is the only member of its family in the archive; Figure 23's power trace
+was not re-picked. The 16 GiB page (~/docs/16gb-vram.md, v1.26) is unchanged: a 79 GiB file is not class-legal at
+a 15 GiB envelope, so no table or figure on that page moves.
+
+---
+
 ### Version 1.28 (2026-11-18)
 
 **The row now describes what the box serves, and the archive's "grafted heads never pay" rule gets its one

@@ -14,7 +14,7 @@ and loses knowledge is not "0.7 of a model".
 3. **`build` is the llama.cpp that produced the row.** Decode rates move 10-20% between builds, so a
    throughput comparison across different builds is a comparison of builds as much as models.
 
-51 measured rows: **32 servable**, 19 retired but kept in place, because a
+52 measured rows: **33 servable**, 19 retired but kept in place, because a
 leaderboard with the failures deleted is how the same 60 GB gets downloaded twice.
 
 ---
@@ -120,48 +120,49 @@ justifies 60-70 GiB at 23-27 t/s on a box whose best model fits in a sixth of th
 | 6 | Clover-35B-A3B-Preview (IQ2_M, AR mode) | 14/14 | — | — | fork b11581-19b458b | 2026-11-12 | ✓ |
 | 7 | Axion-1.0-35B (IQ3_XXS) | 14/14 | — | — | fork b3-1a33095 | 2026-11-12 | ✓ |
 | 8 | qwen3next-q6 | 14/14 | — | — | fork pre-identity | 2026-10-10 | ✓ |
-| 9 | qwen3next-q4 | 14/14 | — | — | fork b3-1a33095 | 2026-10-31 | ✓ |
-| 10 | gemma-4-12B-QAT | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 11 | lfm25-24b-a2b-htc (thinking) | 14/14 | — | — | fork b11581-1a33095 | 2026-11-16 | ✓ |
-| 12 | qwen38-35b | 14/14 | — | — | fork b3-1a33095 | 2026-11-01 | ✓ |
-| 13 | gemma-4-E4B-QAT | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 14 | qwen3-14b | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 15 | qwen3-30b-a3b | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 16 | Clover-35B-A3B-Preview | 14/14 | — | — | clover b1-6b9c0cf | 2026-11-03 | ✗ retired |
-| 17 | Ornith-1.5-35B | 14/14 | — | — | fork b11581-19b458b | 2026-11-18 | ✓ |
-| 18 | graft-50b-a3b | 14/14 | — | — | fork pre-identity | 2026-10-19 | ✗ retired |
-| 19 | gpt-oss-20b-mxfp4 | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 20 | gemma-4-26B-A4B-QAT + MTP drafter | 14/14 | — | — | fork b3-1a33095 | 2026-11-09 | ✓ |
-| 21 | Nemotron-Bolt-74B-A9B | 13/14 | — | — | bolt pre-identity | 2026-10-16 | ✗ retired |
-| 22 | Groot-19B-A3B | 13/14 | — | — | fork b3-1a33095 | 2026-11-11 | ✓ |
-| 23 | Kimi-Linear-48B-A3B-abl | 13/14 | — | — | fork b3-1a33095 | 2026-11-01 | ✗ retired |
-| 24 | qwen3-8b | 13/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 25 | kimi | 13/14 | — | — | fork pre-identity | 2026-10-14 | ✗ retired |
-| 26 | ornith-122b | 12/14 | — | — | fork pre-identity | 2026-10-20 | ✓ |
-| 27 | gptoss | 12/14 | — | — | fork pre-identity | 2026-10-12 | ✓ |
-| 28 | qwen35 | 12/14 | — | — | fork pre-identity | 2026-10-11 | ✗ retired |
-| 29 | qwen36-35b | 12/14 | — | — | fork pre-identity | 2026-10-12 | ✗ retired |
-| 30 | mistral-small-3.1-24b | 12/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 31 | hy-memory-30b-a3b | 12/14 | — | — | fork pre-identity | 2026-10-17 | ✗ retired |
-| 32 | lfm25-24b-a2b-htc | 12/14 | — | — | fork b11581-1a33095 | 2026-11-16 | ✓ |
-| 33 | ornith35b (uncensored) | 12/14 | — | — | fork b3-1a33095 | 2026-10-31 | ✓ boot |
-| 34 | nemotron-super-120b | 11/14 | — | — | bolt pre-identity | 2026-10-18 | ✗ retired |
-| 35 | ornith-mtp-21g | 11/14 | — | — | fork pre-identity | 2026-10-17 | ✓ |
-| 36 | Swift-1.5-FN-Heretic | 11/14 | — | — | fork b3-1a33095 | 2026-11-05 | ✓ |
-| 37 | mellum | 11/14 | — | — | fork pre-identity | 2026-10-12 | ✗ retired |
-| 38 | qwen38fn-abl | 11/14 | — | — | fork pre-identity | 2026-10-13 | ✓ |
-| 39 | hy-memory-30b-a3b-q8 | 11/14 | — | — | fork pre-identity | 2026-10-17 | ✗ retired |
-| 40 | Ling-3.0-flash | 11/14 | — | — | fork pre-identity | 2026-10-22 | ✗ retired |
-| 41 | minicpm-v47-35b | 10/14 | — | — | bolt pre-identity | 2026-10-18 | ✓ |
-| 42 | gptoss-abliterated | 10/14 | — | — | fork pre-identity | 2026-10-13 | ✓ |
-| 43 | flint (i1-Q4_K_M) | 10/14 | — | — | flint pre-identity | 2026-10-25 | ✗ retired |
-| 44 | mellum21-fork | 10/14 | — | — | fork pre-identity | 2026-10-18 | ✗ retired |
-| 45 | Laguna-XS-2.1 | 10/14 | — | — | fork b3-1a33095 | 2026-11-06 | ✓ |
-| 46 | lfm25-24b-a2b | 10/14 | — | — | fork pre-identity | 2026-10-17 | ✓ |
-| 47 | Axion-1.0-35B | 10/14 | — | — | fork b3-1a33095 | 2026-11-05 | ✓ |
-| 48 | Lite-Beam-M2.7-229B | 10/14 | — | — | fork b3-1a33095 | 2026-11-08 | ✓ |
-| 49 | Groot-65B-A6B | 9/14 | — | — | bolt b1-a30fb49 | 2026-11-05 | ✗ retired |
-| 50 | nemotron-bolt (broken load) | 8/14 | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
+| 9 | Hy4-flash (IQ2_S/IQ2_XXS) | 14/14 | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 10 | qwen3next-q4 | 14/14 | — | — | fork b3-1a33095 | 2026-10-31 | ✓ |
+| 11 | gemma-4-12B-QAT | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 12 | lfm25-24b-a2b-htc (thinking) | 14/14 | — | — | fork b11581-1a33095 | 2026-11-16 | ✓ |
+| 13 | qwen38-35b | 14/14 | — | — | fork b3-1a33095 | 2026-11-01 | ✓ |
+| 14 | gemma-4-E4B-QAT | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 15 | qwen3-14b | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 16 | qwen3-30b-a3b | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 17 | Clover-35B-A3B-Preview | 14/14 | — | — | clover b1-6b9c0cf | 2026-11-03 | ✗ retired |
+| 18 | Ornith-1.5-35B | 14/14 | — | — | fork b11581-19b458b | 2026-11-18 | ✓ |
+| 19 | graft-50b-a3b | 14/14 | — | — | fork pre-identity | 2026-10-19 | ✗ retired |
+| 20 | gpt-oss-20b-mxfp4 | 14/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 21 | gemma-4-26B-A4B-QAT + MTP drafter | 14/14 | — | — | fork b3-1a33095 | 2026-11-09 | ✓ |
+| 22 | Nemotron-Bolt-74B-A9B | 13/14 | — | — | bolt pre-identity | 2026-10-16 | ✗ retired |
+| 23 | Groot-19B-A3B | 13/14 | — | — | fork b3-1a33095 | 2026-11-11 | ✓ |
+| 24 | Kimi-Linear-48B-A3B-abl | 13/14 | — | — | fork b3-1a33095 | 2026-11-01 | ✗ retired |
+| 25 | qwen3-8b | 13/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 26 | kimi | 13/14 | — | — | fork pre-identity | 2026-10-14 | ✗ retired |
+| 27 | ornith-122b | 12/14 | — | — | fork pre-identity | 2026-10-20 | ✓ |
+| 28 | gptoss | 12/14 | — | — | fork pre-identity | 2026-10-12 | ✓ |
+| 29 | qwen35 | 12/14 | — | — | fork pre-identity | 2026-10-11 | ✗ retired |
+| 30 | qwen36-35b | 12/14 | — | — | fork pre-identity | 2026-10-12 | ✗ retired |
+| 31 | mistral-small-3.1-24b | 12/14 | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 32 | hy-memory-30b-a3b | 12/14 | — | — | fork pre-identity | 2026-10-17 | ✗ retired |
+| 33 | lfm25-24b-a2b-htc | 12/14 | — | — | fork b11581-1a33095 | 2026-11-16 | ✓ |
+| 34 | ornith35b (uncensored) | 12/14 | — | — | fork b3-1a33095 | 2026-10-31 | ✓ boot |
+| 35 | nemotron-super-120b | 11/14 | — | — | bolt pre-identity | 2026-10-18 | ✗ retired |
+| 36 | ornith-mtp-21g | 11/14 | — | — | fork pre-identity | 2026-10-17 | ✓ |
+| 37 | Swift-1.5-FN-Heretic | 11/14 | — | — | fork b3-1a33095 | 2026-11-05 | ✓ |
+| 38 | mellum | 11/14 | — | — | fork pre-identity | 2026-10-12 | ✗ retired |
+| 39 | qwen38fn-abl | 11/14 | — | — | fork pre-identity | 2026-10-13 | ✓ |
+| 40 | hy-memory-30b-a3b-q8 | 11/14 | — | — | fork pre-identity | 2026-10-17 | ✗ retired |
+| 41 | Ling-3.0-flash | 11/14 | — | — | fork pre-identity | 2026-10-22 | ✗ retired |
+| 42 | minicpm-v47-35b | 10/14 | — | — | bolt pre-identity | 2026-10-18 | ✓ |
+| 43 | gptoss-abliterated | 10/14 | — | — | fork pre-identity | 2026-10-13 | ✓ |
+| 44 | flint (i1-Q4_K_M) | 10/14 | — | — | flint pre-identity | 2026-10-25 | ✗ retired |
+| 45 | mellum21-fork | 10/14 | — | — | fork pre-identity | 2026-10-18 | ✗ retired |
+| 46 | Laguna-XS-2.1 | 10/14 | — | — | fork b3-1a33095 | 2026-11-06 | ✓ |
+| 47 | lfm25-24b-a2b | 10/14 | — | — | fork pre-identity | 2026-10-17 | ✓ |
+| 48 | Axion-1.0-35B | 10/14 | — | — | fork b3-1a33095 | 2026-11-05 | ✓ |
+| 49 | Lite-Beam-M2.7-229B | 10/14 | — | — | fork b3-1a33095 | 2026-11-08 | ✓ |
+| 50 | Groot-65B-A6B | 9/14 | — | — | bolt b1-a30fb49 | 2026-11-05 | ✗ retired |
+| 51 | nemotron-bolt (broken load) | 8/14 | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
 
 Fourteen hand-written riddles and three arithmetic traps. Not a benchmark in the psychometric sense: it
 catches a model that pattern-matches an answer without following the question, which is exactly the
@@ -221,8 +222,9 @@ failure the code and knowledge axes do not show. `14/14` is the ceiling; several
 | 47 | qwen35 | 22.9 t/s | — | — | fork pre-identity | 2026-10-11 | ✗ retired |
 | 48 | nemotron-bolt (broken load) | 22.7 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
 | 49 | qwen38fn32-prune2 | 20.0 t/s | — | — | qwen4exp-var b1-1844325 | 2026-11-03 | ✗ retired |
-| 50 | gemma4-31b | 17.0 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
-| 51 | mistral-small-3.1-24b | 14.9 t/s | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 50 | Hy4-flash (IQ2_S/IQ2_XXS) | 18.9 t/s | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 51 | gemma4-31b | 17.0 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
+| 52 | mistral-small-3.1-24b | 14.9 t/s | — | — | fork b3-1a33095 | 2026-11-10 | ✓ |
 
 Decode is bandwidth-bound on this platform (~256 GB/s shared with the CPU), so it tracks active
 parameters, not total parameters. The top of this table is two ~12-24B MoEs; the bottom is a 120B.
@@ -278,7 +280,8 @@ parameters, not total parameters. The top of this table is two ~12-24B MoEs; the
 | 45 | nemotron-super-120b | 411 t/s | — | — | bolt pre-identity | 2026-10-18 | ✗ retired |
 | 46 | qwen38fn32-prune2 | 397 t/s | — | — | qwen4exp-var b1-1844325 | 2026-11-03 | ✗ retired |
 | 47 | gemma4-31b | 350 t/s | — | — | fork pre-identity | 2026-10-21 | ✗ retired |
-| 48 | Lite-Beam-M2.7-229B | 261 t/s | — | — | fork b3-1a33095 | 2026-11-08 | ✓ |
+| 48 | Hy4-flash (IQ2_S/IQ2_XXS) | 276 t/s | — | — | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 49 | Lite-Beam-M2.7-229B | 261 t/s | — | — | fork b3-1a33095 | 2026-11-08 | ✓ |
 
 Prefill is shader-bound and moves far more between builds than decode does. Use it to size long-prompt
 work, not to rank models generally.
@@ -289,14 +292,15 @@ work, not to rank models generally.
 
 | # | model | HumanEval | n | cap | build | measured | status |
 |---:|---|---:|---:|---:|---|---|---|
-| 1 | gemma-4-12B-QAT | 0.8963 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 2 | gemma-4-E4B-QAT | 0.8659 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 3 | qwen3-14b | 0.8537 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 4 | qwen3-30b-a3b | 0.8537 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 5 | mistral-small-3.1-24b | 0.8232 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 6 | qwen3-8b | 0.7866 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 7 | gpt-oss-20b-mxfp4 | 0.5854 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
-| 8 | nemotron-bolt (broken load) | 0.1786 **floor** | 56 | 512 | fork pre-identity | 2026-10-21 | ✗ retired |
+| 1 | Hy4-flash (IQ2_S/IQ2_XXS) | 0.9207 **floor** | 164 | 512 | hy4flash-pr b1-f8d4cc4 | 2026-11-19 | ✓ |
+| 2 | gemma-4-12B-QAT | 0.8963 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 3 | gemma-4-E4B-QAT | 0.8659 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 4 | qwen3-14b | 0.8537 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 5 | qwen3-30b-a3b | 0.8537 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 6 | mistral-small-3.1-24b | 0.8232 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 7 | qwen3-8b | 0.7866 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 8 | gpt-oss-20b-mxfp4 | 0.5854 **floor** | 164 | 512 | fork b3-1a33095 | 2026-11-10 | ✓ |
+| 9 | nemotron-bolt (broken load) | 0.1786 **floor** | 56 | 512 | fork pre-identity | 2026-10-21 | ✗ retired |
 
 These rows exist because a floor is still information: it is the lowest a model is known to score. They
 are not ranked against the tables above, and a plan that depends on one of them should re-measure first.

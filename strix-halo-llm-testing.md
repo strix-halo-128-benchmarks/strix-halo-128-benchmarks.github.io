@@ -4,12 +4,12 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.28** · 18th November 2026 · Serving-config re-measure: the 35B's in-weights MTP head, and a 122B drafter that finally pays
+- **Document version:** **1.29** · 20th November 2026 · Hy4-flash at IQ2: 218.9B of weights on an unmerged PR tree, and the 26B driver still wins every axis that matters
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-17
-- **Roster:** 49 `.gguf` files on disk, 896.9 GiB, 31 of them carrying a measured row (32 rows: the LFM2.5 heretic file carries two), checked 2026-11-17
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-19
+- **Roster:** 53 `.gguf` files on disk, 977.0 GiB, 32 of them carrying a measured row (33 rows: the LFM2.5 heretic file carries two), checked 2026-11-20
   · **Change log:** §21
 
 **About this document**
@@ -155,7 +155,7 @@ that is ±2.3 pp at p=0.9, at n=120 it is ±2.7 pp (§8 has the full table).
 
 ### 0.3 What exists as a result
 
-A roster of **30 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
+A roster of **33 servable models** with measured profiles; a deployed daily driver — the uncensored QAT Q4_K_M
 build of gemma4-26b-a4b on port 8100, which since 2026-10-28 is what answers WhatsApp, with
 Ornith-1.5-35B-Uncensored on :8094 as the system boot model; a documented set of models that were measured,
 failed or lost their slot and were deleted, with hashes and restore recipes; and a measured comparison against
@@ -1013,7 +1013,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 49 of the 87 model aliases that have
+One row per model that completed the full suite and reached a verdict — 52 of the 96 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -1021,7 +1021,7 @@ identity — the flavour and commit that produced it — tabulated in §4.1, and
 b1-a30fb49`, or `pre-identity` where the run predates identity stamping (§4.1 explains why that is a
 window, not a guess). The full path is deliberately not published. The `measured` column is the date of the best-scoring run shown — the run id and the full build
 identity are in `data/catalogue.json`, so any row can be traced to the exact binary that produced it.
-The `disk` column is the roster as of **2026-11-03**: `✓` present and servable,
+The `disk` column is the roster as of **2026-11-20**: `✓` present and servable,
 `✗` retired (recipes in `~/llama-local/RETIRED-models.md`). Table 4 is all-time by design — the
 deleted rows are why the recommendations below have reasons.
 
@@ -1046,6 +1046,7 @@ deleted rows are why the recommendations below have reasons.
 | gptoss-abliterated | 116.8B | MXFP4 | 0.9268 (164@2048) | 0.7500 (120@2048) | 10/14 | 1052 | 50.5 | 2026-10-13 | fork pre-identity | ✓ |
 | qwen35 | 122.1B | Q4_K_M | 0.9242 (66) | 0.5417 (48) | 12/14 | 622 | 22.9 | 2026-10-11 | fork pre-identity | ✗ |
 | ornith-mtp-21g | 35.5B | IQ4_XS | 0.9207 (164@4096) | 0.7750 (120@2048) | 11/14 | 1610 | 65.2 | 2026-10-17 | fork pre-identity | ✓ |
+| Hy4-flash (IQ2_S/IQ2_XXS) | 218.9B | IQ2_S | 0.9207 (164@512) | 0.6167 (120@512) | 14/14 | 276 | 18.9 | 2026-11-19 | hy4flash-pr b1-f8d4cc4 | ✓ PR-tree |
 | flint (i1-Q4_K_M) | 40.0B | Q4_K_M | 0.9167 (60@4096) | — | 10/14 | — | 71.1 | 2026-10-25 | flint pre-identity | ✗ 10-30 |
 | Swift-1.5-FN-Heretic | 176.9B | IQ3_S | 0.9167 (60@2048) | 0.8000 (40@2048) | 11/14 | 512 | 25.6 | 2026-11-05 | fork b3-1a33095 | ✓ |
 | qwen3next-q4 | 79.7B | Q4_K_M | 0.9146 (164@2048) | 0.7417 (120@2048) | 14/14 | 1219 | 58.1 | 2026-10-31 | fork b3-1a33095 | ✓ |
@@ -1447,15 +1448,32 @@ rows that reach the top of the matrix.
 The other seven are small non-thinking arms measured at a **512-token cap**, which is what a card's KV budget
 leaves after the weights: `gemma-4-12B-QAT` 0.8963 code / 0.920 IFEval, `gemma-4-E4B-QAT` 0.8659 / 0.900,
 `qwen3-14b` 0.8537 / 0.880, `qwen3-30b-a3b` 0.8537 / 0.860, `mistral-small-3.1-24b` 0.8232 / 0.820,
-`qwen3-8b` 0.7866 / 0.900, `gpt-oss-20b-mxfp4` 0.5854 / 0.480. Their knowledge cells read 0.467 to 0.617 and are
-the only knowledge numbers in Table 4 measured at 512; the leaderboard page therefore ranks them in a separate
-floor table rather than against the 2048-and-up rows. Read them as what a 16 GiB card delivers, not as a ceiling.
+`qwen3-8b` 0.7866 / 0.900, `gpt-oss-20b-mxfp4` 0.5854 / 0.480. Their knowledge cells read 0.467 to 0.617 and,
+with the 218.9B Hy4-flash below, are the only knowledge numbers in Table 4 measured at 512; the leaderboard
+page therefore ranks them in a separate floor table rather than against the 2048-and-up rows. Read them as what
+a 16 GiB card delivers, not as a ceiling.
 
 The eleventh is a perf-only row: `gemma-4-26B-A4B-QAT + MTP drafter` is the same weights as `g4-26b-a4b-qat` plus
 a 0.43 GiB draft head, decoding 54.9 t/s against 59.2 without it, at 15.06 GiB and 8k context — over a 16 GiB
 card's budget by 0.06 GiB, which is §10's worked example. **What the block changed in the ranking:** the top code
 cell moved to a 24B arm at 8192, the three-row tie at 0.9573 dropped to fourth, and the best 120-item knowledge
 score among live rows is now a 3.05 bpw diffusion export at 12.32 GiB (0.8417), a point below the driver.
+
+**Hy4-flash at IQ2 — 218.9B of weights, and the trim is the whole result.** 218.9B total with 10B active per
+token, 42 blocks, 512 experts top-16 plus one shared, MLA attention, 1M training context, vision in the weights
+and unusable here. Every GGUF of it declares `hy_v4_flash`, an arch neither the serving fork nor the Bolt tree
+registers (both know only `hy_v4`, the base model), so this row came from an **unmerged upstream PR (#32517)**
+built into its own tree — text-only, because that PR's projector rejects the file and the server exits rather
+than falling back. 78.88 GiB of weights, 79 of the 100 GiB pool at 32k, measured with the driver and the boot
+unit still resident. Caps are 512 on all three capability axes, which is what 2.6 bpw leaves: **0.9207 code
+(151/164)**, **0.6167 knowledge (74/120)**, 0.7667 / 0.8444 IFEval (30), 14/14 riddles, 3/3 preflight, both
+needles, at **276 t/s prefill and 18.9 t/s decode** — the second-slowest decoder in Table 4 after
+`mistral-small-3.1-24b`, and 3.5x the decode cost of Ornith-35B on the same suite (5,984 s of wall against
+683 s). Against the roster it is sixteenth on code with a tie at 0.9207, level with the 30B Q3 build on
+knowledge and 0.23 under the driver. **Verdict: no slot and no unit.** The bound is not the architecture but the
+trim: the only less-damaged builds of this file are Q3_K at 144.7 GiB and Q4_K_M at 156.8 GiB, neither of which
+this box can hold, so "try it at a better quantisation" is not an available experiment at any effort. The row
+stays because the negative is the measurement, and the launcher stays on port 8101 for the day #32517 merges.
 
 ---
 
@@ -1661,6 +1679,7 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | 14/14 | graft-50b-a3b | ✗ |
 | 14/14 | gpt-oss-20b-mxfp4 | ✓ |
 | 14/14 | gemma-4-26B-A4B-QAT + MTP drafter | ✓ |
+| 14/14 | Hy4-flash (IQ2_S/IQ2_XXS) | ✓ PR-tree |
 
 ---
 
@@ -2538,10 +2557,11 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 207 runs totalling **76.9 hours of benchmark execution**, recorded
-run by run in `catalogue.json`, over 2026-10-07 → 2026-11-12. Of the 87 model aliases with at least one
-measurement, 30 servable models carry a row in Table 4 and every deletion is recorded in the ledger; the two
-largest deletion passes alone released 61.6 GiB and 245.1 GiB.
+**The one cost that is measured:** 226 runs, of which the 200 that record a wall time total **95.1 hours of
+benchmark execution**, recorded run by run in `catalogue.json`, over 2026-10-07 → 2026-11-19. Of the 96 model
+aliases with at least one measurement, 52 carry a row in Table 4 and 33 of those are on files still on disk;
+every deletion is recorded in the ledger, and the two largest deletion passes alone released 61.6 GiB and
+245.1 GiB.
 
 A full sweep on a 120B model takes 2-4 hours of that budget, and the HumanEval axis is the expensive
 one at 20 minutes to 2 hours depending on the model. The benefit is that every decision is a line in
@@ -2622,7 +2642,7 @@ Figure 15 plots HumanEval against decode for every row that carries both axes.
 
 {{svg charts/f15-quality-speed.svg}}
 
-Figure 15 — HumanEval pass@1 against decode throughput, 40 measured rows that carry both axes.
+Figure 15 — HumanEval pass@1 against decode throughput, 58 measured models that carry both axes.
 
 ### 19.2 Knowledge against decode speed
 
@@ -2637,7 +2657,7 @@ Figure 16 is the same plot against MMLU-Pro.
 
 {{svg charts/f16-knowledge-speed.svg}}
 
-Figure 16 — MMLU-Pro against decode throughput, 38 measured rows that carry both axes.
+Figure 16 — MMLU-Pro against decode throughput, 56 measured models that carry both axes.
 
 ### 19.3 The cap is a variable, not a detail
 
@@ -2651,11 +2671,11 @@ shown for context only.
 *Does not show* the worst case, sage-a1.5 with thinking on, where all 20 items burned the cap and
 returned nothing — that run has no score to plot (§7.3).
 
-Figure 17 plots HumanEval against the generation cap for the nine models measured twice.
+Figure 17 plots HumanEval against the generation cap for the ten models measured twice.
 
 {{svg charts/f17-cap-sensitivity.svg}}
 
-Figure 17 — HumanEval against generation cap for the nine models measured twice at n ≥ 100.
+Figure 17 — HumanEval against generation cap for the ten models measured twice at n ≥ 100.
 
 ### 19.4 The league tables, as bars
 
@@ -2715,7 +2735,7 @@ Figure 21 is one six-axis profile per model.
 
 {{svg charts/f21-profiles.svg}}
 
-Figure 21 — Six-axis profile of the eight best-scoring models with every axis measured (of 20).
+Figure 21 — Six-axis profile of the eight best-scoring models with every axis measured (of 44).
 
 ### 19.8 Hosted routes, measured
 
@@ -2924,9 +2944,32 @@ The full version history lives on its own page: **[change log](changelog.html)**
 numbers that forced it, and what the report said before. It is long by design; a correction that hides what
 was wrong is not a correction.
 
-The seven most recent entries, in brief — the full history, and what each edition got wrong, is on the
+The nine most recent entries, in brief — the full history, and what each edition got wrong, is on the
 [change log](changelog.html) page:
 
+- **v1.29** — **Hy4-flash at IQ2 measured: a 218.9B MoE that needs an unmerged PR tree, and no slot at the end of
+  it.** `tencent/Hy4-flash` declares `hy_v4_flash`, which neither the fork nor the Bolt tree registers (both know
+  only `hy_v4`, the base model), so this arm ran from an unmerged upstream PR (#32517) built into its own tree —
+  text-only, because that PR's projector rejects the file. 78.88 GiB of weights, 79 of the 100 GiB pool at 32k,
+  caps 512 on all three capability axes: **0.9207 code (151/164), 0.6167 knowledge (74/120), 0.7667/0.8444 IFEval
+  (30), 14/14 riddles**, 276 t/s prefill and 18.9 t/s decode — the second-slowest decoder in Table 4, and 3.5x
+  Ornith-35B's decode cost on the same suite (5,984 s of wall against 683 s). Table 4 gains the row, §9.1 a block,
+  §11.4 the riddle entry; the verdict is no slot, because the less-damaged builds of the same file are 144.7 GiB
+  and 156.8 GiB. **Recounts:** the header (53 files, 977.0 GiB, 32 files carrying a measured row, 33 rows — the two
+  DFlash draft files and this arm's two shards are the four files added since the last check), §9's alias
+  denominators (52 of 96, restated from the archive rather than carried forward), §0.3's and §18.3's servable
+  count (30 → 33, matching Table 4's ✓ column, which had already read 32), and §18.3's cost line (226 runs, 95.1 h
+  over the 200 rows that record a wall time, window → 2026-11-19). **Four figure captions corrected to what their
+  figures plot:** 15 and 16 read 40 and 38 models while the artwork had plotted 57 and 55 since the 2026-11-17
+  refresh; 17's cap pairs were "nine" and are ten; 21's "of 20" is 44. **Deliberately not re-derived:** Table 5's
+  servable snapshot (dated 2026-10-31), §10.2's family spreads (Hy4 is the only member of its family, so there is
+  no spread to report), and Figure 23's power trace. The 16 GiB page stays at v1.26 — 79 GiB is not class-legal
+  there, so nothing on it moved.
+- **v1.28** — **serving-config re-measure.** `Ornith-1.5-35B` re-measured with its own in-weights MTP head
+  engaged: 0.9024 code (+14/−3 flips, p=0.006), 0.4250 knowledge (noise), 14/14 riddles, 1507 / 80.5 t/s. The
+  "every grafted draft head loses" claim was withdrawn — an external DFlash2 drafter paid. Full entry on the
+  [change log](changelog.html) page; it was not summarised in this brief list at the time, which is what this
+  line fixes.
 - **v1.27** — **the abliterated twin of LFM2.5-24B measured: two rows in Table 4, and the refusal delta that
   justifies them.** `lfm25-24b-a2b-htc` and `-htc-think` are the same base checkpoint, the same QAD-Q4_0 recipe
   and a byte-identical 12.65 GiB file as `lfm25-24b-a2b`; only the refusal behaviour was ablated. With the think
