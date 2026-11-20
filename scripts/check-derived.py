@@ -119,9 +119,6 @@ def main() -> int:
     # landing. Those pairs are listed here rather than inferred: the gate then still catches a real
     # drift at the documented cap, and prints the newer row it is deliberately not using.
     EXCEPTIONS: dict[tuple[str, str], set] = {
-        ("gpt-oss-20b-mxfp4", "humaneval"): {512},
-        ("gpt-oss-20b-mxfp4", "mmlu_pro"): {512},
-        ("gpt-oss-20b-mxfp4", "ifeval"): {1280},
         ("gpt-oss-20b-mxfp4", "riddles"): {None, 1024},
     }
 
@@ -216,8 +213,8 @@ def main() -> int:
         vals = [score(pick(mid, ax), ax)[0] for ax in ("humaneval", "mmlu_pro", "ifeval")]
         if all(v is not None for v in vals):
             means[mid] = sum(float(v) for v in vals if v is not None) / 3.0
-    PARTIAL = {"gpt-oss-20b-mxfp4"}          # ‡ row: no mean until its IFEval sample is complete
-    means = {k: v for k, v in means.items() if k not in PARTIAL}
+    # every row with three axes now has a mean: gpt-oss's IFEval sample closed at n=50 on 20 Nov,
+    # so there is no ‡ row and no exclusion here (a re-shortened sample would fail the n=50 check below)
     top = max(means, key=means.get) if means else ""
     ok("mean leader is the low-cap row named in prose", top == "huihui-gemma26b-qat-abl" and "0.881" in md,
        f"computed leader {top} at {means.get(top, 0):.3f}")
@@ -312,7 +309,7 @@ def main() -> int:
     picks = {"clover-35b-a3b-iq2", "g4-12b-qat", "g4-e4b-qat"}
     others = [mid for mid in means if mid not in picks]
     missing = [mid for mid in others if mid not in seg]
-    ok("§8 names every other quality row", not missing and "ten of the eighteen" in seg and "eight clear the 0.78" in seg,
+    ok("§8 names every other quality row", not missing and "eleven of the nineteen" in seg and "nine clear the 0.78" in seg,
        f"missing {missing}" if missing else "count phrase missing")
 
     # ---- §3's gaps, from the item counts -----------------------------------
@@ -323,9 +320,9 @@ def main() -> int:
 
     # ---- Figure 6's threshold counts ---------------------------------------
     vals = sorted(means.values(), reverse=True)
-    for thr, want in ((0.78, 10), (0.85, 3), (0.75, 13)):
+    for thr, want in ((0.78, 11), (0.85, 3), (0.75, 14)):
         got = sum(1 for v in vals if v > thr)
-        word = {3: "three", 10: "ten", 13: "thirteen"}[want]
+        word = {3: "three", 11: "eleven", 14: "fourteen"}[want]
         ok(f"Figure 6 threshold {thr}", got == want and f"{word} " in md, f"{got} rows above {thr}")
 
     # ---- ordinals, ranks and count claims, derived from Table 2 -------------
@@ -363,6 +360,60 @@ def main() -> int:
     mmcols = [r["mm"] for r in t2 if r["mm"] is not None]
     widest = round((max(mmcols) - min(mmcols)) * 100)
     ok("Table 4's scoped MMLU gap", f"that is {widest} points" in md, f"column range {widest} points")
+    # the caption's denominator is the count of rows that carry a mean, not a typed number
+    NWORD19 = {6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven",
+               12: "twelve", 13: "thirteen", 14: "fourteen", 18: "eighteen", 19: "nineteen"}
+    ORD = {7: "seventh", 8: "eighth", 9: "ninth"}
+    ok("Figure 6 caption counts the rows that carry a mean",
+       f"out of the **{NWORD19.get(len(means), len(means))}** rows that carry a mean" in md,
+       f"{len(means)} rows carry a mean")
+
+    # §3's "ties groot for eighth of nineteen" — the placing, from the means
+    ranked = sorted(means.values(), reverse=True)
+    g26 = means["g4-26b-a4b-qat"]
+    place = 1 + sum(1 for v in ranked if v > g26 + 1e-9)
+    ok("§3 the 26B's mean placing", f"ties `groot-19b-a3b` for {ORD.get(place, place)} of nineteen" in md,
+       f"0.799 sits at {place} of {len(means)}")
+
+    # the Start-here paragraph: gpt-oss's own mean, its placing, and the fitting-row order it claims
+    fit_ok = [r for r in t2 if "NO" not in r["flag"] and r["id"] in means]
+    fit_order = [r["id"] for r in sorted(fit_ok, key=lambda r: -means[r["id"]])]
+    g = means["gpt-oss-20b-mxfp4"]
+    gplace = sorted(means.values(), reverse=True).index(g) + 1
+    gfit = fit_order.index("gpt-oss-20b-mxfp4") + 1
+    ORDINAL = {3: "third", 4: "fourth", 5: "fifth", 6: "sixth", 7: "seventh"}
+    ok("Start here: gpt-oss's mean and placings",
+       f"**{g:.3f}**" in md
+       and f"{ORDINAL.get(gplace, gplace)} of the nineteen rows that have one" in md
+       and f"{ORDINAL.get(gfit, gfit)} among the rows\nthat fit" in md
+       and all(mid in md for mid in fit_order[:gfit]),
+       f"mean {g:.3f}, {gplace} of {len(means)} overall, {gfit} of the fitting rows: {fit_order[:gfit]}")
+
+    # the decode comparison the paragraph makes, from the perf rows
+    def tg(mid):
+        return (pick(mid, "perf") or {}).get("tg_tps")
+    gtg, ltg = tg("gpt-oss-20b-mxfp4"), tg("lfm25-24b-a2b-think")
+    ok("Start here: the decode comparison is real",
+       gtg is not None and ltg is not None and ltg > gtg
+       and f"{ltg:.0f} tok/s against its {gtg:.0f}" in md,
+       f"lfm-think {ltg:.0f} vs gpt-oss {gtg:.0f} tok/s")
+
+    # Table 2's perf cells must quote the NEWEST perf row for the row's own build and context.
+    # This is how a stale pair survives a re-measure: the quality cells are re-pointed and the
+    # throughput cell keeps the older run's figure, which is what had happened to two rows here.
+    stale_perf = []
+    for line in md.splitlines():
+        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        if len(c) != 12 or c[0] not in models or "/" not in c[5]:
+            continue
+        perf = pick(c[0], "perf")
+        if not perf or perf.get("pp_tps") is None:
+            continue
+        want = f"{perf['pp_tps']:.0f} / {perf['tg_tps']:.0f}"
+        if c[5] != want:
+            stale_perf.append(f"{c[0]} prints {c[5]}, newest perf row {want}")
+    ok("Table 2's pp / tg cells quote the newest perf row", not stale_perf, "; ".join(stale_perf[:4]))
+
     body = md[:md.find("## 16. Document history")] if "## 16. Document history" in md else md
     ok("no stale 8.4-point gap in the body", "8.4 points" not in body,
        "8.4 points still in the body outside the history")
@@ -520,7 +571,8 @@ def main() -> int:
     for stale in ("a third of the dense rate", "eleven models tied", "for fourth",
                   "the whole roster fits at 24 GB", "the three 8192-cap arms",
                   "for the four reasoning arms", "the five arms whose templates",
-                  "thirteen 16 GB cards", "outside the ±7.7-point interval"):
+                  "thirteen 16 GB cards", "outside the ±7.7-point interval",
+                  "0.733", "withheld", "n=30 rather than 50"):
         ok(f"stale phrase gone: {stale!r}", stale not in body)
 
     if CAPNOTE:

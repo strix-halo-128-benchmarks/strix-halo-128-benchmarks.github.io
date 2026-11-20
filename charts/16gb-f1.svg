@@ -1724,18 +1724,18 @@ L 581.132707 59.029122
     </g>
    </g>
    <g id="LineCollection_43">
-    <path d="M 638.529057 200.662358 
-L 638.529057 90.820299 
+    <path d="M 638.529057 201.381108 
+L 638.529057 113.215017 
 " clip-path="url(#p7ccc2c0ef9)" style="fill: none; stroke: #d55e00; stroke-opacity: 0.95; stroke-width: 1.25"/>
    </g>
    <g id="line2d_213">
     <g clip-path="url(#p7ccc2c0ef9)">
-     <use xlink:href="#m2855eb7564" x="638.529057" y="200.662358" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+     <use xlink:href="#m2855eb7564" x="638.529057" y="201.381108" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
    <g id="line2d_214">
     <g clip-path="url(#p7ccc2c0ef9)">
-     <use xlink:href="#m2855eb7564" x="638.529057" y="90.820299" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
+     <use xlink:href="#m2855eb7564" x="638.529057" y="113.215017" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95"/>
     </g>
    </g>
    <g id="LineCollection_44">
@@ -1985,7 +1985,7 @@ Q 547.792663 60.072793 550.154147 84.903145
    </g>
    <g id="line2d_247">
     <g clip-path="url(#p7ccc2c0ef9)">
-     <use xlink:href="#ma6308338b8" x="638.529057" y="145.741329" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
+     <use xlink:href="#ma6308338b8" x="638.529057" y="157.298063" style="fill: #d55e00; fill-opacity: 0.95; stroke: #d55e00; stroke-opacity: 0.95; stroke-linejoin: miter"/>
     </g>
    </g>
    <g id="line2d_248">
