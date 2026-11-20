@@ -209,6 +209,8 @@ def main() -> int:
         vals = [score(pick(mid, ax), ax)[0] for ax in ("humaneval", "mmlu_pro", "ifeval")]
         if all(v is not None for v in vals):
             means[mid] = sum(float(v) for v in vals if v is not None) / 3.0
+    PARTIAL = {"gpt-oss-20b-mxfp4"}          # ‡ row: no mean until its IFEval sample is complete
+    means = {k: v for k, v in means.items() if k not in PARTIAL}
     top = max(means, key=means.get) if means else ""
     ok("mean leader is the low-cap row named in prose", top == "huihui-gemma26b-qat-abl" and "0.881" in md,
        f"computed leader {top} at {means.get(top, 0):.3f}")
@@ -221,7 +223,7 @@ def main() -> int:
         try:
             printed = float(cells[9])
         except ValueError:
-            continue
+            continue          # "—": the row's derived columns are withheld by design (‡)
         if abs(printed - means[cells[0]]) > 0.0015:
             bad_means.append(f"{cells[0]} prints {printed:.3f}, archive {means[cells[0]]:.3f}")
     ok("every mean in Table 2 matches the archive", not bad_means, "; ".join(bad_means[:4]))
@@ -299,10 +301,18 @@ def main() -> int:
            f"computed ±{printed}, page says ±{want}")
 
     # ---- §8 names all sixteen other quality rows --------------------------
-    seg = md[md.find("Of the other sixteen quality rows"): md.find("Of the other sixteen quality rows") + 1400]
-    named = [mid for mid in means if mid in seg]
-    ok("§8 names all sixteen", len(named) == len(means) - 3 and "sixteen" in seg,
-       f"{len(named)} named, {len(means) - 3} expected")
+    seg = md[md.find("Of the other sixteen quality rows"): md.find("Of the other sixteen quality rows") + 1600]
+    picks = {"clover-35b-a3b-iq2", "g4-12b-qat", "g4-e4b-qat"}
+    others = [mid for mid in means if mid not in picks]
+    missing = [mid for mid in others if mid not in seg]
+    ok("§8 names every other quality row", not missing and "ten of the eighteen" in seg and "eight clear the 0.78" in seg,
+       f"missing {missing}" if missing else "count phrase missing")
+
+    # ---- §3's gaps, from the item counts -----------------------------------
+    he_gap = abs(159 - 158) / 164 * 100
+    mm_gap = abs(101 - 91) / 120 * 100
+    ok("§3 HumanEval gap from items", f"{he_gap:.1f} points" in md, f"computed {he_gap:.1f}")
+    ok("§3 MMLU-Pro gap from items", f"{mm_gap:.1f} points" in md, f"computed {mm_gap:.1f}")
 
     # ---- Figure 6's threshold counts ---------------------------------------
     vals = sorted(means.values(), reverse=True)
@@ -310,6 +320,12 @@ def main() -> int:
         got = sum(1 for v in vals if v > thr)
         word = {3: "three", 10: "ten", 13: "thirteen"}[want]
         ok(f"Figure 6 threshold {thr}", got == want and f"{word} " in md, f"{got} rows above {thr}")
+
+    # ---- every version has its own history row, with no gaps -----------------
+    vers = [int(m.group(1)) for m in re.finditer(r"^\| 1\.(\d+) \| \d+(?:st|nd|rd|th) \w+ \d{4} \|", md, re.M)]
+    want = list(range(max(vers), min(vers) - 1, -1)) if vers else []
+    ok("history rows are contiguous", vers == want,
+       f"{len(vers)} rows, gaps at {[v for v in want if v not in vers][:6]}")
 
     # ---- the load-time arithmetic ------------------------------------------
     biggest = max(m["size_gib"] for m in models.values())
