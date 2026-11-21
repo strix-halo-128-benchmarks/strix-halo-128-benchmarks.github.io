@@ -8181,5 +8181,43 @@
   "axes": [
    "ifeval"
   ]
+ },
+ {
+  "run_id": "20261120-173555-mellum21-12b-fork-cap8192-r2",
+  "when": "2026-11-20 17:35:55",
+  "model": "mellum21-12b",
+  "n_params": 12149923072,
+  "ftype": "Q4_K - Medium",
+  "build": "fork",
+  "tree": "fork",
+  "build_info": "b11581-1a3309516",
+  "kernel": "7.3.4-1-cachyos",
+  "pp": 2519.100021027546,
+  "tg": 114.02056680736156,
+  "ttft_ms": 713.35,
+  "preflight": "3/3",
+  "needle": "FF",
+  "riddles": "12/14",
+  "humaneval": 0.9451,
+  "humaneval_n": 164,
+  "cap_he": 8192,
+  "mmlu": 0.775,
+  "mmlu_n": 120,
+  "cap_mmlu": 8192,
+  "mmlu_method": "chat 0-shot probe (NOT 5-shot loglikelihood)",
+  "ifeval_p": 0.86,
+  "ifeval_i": 0.8684,
+  "ifeval_n": 50,
+  "wall_s": 12887.842799663544,
+  "axes": [
+   "humaneval",
+   "identity",
+   "ifeval",
+   "mmlu_pro",
+   "needle",
+   "perf",
+   "preflight",
+   "riddles"
+  ]
  }
 ]

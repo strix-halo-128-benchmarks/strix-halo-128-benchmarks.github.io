@@ -9,6 +9,66 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.31 (2026-11-21)
+
+**Mellum2.1-12B comes back from retirement: re-measured at 8192, better on code, weaker on knowledge, and no
+long context at all.**
+
+The Q4_K_M file was retired on 2026-11-05 with a 0.9146 code row and a 0.8083 knowledge row. It was restored to
+disk on 2026-11-20 and run again on fork `b11581-1a33095` (`halo-box-strix-llama.cpp`, commit `19b458b5a`,
+kernel 7.3.4-1, run `20261120-173555-mellum21-12b-fork-cap8192-r2`): **0.9451 code (155/164 at cap 8192), 0.7750
+knowledge (93/120 at 8192), 12/14 riddles, 3/3 preflight, 114.0 t/s decode at 2519 t/s prefill.** Against the
+row it replaces that is +5 code items, −4 knowledge items, +2 riddles and +2 t/s, so the model moves up four
+places on code. The table's cells follow the rule this report has always used — best value per axis — so code,
+riddles and decode come from the re-run and the knowledge cell stays at the 2026-10-18 **0.8083 (97/120)**;
+both numbers are now in §9.1 rather than one of them silently winning. Both needle probes fail on the re-run —
+2k and 8k truncated at 1,024 tokens, retried at the same budget, still empty — and §9.1 says so rather than
+leaving the axis implied.
+
+The re-measure is the only measurement in this edition. Everything else here is a count, an ordering or a
+caption that the roster change and a re-read moved.
+
+| what changed | before | now |
+|---|---|---|
+| Table 4, `mellum21-fork` row | 0.9146 / 0.8083 / 10-14 / 2723 / 111.9, 2026-10-18, `fork pre-identity`, `✗ 11-05` | 0.9451 / 0.8083 / 12-14 / 2723 / 114.0, 2026-11-20, `fork b11581-1a33095`, `✓` |
+| Table 4 order | six rows out of sequence (0.9024, 0.8598, 0.8476, 0.8354, 0.8000, 0.7866 inside lower blocks) | sorted by HumanEval, no-score rows at the foot; 36 rows changed position, no value changed |
+| §9.1 mellum block | 111.9 t/s, "0.91 code", cap caveat only | 114.0 t/s, 0.9451 code, both knowledge runs (0.8083 carried, 0.7750 re-measured), the failed needles named |
+| §11.3 decode leaderboard | 111.9 t/s, `✗ 11-05` | 114.0 t/s, `✓` |
+| §5.1 and §5.2 quant pairs | Q4_K_M 111.9 t/s (+22%), 0.9146 / 0.8083 | 114.0 t/s (+24%), 0.9451 / 0.8083 (+6.7 / +10.8 pp) |
+| §10.2 family spread, mellum | 0.8780-0.9146 Δ.037, 0.7000-0.8083 Δ.108, 10-11/14, 92-112 t/s | 0.8780-0.9451 Δ.067, 0.7000-0.8083 Δ.108, 11-12/14, 92-114 t/s |
+| §19.2 knowledge against speed | "the best knowledge-per-second point on this machine is mellum21, still 5.8pp under the ceiling" | claim withdrawn, the two comparison sentences that hold now stated — see below |
+| Table 8 registry | `✓ sha256 · retired 2026-11-05` | `✓ sha256 · restored 2026-11-20` |
+| Table 5 footnote | mellum21-fork listed among the rows retired since the snapshot | it is named as retired and then restored, with its snapshot cells left as the 2026-10-18 run |
+| header roster | 51 files, 898.1 GiB, 31 files with a row, 32 rows | 54 files, 948.2 GiB, 32 files with a row, 32 rows |
+| §0.3 and §18.3 servable count | 32 | 33 |
+| §9 alias denominator | 52 of 96 | 52 of 98 |
+| Figure 15 / 16 / 17 / 21 captions | 58 models / 56 models / ten cap pairs / "of 44" | 58 / 56 / eleven / "of 45", read off the regenerated artwork |
+
+**One claim was false before this edition touched it.** §19.2 said "the best knowledge-per-second point on this
+machine is mellum21, still 5.8pp under the ceiling". Computed as MMLU ÷ decode the leader is the retired 31B
+(0.8667 ÷ 17.0 = 0.0510 per t/s), and among files decoding above 50 t/s it is the live driver (0.8500 ÷ 56.9 =
+0.0149); mellum21's 0.8083 ÷ 111.9 = 0.0072 never led that ratio at either cap. The sentence now states the two
+comparisons that hold — the two fastest files read 0.7750 and 0.6917, 9.2 and 17.5 pp under the ceiling, and no
+file above 50 t/s beats the driver's 0.8500.
+
+**Two figure captions disagreed with their own artwork**, the failure mode the v1.29 entry already recorded:
+regenerating the figures moved the `n =` footers and the prose above them did not move with it. Figure 17 now
+says eleven cap pairs (the artwork drew eleven) and Figure 21 says "of 45" where the denominator had moved.
+**And one figure defect was caught by the captions moving under it:** `charts.py`'s alias table had no entry for
+the re-measure's `mellum21-12b`, so the same weight file plotted as two models — which inflated Figures 15 and
+16 by one point each (58 → 59, 56 → 57) and would have shipped a figure in which mellum appeared twice, once at
+each of its two runs. The alias is now folded into `mellum21-fork` in `canonical()`, the figures plot one point
+per file again, and the captions read 58 and 56 — the same numbers they carried before, now for the right
+reason.
+
+**What was deliberately left alone.** Table 5's 2026-10-31 snapshot keeps every cell it published, including
+mellum21-fork's 0.9146/0.8083 — a snapshot that silently updates is not a snapshot — and the footnote is what
+carries the restore. §18.3's run count and hour total are unchanged: this edition adds one completed run and the
+line was not re-derived from a new basis. The 16 GiB page stays at v1.37, because nothing in its class matrix
+moved: no matrix row was added, the 21 rows still resolve to 18 weight files on disk including three that carry
+two rows each, and `charts16.py` regenerates its eight figures with no diff against the published set. An Inkling2-mini triage arm was still measuring while this edition was built, so it is
+excluded from the matrix until its HumanEval axis closes.
+
 ### Version 1.30 (2026-11-20)
 
 **Hy4-flash leaves the disk the same day it was measured: the row stays, the 79 GiB does not.**
