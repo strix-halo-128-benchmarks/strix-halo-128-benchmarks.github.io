@@ -154,7 +154,7 @@ def main() -> int:
     ok("weights total", f"{total:.1f} GiB" in md, f"{total:.1f} GiB")
 
     # ---- ladder at 8k --------------------------------------------------------
-    for gib, expect in ((7, 2), (11, 4), (target, 17), (23, 20), (31, 21)):
+    for gib, expect in ((7, 2), (11, 4), (target, 18), (23, 21), (31, 22)):
         n = sum(1 for m in models.values() if footprint(m, 8192) <= gib)
         ok(f"ladder at {gib} GiB", n == expect and f"{n} of {len(models)}" in md, f"computed {n} of {len(models)}")
 
@@ -200,9 +200,9 @@ def main() -> int:
 
     r14 = sum(1 for m in models
               if (pick(m, "riddles") or {}).get("score") == (pick(m, "riddles") or {}).get("total") == 14)
-    ok("riddle tally at 14/14", r14 == 15 and "fifteen models tied" in md, f"computed {r14}")
+    ok("riddle tally at 14/14", r14 == 16 and "sixteen models tied" in md, f"computed {r14}")
 
-    ok("§3 riddle denominator", "15 of the 21 rows" in md,
+    ok("§3 riddle denominator", "16 of the 22 rows" in md,
        "the page states a denominator that is not the roster's row count")
     kv36 = [m["id"] for m in models.values() if m.get("kv_mib_per_ktok") == 36]
     ok("rows at 36 MiB per 1k", len(kv36) == 6 and "Six rows land at 36" in md, f"computed {len(kv36)}: {sorted(kv36)}")

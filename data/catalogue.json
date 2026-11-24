@@ -8219,5 +8219,43 @@
    "preflight",
    "riddles"
   ]
+ },
+ {
+  "run_id": "20261124-042612-g16-air-26b-a4b",
+  "when": "2026-11-24 04:26:12",
+  "model": "air-26b-a4b",
+  "n_params": 25233142046,
+  "ftype": "Q8_0",
+  "build": "fork",
+  "tree": "fork",
+  "build_info": "b11581-1a3309516",
+  "kernel": "7.3.5-2-cachyos",
+  "pp": 1387.1164622981746,
+  "tg": 49.15212582944213,
+  "ttft_ms": 1297.656,
+  "preflight": "3/3",
+  "needle": "PP",
+  "riddles": "14/14",
+  "humaneval": 0.9695,
+  "humaneval_n": 164,
+  "cap_he": 2048,
+  "mmlu": 0.8333,
+  "mmlu_n": 120,
+  "cap_mmlu": 2048,
+  "mmlu_method": "chat 0-shot probe (NOT 5-shot loglikelihood)",
+  "ifeval_p": null,
+  "ifeval_i": null,
+  "ifeval_n": 0,
+  "wall_s": 15085.844509840012,
+  "axes": [
+   "humaneval",
+   "identity",
+   "ifeval",
+   "mmlu_pro",
+   "needle",
+   "perf",
+   "preflight",
+   "riddles"
+  ]
  }
 ]
