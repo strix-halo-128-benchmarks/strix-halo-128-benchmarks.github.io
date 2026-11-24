@@ -4,12 +4,12 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.32** · 24th November 2026 · Air-26B-A4B, a 4.27 bpw re-quant of the same base weights the QAT driver carries, joins the matrix at a 2048 cap and ties the top code cell
+- **Document version:** **1.33** · 24th November 2026 · gpt-oss-20b-mxfp4's 4096-cap re-run re-bands its row out of the 512 floor, the disk roster is recounted, and one stale code-leader claim is corrected
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
 - **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-24
-- **Roster:** 54 `.gguf` files on disk, 948.2 GiB, 32 of them carrying a measured row (32 rows: the LFM2.5 heretic file carries two), checked 2026-11-21
+- **Roster:** 65 `.gguf` files on disk, 987.0 GiB including projectors, drafters and shards, checked 2026-11-24 · 34 of Table 4's rows sit on files still present
   · **Change log:** §21
 
 **About this document**
@@ -98,7 +98,7 @@ speed?
 6 watts, about £13 a year. The expensive part is the time, not the electricity.
 
 **What to use, in one line each.** Chat and general work: the 26B driver on port 8100. Bulk classification or
-summarising: `qwen3-30b-a3b` at 79.7 tokens/second, or `gpt-oss-20b` at 74.4. Long context: 64k, which
+summarising: `qwen3-30b-a3b` at 79.7 tokens/second, or `gpt-oss-20b` at 72.0. Long context: 64k, which
 `groot-19b-a3b`, `axion-1.0-35b-iq3` and `clover-35b-a3b-iq2` each hold — the million-token Kimi-Linear that
 used to take this slot was retired on 2026-11-05. Images: MiniCPM-V. Every one of those is on disk and
 measured; anything that lost its slot has been deleted, and the ledger says why.
@@ -1033,6 +1033,7 @@ deleted rows are why the recommendations below have reasons.
 | lfm25-24b-a2b (thinking) | 24.0B | Q4_0 | 0.9695 (164@8192) | 0.6917 (120@4096) | 14/14 | 3360 | 111.2 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | air-26b-a4b | 25.2B | Q8_0 (mixed, 4.27 bpw) | 0.9695 (164@2048) | 0.8333 (120@2048) | 14/14 | 1746 | 48 | 2026-11-24 | fork b11581-19b458b | ✓ |
 | gemma4-31b | 30.7B | Q4_0 | 0.9634 (164@2048) | 0.8667 (120@2048) | 14/14 | 350 | 17.0 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
+| gpt-oss-20b-mxfp4 | 20.9B | MXFP4 | 0.9634 (164@4096) | 0.8000 (120@4096) | 14/14 | 2205 | 72.0 | 2026-11-20 | fork b11581-19b458b | ✓ |
 | gemma4-26b-uncen | 25.2B | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 1759 | 56.9 | 2026-10-28 | fork b3-1a33095 | ✓ driver |
 | minicpm-v47-35b | 34.7B | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 1600 | 64.6 | 2026-10-18 | bolt pre-identity | ✓ |
 | gemma4-26b-a4b | 25.2B | Q8_0 | 0.9573 (164@2048) | 0.8667 (120@2048) | 14/14 | — | 49.4 | 2026-10-30 | fork b3-1a33095 | ✗ 10-30 |
@@ -1077,7 +1078,6 @@ deleted rows are why the recommendations below have reasons.
 | graft-50b-a3b | 50.7B | Q4_K_M | 0.7805 (164@2048) | 0.6583 (120@2048) | 14/14 | 1368 | 54.3 | 2026-10-19 | fork pre-identity | ✗ |
 | hy-memory-30b-a3b-q8 | 30.1B | Q8_0 | 0.7683 (164@2048) | 0.7500 (120@2048) | 11/14 | 1459 | 52.3 | 2026-10-17 | fork pre-identity | ✗ 10-29 |
 | lfm25-24b-a2b-htc | 24.0B | Q4_0 | 0.6890 (164@4096) | 0.2667 (120@4096) | 12/14 | 3225 | 106.0 | 2026-11-16 | fork b11581-1a33095 | ✓ |
-| gpt-oss-20b-mxfp4 | 20.9B | MXFP4 | 0.5854 (164@512) | 0.5583 (120@512) | 14/14 | 2169 | 74.4 | 2026-11-10 | fork b3-1a33095 | ✓ |
 | ornith35b (uncensored) | 35.5B | IQ3_XXS | 0.5671 (164@4096) | 0.6333 (120@4096) | 12/14 | 1762 | 69.9 | 2026-10-31 | fork b3-1a33095 | ✓ boot |
 | nemotron-bolt (broken load) | 74.0B | IQ2_XXS | 0.1786 (56@512) | 0.4146 (41@512) | 8/14 | 586 | 22.7 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
 | Ling-3.0-flash | — | Q4_K_M | — | 0.7667 (120@2048) | 11/14 | — | 43.5 | 2026-10-22 | fork pre-identity | ✗ 10-30 |
@@ -1087,13 +1087,15 @@ deleted rows are why the recommendations below have reasons.
 **The twelve 16 GiB-card rows are new in this edition.** They are the same box, the same build
 (`b3-1a33095`), the same harness and the same per-item records — measured against a different question: what a
 **16 GiB graphics card** can hold, rather than what this 100 GiB pool can. That changes the caps, and the caps
-change the scores. The seven small non-thinking arms (`gemma-4-12B-QAT`, `gemma-4-E4B-QAT`, `qwen3-14b`,
-`qwen3-30b-a3b`, `qwen3-8b`, `mistral-small-3.1-24b`, `gpt-oss-20b-mxfp4`) were scored at **512 tokens** on both
+change the scores. The six small non-thinking arms (`gemma-4-12B-QAT`, `gemma-4-E4B-QAT`, `qwen3-14b`,
+`qwen3-30b-a3b`, `qwen3-8b`, `mistral-small-3.1-24b`) were scored at **512 tokens** on both
 capability axes, which is the generation budget a 16 GiB card leaves after its weights and KV cache — so read
 those cells as "what you get on the card", not as the model's ceiling. The three arms that deliberate
 (`lfm25-24b-a2b (thinking)`, `Groot-19B-A3B`, `Axion-1.0-35B (IQ3_XXS)`) were re-run at 4096-8192 because 512
 pins them mid-thought and measures the cap instead of the model; their 512-cap numbers are on the 16 GiB page
-as the cap evidence. `gemma-4-26B-A4B-QAT` and base `lfm25-24b-a2b` already had rows here at wider caps (2048
+as the cap evidence. `gpt-oss-20b-mxfp4` was the seventh of that group and left it in v1.33: re-run at a 4096
+cap on 20th November it reads **0.9634 code / 0.8000 knowledge**, so its row now carries a standard cap and
+rank, not a floor cell. `gemma-4-26B-A4B-QAT` and base `lfm25-24b-a2b` already had rows here at wider caps (2048
 and 4096), so those two files appear once: at their better run. `Clover-35B-A3B-Preview` is the twelfth and the one to read carefully: it is a block-diffusion model that
 llama.cpp runs autoregressively, so its 0.9451/0.8417 is the causal-decode arm of a model trained for
 parallel decode — the flavour of the weights, not the speed of the architecture it was designed for. The fit
@@ -1112,8 +1114,8 @@ Q8_0 row now carries its own file's numbers.
 
 
 **Table 5 — what is actually servable on 2026-10-31.** Sixteen artefacts, every one now carrying a
-capability row. The inventory it counts from is the roster header at the top of this page — 49 `.gguf` files,
-807.6 GiB on disk including projectors and drafters, checked 2026-11-12 — and §20.3 is the file map, not a
+capability row. The inventory it counts from is the roster header at the top of this page — 65 `.gguf` files,
+987.0 GiB on disk including projectors and drafters, checked 2026-11-24 — and §20.3 is the file map, not a
 listing. Table 5 is deliberately a duplicate of Table 4 restricted to what was servable on that date: the
 endpoint column is a roster record, not a ranking, and a snapshot that silently shrinks is not a snapshot.
 
@@ -1428,7 +1430,7 @@ output at all. Deleted 2026-11-03.
 **Retired on 2026-10-29 (61.6 GiB) and 2026-10-30 (245.1 GiB).** Every one has a full record —
 removed paths, byte counts, sha256 per file and a restore URL — in `~/llama-local/RETIRED-models.md`.
 
-- **gemma4-31b QAT Q4_0 (18.0 GiB)** — the all-time code leader (0.9634, 0.8667 MMLU, 14/14) and still
+- **gemma4-31b QAT Q4_0 (18.0 GiB)** — the best code score of any dense row measured here (0.9634, 0.8667 MMLU 14/14), behind only the two 0.9695 MoE arms, and still
   the right thing to drop: dense 30.7B at 17.0 t/s, so a suite on it costs 2.5x the wall clock of any
   MoE at the same score, and for one item more than the 26B driver at a third of the speed. Shape and
   speed, not quality.
@@ -1459,10 +1461,11 @@ that row's cap and half its file size. Three others carry wide caps because they
 **0.9390 / 0.7167** at 4096 and 64.8 t/s, `Axion-1.0-35B (IQ3_XXS)` **0.9329 / 0.7583** at 8192/4096 and
 93.8 t/s. Those three and `air-26b-a4b` are the only rows in the block that reach the top of the matrix.
 
-The other seven are small non-thinking arms measured at a **512-token cap**, which is what a card's KV budget
+The other six are small non-thinking arms measured at a **512-token cap**, which is what a card's KV budget
 leaves after the weights: `gemma-4-12B-QAT` 0.8963 code / 0.920 IFEval, `gemma-4-E4B-QAT` 0.8659 / 0.900,
 `qwen3-14b` 0.8537 / 0.880, `qwen3-30b-a3b` 0.8537 / 0.860, `mistral-small-3.1-24b` 0.8232 / 0.820,
-`qwen3-8b` 0.7866 / 0.900, `gpt-oss-20b-mxfp4` 0.5854 / 0.480. Their knowledge cells read 0.467 to 0.617 and,
+`qwen3-8b` 0.7866 / 0.900. `gpt-oss-20b-mxfp4` was the seventh and left the group in v1.33, re-measured at a
+4096 cap (0.9634 code / 0.8000 knowledge, 20th November), so it is no longer a floor row. Their knowledge cells read 0.467 to 0.617 and,
 with the 218.9B Hy4-flash below, are the only knowledge numbers in Table 4 measured at 512; the leaderboard
 page therefore ranks them in a separate floor table rather than against the 2048-and-up rows. Read them as what
 a 16 GiB card delivers, not as a ceiling.
@@ -1650,11 +1653,12 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | 0.9695 @8192 | lfm25-24b-a2b (thinking) | ✓ |
 | 0.9695 @2048 | air-26b-a4b | ✓ |
 | 0.9634 @2048 | gemma4-31b | ✗ 10-30 |
+| 0.9634 @4096 | gpt-oss-20b-mxfp4 | ✓ |
 | 0.9573 @2048 | gemma4-26b-uncen | ✓ driver |
 | 0.9573 @4096 | minicpm-v47-35b | ✓ |
 | 0.9573 @2048 | gemma4-26b-a4b | ✗ 10-30 |
 
-*A 24B arm measured at 8192 holds the top cell, tied today by `air-26b-a4b` at the standard 2048 cap on 12.55 GiB of weights; the three rows below the 0.9634 are a tie at 0.9573 across two builds and three caps, which is what a 0.9573 looks like when the sampling interval is ±2.3 points.*
+*A 24B arm measured at 8192 holds the top cell, tied today by `air-26b-a4b` at the standard 2048 cap on 12.55 GiB of weights. The two 0.9634 rows below it are separated by 6.7 GiB of file and 4.2x the decode rate, and the three-row tie at 0.9573 is what that score looks like when the sampling interval is ±2.3 points.*
 
 ### 11.2 Knowledge — the best on MMLU-Pro
 

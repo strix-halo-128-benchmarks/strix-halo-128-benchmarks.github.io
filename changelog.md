@@ -9,6 +9,34 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.33 (2026-11-24)
+
+**gpt-oss-20b-mxfp4 leaves the 512 floor: its 4096-cap re-run sat in the archive and in no row. Plus two
+inventories recounted and one stale code-leader claim corrected.**
+
+The same MXFP4 file was re-measured on 20th November at a 4096 cap (run `20261120-141653-g16-gpt-oss-20b-mxfp4`,
+fork `b11581-19b458b`, kernel 7.3.4-1): **0.9634 code (158/164 at cap 4096), 0.8000 knowledge (96/120 at 4096),
+2,205 t/s prefill and 72.0 t/s decode**. The row had carried its 2026-11-10 512-cap cells — 0.5854 / 0.5583,
+2,169 / 74.4 — since v1.25, and the derived-data check had named the mismatch on every build since. Consequences:
+the row moves to a standard cap and to fourth on code, tied with `gemma4-31b` at 0.9634; it leaves the
+leaderboard's 512 floor table for the main band; it drops out of the "small non-thinking arms" sentence in both
+places it appears, which now counts **six**; and the executive summary's decode figure for it goes from 74.4 to
+72.0 t/s. Its riddles cell stays at **14/14** from the 512-cap run, the one axis where the wider cap did worse
+(the 4096 run scored 13/14), so §11.4 still lists it.
+
+Two inventories recounted from the disk instead of from the previous version's arithmetic. The header roster
+moves from 54 `.gguf` files / 948.2 GiB, checked 21st November, to **65 files / 987.0 GiB including projectors,
+drafters and shards**, checked 24th November, and its per-file claim ("32 of them carrying a measured row, the
+LFM2.5 heretic file carries two") is replaced by the one that survives a recount: **34 of Table 4's rows sit on
+files still present**. Table 5's caption, which points at that header for its inventory, follows it — it read
+49 files / 807.6 GiB checked 12th November.
+
+One claim corrected. §13 called `gemma4-31b` *the all-time code leader* at 0.9634, which has been false since
+10th November, when `lfm25-24b-a2b (thinking)` landed at 0.9695 — and today's `air-26b-a4b` ties that. It now
+reads the best code score of any dense row measured here, which is what 0.9634 is and stays.
+
+---
+
 ### Version 1.32 (2026-11-24)
 
 **Air-26B-A4B joins the matrix and ties the top code cell, at the standard cap and half the file size of the
