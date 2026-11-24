@@ -4,11 +4,11 @@
 
 **Why this rig exists, how it is measured, what the numbers mean, and which model to pick for what**
 
-- **Document version:** **1.31** · 21st November 2026 · Mellum2.1 re-measured at an 8192 cap and restored to disk: 0.9451 code, 0.7750 knowledge, and every count that hangs off the roster recounted
+- **Document version:** **1.32** · 24th November 2026 · Air-26B-A4B, a 4.27 bpw re-quant of the same base weights the QAT driver carries, joins the matrix at a 2048 cap and ties the top code cell
 - **Host:** Minisforum **MS-S1 MAX** (product_family `MINISFORUM`, board `SHWSA`, BIOS 1.06, EC 0.15)
   · OS: CachyOS Linux · GPU: Radeon 8060S (Strix Halo, gfx1151)
 - **Runtime:** llama.cpp on Vulkan · **Harness:** `~/bench` (`t20`)
-- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-20
+- **Archive:** `~/runs/catalogue.json` · **Measurements:** 2026-10-07 → 2026-11-24
 - **Roster:** 54 `.gguf` files on disk, 948.2 GiB, 32 of them carrying a measured row (32 rows: the LFM2.5 heretic file carries two), checked 2026-11-21
   · **Change log:** §21
 
@@ -1014,7 +1014,7 @@ model quality in comparisons of this kind.
 *Ranked per axis instead? [Leaderboards by axis](leaderboards.html) — same rows, one axis per table, each
 carrying its cap and build.*
 
-One row per model that completed the full suite and reached a verdict — 52 of the 98 model aliases that have
+One row per model that completed the full suite and reached a verdict — 53 of the 97 model aliases that have
 at least one measurement in the archive. `HE` is `score (items@cap)`; caps differ, so read
 section 7.3 before ranking. Prefill/decode are single-tenant measurements. Every row also has a build
 identity — the flavour and commit that produced it — tabulated in §4.1, and recorded per run from
@@ -1031,6 +1031,7 @@ deleted rows are why the recommendations below have reasons.
 | Model | Params | Quant | HumanEval | MMLU-Pro | Riddles | prefill t/s | decode t/s | measured | build | disk |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | lfm25-24b-a2b (thinking) | 24.0B | Q4_0 | 0.9695 (164@8192) | 0.6917 (120@4096) | 14/14 | 3360 | 111.2 | 2026-11-10 | fork b3-1a33095 | ✓ |
+| air-26b-a4b | 25.2B | Q8_0 (mixed, 4.27 bpw) | 0.9695 (164@2048) | 0.8333 (120@2048) | 14/14 | 1746 | 48 | 2026-11-24 | fork b11581-19b458b | ✓ |
 | gemma4-31b | 30.7B | Q4_0 | 0.9634 (164@2048) | 0.8667 (120@2048) | 14/14 | 350 | 17.0 | 2026-10-21 | fork pre-identity | ✗ 10-30 |
 | gemma4-26b-uncen | 25.2B | Q4_K_M | 0.9573 (164@2048) | 0.8500 (120@2048) | 14/14 | 1759 | 56.9 | 2026-10-28 | fork b3-1a33095 | ✓ driver |
 | minicpm-v47-35b | 34.7B | Q6_K | 0.9573 (164@4096) | 0.7750 (120@4096) | 10/14 | 1600 | 64.6 | 2026-10-18 | bolt pre-identity | ✓ |
@@ -1447,12 +1448,16 @@ removed paths, byte counts, sha256 per file and a restore URL — in `~/llama-lo
   (10.1)** and its **MXFP4 twin (6.5)** — all measured, all beaten on their own axis by something
   smaller or faster.
 
-**The 16 GiB roster, in one block (v1.24 and v1.25).** Eleven of the forty-nine rows were measured for the
-**[16 GiB page](16gb.html)** rather than for this one, and they sit in Table 4 because each completed the same
-suite on the same harness. Three carry wide caps because they deliberate: `lfm25-24b-a2b (thinking)`
-**0.9695 code / 0.6917 knowledge** at 8192/4096 and 111.2 t/s, `Groot-19B-A3B` **0.9390 / 0.7167** at 4096 and
-64.8 t/s, `Axion-1.0-35B (IQ3_XXS)` **0.9329 / 0.7583** at 8192/4096 and 93.8 t/s. Those three are the only new
-rows that reach the top of the matrix.
+**The 16 GiB roster, in one block (v1.24, v1.25 and v1.32).** Twelve of the fifty-three rows were measured for
+the **[16 GiB page](16gb.html)** rather than for this one, and they sit in Table 4 because each completed the
+same suite on the same harness. The newest is `air-26b-a4b` — webAI's re-quant of the same `gemma-4-26B-A4B`
+base weights the QAT driver carries, 12.55 GiB at 4.27 bpw: **0.9695 code (159/164) and 0.8333 knowledge
+(100/120) at a 2048 cap**, 14/14 riddles, 1746 t/s prefill and 48 t/s decode, measured on 24th November on fork
+`b11581-19b458b` and kernel 7.3.5-2. It ties `lfm25-24b-a2b (thinking)` for the top code cell, at a quarter of
+that row's cap and half its file size. Three others carry wide caps because they deliberate:
+`lfm25-24b-a2b (thinking)` **0.9695 code / 0.6917 knowledge** at 8192/4096 and 111.2 t/s, `Groot-19B-A3B`
+**0.9390 / 0.7167** at 4096 and 64.8 t/s, `Axion-1.0-35B (IQ3_XXS)` **0.9329 / 0.7583** at 8192/4096 and
+93.8 t/s. Those three and `air-26b-a4b` are the only rows in the block that reach the top of the matrix.
 
 The other seven are small non-thinking arms measured at a **512-token cap**, which is what a card's KV budget
 leaves after the weights: `gemma-4-12B-QAT` 0.8963 code / 0.920 IFEval, `gemma-4-E4B-QAT` 0.8659 / 0.900,
@@ -1643,12 +1648,13 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | HumanEval | model | status |
 |---|---|---|
 | 0.9695 @8192 | lfm25-24b-a2b (thinking) | ✓ |
+| 0.9695 @2048 | air-26b-a4b | ✓ |
 | 0.9634 @2048 | gemma4-31b | ✗ 10-30 |
 | 0.9573 @2048 | gemma4-26b-uncen | ✓ driver |
 | 0.9573 @4096 | minicpm-v47-35b | ✓ |
 | 0.9573 @2048 | gemma4-26b-a4b | ✗ 10-30 |
 
-*A 24B arm measured at 8192 holds the top cell; the three rows below it are a tie at 0.9573 across two builds and three caps, which is what a 0.9573 looks like when the sampling interval is ±2.3 points.*
+*A 24B arm measured at 8192 holds the top cell, tied today by `air-26b-a4b` at the standard 2048 cap on 12.55 GiB of weights; the three rows below the 0.9634 are a tie at 0.9573 across two builds and three caps, which is what a 0.9573 looks like when the sampling interval is ±2.3 points.*
 
 ### 11.2 Knowledge — the best on MMLU-Pro
 
@@ -1675,6 +1681,7 @@ leaderboard with the failures removed is how the same 60 GiB gets downloaded twi
 | riddles | model | status |
 |---|---|---|
 | 14/14 | lfm25-24b-a2b (thinking) | ✓ |
+| 14/14 | air-26b-a4b | ✓ |
 | 14/14 | gemma4-31b | ✗ 10-30 |
 | 14/14 | gemma4-26b-uncen | ✓ driver |
 | 14/14 | gemma4-26b-a4b | ✗ 10-30 |
@@ -2571,9 +2578,9 @@ change results.
 
 ### 18.3 What this method cost, and what it bought
 
-**The one cost that is measured:** 226 runs, of which the 200 that record a wall time total **95.1 hours of
-benchmark execution**, recorded run by run in `catalogue.json`, over 2026-10-07 → 2026-11-20. Of the 96 model
-aliases with at least one measurement, 52 carry a row in Table 4 and 33 of those are on files still on disk;
+**The one cost that is measured:** 233 runs, of which the 206 that record a wall time total **104.2 hours of
+benchmark execution**, recorded run by run in `catalogue.json`, over 2026-10-07 → 2026-11-24. Of the 97 model
+aliases with at least one measurement, 53 carry a row in Table 4 and 34 of those are on files still on disk;
 every deletion is recorded in the ledger, and the two largest deletion passes alone released 61.6 GiB and
 245.1 GiB.
 

@@ -9,6 +9,34 @@ Versions before 1.3 are summarised compactly: they predate the build register (�
 
 ---
 
+### Version 1.32 (2026-11-24)
+
+**Air-26B-A4B joins the matrix and ties the top code cell, at the standard cap and half the file size of the
+row it ties.**
+
+The 16 GiB campaign measured a new arm on 24th November: `air-26b-a4b`, webAI's `Air` re-quant of
+`google/gemma-4-26B-A4B-it` — the same base weights the QAT driver carries — at 12.55 GiB and 4.27 bpw (mixed
+Q8_0/IQ4_NL/IQ3_S, and the file's own `file_type` says `Q8_0`, which overstates it). **0.9695 code (159/164 at
+cap 2048), 0.8333 knowledge (100/120 at 2048), 14/14 riddles, 3/3 preflight, both needle probes, 1746 t/s
+prefill and 48 t/s decode**, on fork `b11581-19b458b` (tree HEAD `19b458b5a`), kernel 7.3.5-2, Mesa 26.3.1. The
+prefill cell is the quiet-box re-probe, not the run's own cold 1,387 t/s; the correction and both stamps are in
+the run file.
+
+Counts recounted from the archive in the same pass, and the sentences that hang off them: matrix rows 52 → 53;
+servable rows 33 → 34; the alias denominator reconciled at **97** with at least one measurement (§9 read 98,
+§18.3 read 96, and the unnamed `?` rows are excluded); §11.1's code table gains the row above the 0.9634 and its
+caption says the top cell is tied; §11.4's fourteen-of-fourteen list gains it; §9's 16 GiB block goes from
+eleven of the forty-nine to **twelve of the fifty-three**; and §18.3's cost line from 226 runs / 200 with wall
+time / 95.1 h to **233 / 206 / 104.2 h**, with the measurement range extended to 24th November 2026.
+
+Deliberately unchanged in this edition: the header's disk roster, still stamped as checked on 21st November 2026;
+the §20.5 manifest, which selects seventeen artefacts by its own rule; and `gpt-oss-20b-mxfp4`'s row, which still
+carries its 2026-11-10 512-cap cells although the 16 GiB campaign re-measured the same file at a 4096 cap on
+20th November (0.9634 code / 0.8000 knowledge). Moving that row would re-band an entry four sections quote, so
+it stays a separate editorial decision rather than a recount.
+
+---
+
 ### Version 1.31 (2026-11-21)
 
 **Mellum2.1-12B comes back from retirement: re-measured at 8192, better on code, weaker on knowledge, and no
